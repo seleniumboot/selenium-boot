@@ -1,0 +1,7 @@
+browser:
+  name: chrome
+  headless: false
+
+execution:
+  mode: local
+  baseUrl: https://panjatan.netlify.app/
