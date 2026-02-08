@@ -1,5 +1,6 @@
 package com.seleniumboot.listeners;
 
+import com.seleniumboot.driver.DriverManager;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
@@ -8,53 +9,44 @@ import org.testng.ITestResult;
  * TestExecutionListener controls per-test execution lifecycle.
  *
  * Responsibilities (MVP):
- * - Hook into test start / finish
- * - Provide safe extension points for:
- *   - Driver provisioning (future)
- *   - Failure capture (future)
- *   - Reporting hooks (future)
- *
- * This listener must remain lightweight and thread-safe.
+ * - Create WebDriver before test execution
+ * - Quit WebDriver after test execution
+ * - Provide hooks for failure handling (future)
  */
 public final class TestExecutionListener implements ITestListener {
 
     @Override
     public void onTestStart(ITestResult result) {
-        // Reserved for:
-        // - ThreadLocal driver binding
-        // - Test-level context initialization
+        // Create WebDriver for current thread
+        DriverManager.createDriver();
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
-        // Reserved for:
-        // - Reporting success
-        // - Execution metadata capture
+        // Reserved for reporting hooks
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
         // Reserved for:
         // - Screenshot capture
-        // - Failure metadata collection
+        // - Failure metadata
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
-        // Reserved for:
-        // - Skip reason reporting
+        // No-op for MVP
     }
 
     @Override
     public void onStart(ITestContext context) {
-        // Test context initialized
         // Do NOT create WebDriver here
+        // Context-level initialization only
     }
 
     @Override
     public void onFinish(ITestContext context) {
-        // Reserved for:
-        // - Per-context cleanup
-        // - Reporting flush hooks
+        // Quit WebDriver bound to current thread
+        DriverManager.quitDriver();
     }
 }
