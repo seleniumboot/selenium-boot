@@ -4,6 +4,7 @@ public final class SeleniumBootConfig {
 
     private Browser browser;
     private Execution execution;
+    private Retry retry;
 
     // --- getters ---
     public Browser getBrowser() {
@@ -12,6 +13,13 @@ public final class SeleniumBootConfig {
 
     public Execution getExecution() {
         return execution;
+    }
+    public Retry getRetry() {
+        return retry;
+    }
+
+    public void setRetry(Retry retry) {
+        this.retry = retry;
     }
 
     // --- setters (required for SnakeYAML) ---
@@ -66,6 +74,26 @@ public final class SeleniumBootConfig {
 
         public void setBaseUrl(String baseUrl) {
             this.baseUrl = baseUrl;
+        }
+    }
+
+    public static final class Retry {
+        private boolean enabled = true;
+        private int maxAttempts = 1;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public int getMaxAttempts() {
+            return maxAttempts;
+        }
+        public void setMaxAttempts(int maxAttempts) {
+            this.maxAttempts = maxAttempts;
         }
     }
 }

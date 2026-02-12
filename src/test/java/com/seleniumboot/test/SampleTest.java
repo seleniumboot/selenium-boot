@@ -17,4 +17,12 @@ public class SampleTest extends BaseTest{
         getDriver().get("https://google.com");
         assertEquals(getDriver().getTitle(), "Google.com");
     }
+
+    @Test
+    public void flakyTest() {
+        if (Math.random() < 0.7) {
+            throw new RuntimeException("Random failure");
+        }
+    }
+
 }

@@ -17,8 +17,8 @@ public final class TestExecutionListener implements ITestListener {
 
     @Override
     public void onTestStart(ITestResult result) {
-        // Create WebDriver for current thread
         DriverManager.createDriver();
+        result.getMethod().setRetryAnalyzerClass(RetryListener.class);
     }
 
     @Override
