@@ -11,4 +11,10 @@ public class SampleTest extends BaseTest{
         getDriver().get("https://google.com");
         assertEquals(getDriver().getTitle(), "Google");
     }
+
+    @Test
+    public void testScreenshotOnFailure() {
+        getDriver().get("https://google.com");
+        assertEquals(getDriver().getTitle(), "Google.com");
+    }
 }

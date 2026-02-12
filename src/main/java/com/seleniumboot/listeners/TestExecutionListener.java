@@ -28,9 +28,8 @@ public final class TestExecutionListener implements ITestListener {
 
     @Override
     public void onTestFailure(ITestResult result) {
-        // Reserved for:
-        // - Screenshot capture
-        // - Failure metadata
+        String testName = result.getMethod().getMethodName();
+        com.seleniumboot.reporting.ScreenshotManager.capture(testName);
     }
 
     @Override
