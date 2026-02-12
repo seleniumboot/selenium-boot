@@ -1,6 +1,7 @@
 package com.seleniumboot.test;
 
 import com.seleniumboot.driver.DriverManager;
+import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.listeners.SuiteExecutionListener;
 import com.seleniumboot.listeners.TestExecutionListener;
 import org.openqa.selenium.WebDriver;
@@ -24,5 +25,28 @@ public abstract class BaseTest {
 
     protected WebDriver getDriver() {
         return DriverManager.getDriver();
+    }
+
+    protected void open() {
+        String baseURL = SeleniumBootContext.getConfig()
+                .getExecution().getBaseUrl();
+
+        if (baseURL == null || baseURL.isEmpty()) {
+            throw new IllegalStateException("baseURL is null or empty");
+        }
+        getDriver().get(baseURL);
+    }
+
+    protected void open(String path) {
+        String baseUrl = SeleniumBootContext.getConfig()
+                .getExecution().getBaseUrl();
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            throw new IllegalStateException("baseURL is null or empty");
+        }
+
+        String normalized = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+
+        String fullUrl = normalized + path;
+        getDriver().get(fullUrl);
     }
 }

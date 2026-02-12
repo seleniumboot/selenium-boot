@@ -65,6 +65,7 @@ public final class DriverManager {
                             "Did you forget to call DriverManager.createDriver()?"
             );
         }
+        driver.manage().window().maximize();
         return driver;
     }
 

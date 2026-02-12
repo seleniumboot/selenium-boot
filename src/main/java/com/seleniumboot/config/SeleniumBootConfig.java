@@ -1,10 +1,13 @@
 package com.seleniumboot.config;
 
+import org.openqa.selenium.WebDriver;
+
 public final class SeleniumBootConfig {
 
     private Browser browser;
     private Execution execution;
     private Retry retry;
+    private Timeouts timeouts;
 
     // --- getters ---
     public Browser getBrowser() {
@@ -31,6 +34,12 @@ public final class SeleniumBootConfig {
         this.execution = execution;
     }
 
+    public Timeouts getTimeouts() {
+        return timeouts;
+    }
+    public void setTimeouts(Timeouts timeouts) {
+        this.timeouts = timeouts;
+    }
     // =========================
 
     public static final class Browser {
@@ -94,6 +103,27 @@ public final class SeleniumBootConfig {
         }
         public void setMaxAttempts(int maxAttempts) {
             this.maxAttempts = maxAttempts;
+        }
+    }
+
+    public static final class Timeouts {
+        private int explicit = 10;
+        private int pageLoad = 30;
+
+        public int getExplicit() {
+            return explicit;
+        }
+
+        public void setExplicit(int explicit) {
+            this.explicit = explicit;
+        }
+
+        public int getPageLoad() {
+            return pageLoad;
+        }
+
+        public void setPageLoad(int pageLoad) {
+            this.pageLoad = pageLoad;
         }
     }
 }
