@@ -1,3 +1,15 @@
+browser:
+  name: chrome
+  headless: false
+
 execution:
-  baseUrl: https://example.com
-  mode: remote
+  mode: local
+  baseUrl: https://panjatan.netlify.app/
+
+retry:
+  enabled: true
+  maxAttempts: 1
+
+timeouts:
+  explicit: 10
+  pageLoad: 30
