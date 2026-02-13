@@ -9,20 +9,23 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 public final class ConfigurationLoader {
 
-    private static final String CONFIG_FILE = "selenium-boot.yml";
-
     private ConfigurationLoader() {
         // utility class
     }
 
     public static SeleniumBootConfig load() {
+        String profile = System.getProperty("selenium.boot.profile");
+
+        String configFile = (profile == null || profile.isBlank())
+                ? "selenium-boot.yml"
+                : "selenium-boot-" + profile + ".yml";
+
         InputStream inputStream = ConfigurationLoader.class
                 .getClassLoader()
-                .getResourceAsStream(CONFIG_FILE);
-
+                .getResourceAsStream(configFile);
         if (inputStream == null) {
             throw new IllegalStateException(
-                    "Configuration file '" + CONFIG_FILE + "' not found in classpath");
+                    "Configuration file '" + configFile + "' not found in classpath");
         }
 
         LoaderOptions loaderOptions = new LoaderOptions();
@@ -33,6 +36,7 @@ public final class ConfigurationLoader {
         SeleniumBootConfig config = yaml.load(inputStream);
 
         validate(config);
+
         return config;
     }
 
