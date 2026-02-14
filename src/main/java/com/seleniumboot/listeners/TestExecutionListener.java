@@ -6,13 +6,27 @@ import org.testng.ITestListener;
 import org.testng.ITestResult;
 
 /**
- * TestExecutionListener controls per-test execution lifecycle.
+ * TestExecutionListener manages the per-test method lifecycle within Selenium Boot.
  *
- * Responsibilities (MVP):
- * - Create WebDriver before test execution
- * - Quit WebDriver after test execution
- * - Provide hooks for failure handling (future)
+ * <p>Responsibilities:
+ * <ul>
+ *     <li>Creates a WebDriver instance at the start of each test method.</li>
+ *     <li>Ensures the WebDriver is terminated after test completion
+ *         (success, failure, or skip).</li>
+ *     <li>Captures failure artifacts (e.g., screenshots) before driver shutdown.</li>
+ * </ul>
+ *
+ * <p>Design Principles:
+ * <ul>
+ *     <li>One test method = one WebDriver session.</li>
+ *     <li>Thread-safe execution using ThreadLocal driver management.</li>
+ *     <li>Deterministic cleanup to prevent session leaks under parallel load.</li>
+ * </ul>
+ *
+ * <p>This listener does not manage suite-level initialization.
+ * Global setup is handled by {@code SuiteExecutionListener}.
  */
+
 public final class TestExecutionListener implements ITestListener {
 
     @Override
