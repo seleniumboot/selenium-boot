@@ -14,6 +14,10 @@ public final class DriverProviderFactory {
             return new LocalChromeDriverProvider();
         }
 
+        if ("firefox".equalsIgnoreCase(browser)) {
+            return new LocalFirefoxDriverProvider();
+        }
+
         throw new IllegalStateException("Unsupported browser: " + browser);
     }
 }
