@@ -4,6 +4,7 @@ import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.lifecycle.FrameworkBootstrap;
+import com.seleniumboot.metrics.ExecutionMetrics;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
 import org.testng.xml.XmlSuite;
@@ -60,6 +61,7 @@ public final class SuiteExecutionListener implements ISuiteListener {
 
     @Override
     public void onFinish(ISuite suite) {
+        ExecutionMetrics.printSummary();
         DriverManager.quitDriver();
     }
 }
