@@ -67,6 +67,7 @@ public final class SeleniumBootConfig {
     public static final class Execution {
         private String mode;
         private String baseUrl;
+        private String gridUrl;
 
         public String getMode() {
             return mode;
@@ -83,6 +84,14 @@ public final class SeleniumBootConfig {
 
         public void setBaseUrl(String baseUrl) {
             this.baseUrl = baseUrl;
+        }
+
+        public void setGridUrl(String gridUrl) {
+            this.gridUrl = gridUrl;
+        }
+
+        public String getGridUrl() {
+            return gridUrl;
         }
     }
 

@@ -9,6 +9,11 @@ public final class DriverProviderFactory {
     public static DriverProvider getProvider() {
         SeleniumBootConfig config = SeleniumBootContext.getConfig();
         String browser = config.getBrowser().getName();
+        String executionMode = config.getExecution().getMode();
+
+        if ("remote".equalsIgnoreCase(executionMode)) {
+            return new RemoteDriverProvider();
+        }
 
         if ("chrome".equalsIgnoreCase(browser)) {
             return new LocalChromeDriverProvider();

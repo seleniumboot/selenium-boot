@@ -5,6 +5,7 @@ browser:
 execution:
   mode: local
   baseUrl: https://panjatan.netlify.app/
+  gridUrl: http://localhost:4444/wd/hub
 
 retry:
   enabled: true
