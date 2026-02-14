@@ -20,6 +20,15 @@ public class LocalFirefoxDriverProvider implements DriverProvider{
             options.addArguments("-headless");
         }
 
+        if (config.getBrowser().getArguments() != null) {
+            options.addArguments(config.getBrowser().getArguments());
+        }
+
+        if (config.getBrowser().getCapabilities() != null) {
+            config.getBrowser().getCapabilities()
+                    .forEach(options::setCapability);
+        }
+
         WebDriver driver = new FirefoxDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ZERO);
 

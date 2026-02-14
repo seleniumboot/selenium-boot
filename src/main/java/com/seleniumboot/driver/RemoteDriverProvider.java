@@ -33,6 +33,15 @@ public class RemoteDriverProvider implements DriverProvider{
                     options.addArguments("--headless=new");
                 }
 
+                if (config.getBrowser().getArguments() != null) {
+                    options.addArguments(config.getBrowser().getArguments());
+                }
+
+                if (config.getBrowser().getCapabilities() != null) {
+                    config.getBrowser().getCapabilities()
+                            .forEach(options::setCapability);
+                }
+
                 WebDriver driver = new RemoteWebDriver(url, options);
                 driver.manage().timeouts().implicitlyWait(Duration.ZERO);
                 return driver;
@@ -44,6 +53,15 @@ public class RemoteDriverProvider implements DriverProvider{
 
                 if (config.getBrowser().isHeadless()) {
                     options.addArguments("-headless");
+                }
+
+                if (config.getBrowser().getArguments() != null) {
+                    options.addArguments(config.getBrowser().getArguments());
+                }
+
+                if (config.getBrowser().getCapabilities() != null) {
+                    config.getBrowser().getCapabilities()
+                            .forEach(options::setCapability);
                 }
 
                 WebDriver driver = new RemoteWebDriver(url, options);

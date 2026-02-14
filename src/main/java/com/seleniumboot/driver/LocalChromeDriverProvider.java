@@ -18,9 +18,14 @@ public class LocalChromeDriverProvider implements DriverProvider {
         if (config.getBrowser().isHeadless()) {
             options.addArguments("--headless=new");
         }
-        options.addArguments("--disable-gpu");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
+        if (config.getBrowser().getArguments() != null) {
+            options.addArguments(config.getBrowser().getArguments());
+        }
+
+        if (config.getBrowser().getCapabilities() != null) {
+            config.getBrowser().getCapabilities()
+                    .forEach(options::setCapability);
+        }
 
         WebDriver driver = new ChromeDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ZERO);

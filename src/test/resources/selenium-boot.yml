@@ -1,6 +1,13 @@
 browser:
-  name: firefox
+  name: chrome
   headless: false
+  arguments:
+    - --start-maximized
+    - --disable-notifications
+    - --remote-allow-origins=*
+  capabilities:
+    acceptInsecureCerts: true
+    pageLoadStrategy: eager
 
 execution:
   mode: local

@@ -1,6 +1,7 @@
 package com.seleniumboot.config;
 
-import org.openqa.selenium.WebDriver;
+import java.util.List;
+import java.util.Map;
 
 public final class SeleniumBootConfig {
 
@@ -45,6 +46,24 @@ public final class SeleniumBootConfig {
     public static final class Browser {
         private String name;
         private boolean headless;
+        private List<String> arguments;
+        private Map<String, Object> capabilities;
+
+        public List<String> getArguments() {
+            return arguments;
+        }
+
+        public void setArguments(List<String> arguments) {
+            this.arguments = arguments;
+        }
+
+        public Map<String, Object> getCapabilities() {
+            return capabilities;
+        }
+
+        public void setCapabilities(Map<String, Object> capabilities) {
+            this.capabilities = capabilities;
+        }
 
         public String getName() {
             return name;
