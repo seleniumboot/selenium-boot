@@ -1,2 +1,4 @@
 execution:
   baseUrl: https://stage.example.com
+  parallel: methods
+  threadCount: 4

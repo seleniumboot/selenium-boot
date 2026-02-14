@@ -87,6 +87,8 @@ public final class SeleniumBootConfig {
         private String mode;
         private String baseUrl;
         private String gridUrl;
+        private String parallel = "none";
+        private int threadCount = 1;
 
         public String getMode() {
             return mode;
@@ -111,6 +113,22 @@ public final class SeleniumBootConfig {
 
         public String getGridUrl() {
             return gridUrl;
+        }
+
+        public int getThreadCount() {
+            return threadCount;
+        }
+
+        public void setThreadCount(int threadCount) {
+            this.threadCount = threadCount;
+        }
+
+        public String getParallel() {
+            return parallel;
+        }
+
+        public void setParallel(String parallel) {
+            this.parallel = parallel;
         }
     }
 

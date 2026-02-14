@@ -2,6 +2,7 @@ package com.seleniumboot.lifecycle;
 
 import com.seleniumboot.config.ConfigurationLoader;
 import com.seleniumboot.config.SeleniumBootConfig;
+import com.seleniumboot.execution.ExecutionValidator;
 import com.seleniumboot.internal.SeleniumBootContext;
 
 /**
@@ -20,8 +21,9 @@ public final class FrameworkBootstrap {
         if (SeleniumBootContext.isInitialized()) {
             return;
         }
-
         SeleniumBootConfig config = ConfigurationLoader.load();
+        ExecutionValidator.validate(config.getExecution());
+
         SeleniumBootContext.initialize(config);
     }
 }

@@ -5,6 +5,9 @@ browser:
 execution:
   mode: local
   baseUrl: https://panjatan.netlify.app/
+  parallel: methods
+  threadCount: 4
+
 
 retry:
   enabled: true

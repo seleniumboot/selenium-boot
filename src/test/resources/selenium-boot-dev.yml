@@ -1,3 +1,5 @@
 execution:
   baseUrl: https://example.com
   mode: remote
+  parallel: methods
+  threadCount: 4
