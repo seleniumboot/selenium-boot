@@ -23,6 +23,8 @@ public class RemoteDriverProvider implements DriverProvider{
             throw new IllegalArgumentException(String.format("Invalid gridUrl: %s", gridUrl));
         }
 
+        BrowserArgumentValidator.validate(browser, config.getBrowser().getArguments());
+
         try {
             URL url = new URL(gridUrl);
 

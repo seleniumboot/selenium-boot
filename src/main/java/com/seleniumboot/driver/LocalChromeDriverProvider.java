@@ -7,6 +7,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.time.Duration;
+import java.util.List;
 
 public class LocalChromeDriverProvider implements DriverProvider {
 
@@ -15,9 +16,16 @@ public class LocalChromeDriverProvider implements DriverProvider {
         SeleniumBootConfig config = SeleniumBootContext.getConfig();
         ChromeOptions options = new ChromeOptions();
 
+        List<String> arguments = config.getBrowser().getArguments();
+        BrowserArgumentValidator.validate("chrome", arguments);
+
         if (config.getBrowser().isHeadless()) {
             options.addArguments("--headless=new");
         }
+        if (arguments != null) {
+            options.addArguments(arguments);
+        }
+
         if (config.getBrowser().getArguments() != null) {
             options.addArguments(config.getBrowser().getArguments());
         }

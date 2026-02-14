@@ -7,6 +7,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 
 import java.time.Duration;
+import java.util.List;
 
 public class LocalFirefoxDriverProvider implements DriverProvider{
 
@@ -15,6 +16,13 @@ public class LocalFirefoxDriverProvider implements DriverProvider{
         SeleniumBootConfig config = SeleniumBootContext.getConfig();
 
         FirefoxOptions options = new FirefoxOptions();
+        List<String> arguments = config.getBrowser().getArguments();
+
+        BrowserArgumentValidator.validate("firefox", arguments);
+
+        if (arguments != null) {
+            options.addArguments(arguments);
+        }
 
         if (config.getBrowser().isHeadless()) {
             options.addArguments("-headless");
