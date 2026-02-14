@@ -1,5 +1,10 @@
 package com.seleniumboot.driver;
 
-public class DriverProvider {
-    // TODO: Implementation to be added
+import org.openqa.selenium.WebDriver;
+
+/**
+ * Strategy interface for WebDriver creation.
+ */
+public interface DriverProvider {
+    WebDriver createDriver();
 }

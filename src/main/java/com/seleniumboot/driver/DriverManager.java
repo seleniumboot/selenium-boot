@@ -1,18 +1,14 @@
 package com.seleniumboot.driver;
 
-import com.seleniumboot.config.SeleniumBootConfig;
-import com.seleniumboot.internal.SeleniumBootContext;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 
 /**
  * DriverManager controls the WebDriver lifecycle.
  *
  * Rules:
- * - One WebDriver per thread
- * - ThreadLocal ownership
- * - Framework-managed creation & destruction only
+ * <li>One WebDriver per thread</li>
+ * <li>ThreadLocal ownership</li>
+ * <li>Framework-managed creation & destruction only</li>
  */
 public final class DriverManager {
 
@@ -31,26 +27,9 @@ public final class DriverManager {
             return;
         }
 
-        SeleniumBootConfig config = SeleniumBootContext.getConfig();
-        String browserName = config.getBrowser().getName();
+        DriverProvider provider = DriverProviderFactory.getProvider();
+        WebDriver driver = provider.createDriver();
 
-        if (!"chrome".equalsIgnoreCase(browserName)) {
-            throw new IllegalStateException(
-                    "Unsupported browser for MVP: " + browserName
-            );
-        }
-
-        ChromeOptions options = new ChromeOptions();
-
-        if (config.getBrowser().isHeadless()) {
-            options.addArguments("--headless=new");
-        }
-
-        options.addArguments("--disable-gpu");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-
-        WebDriver driver = new ChromeDriver(options);
         DRIVER.set(driver);
     }
 
