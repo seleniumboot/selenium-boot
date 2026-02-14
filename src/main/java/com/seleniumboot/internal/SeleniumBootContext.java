@@ -10,6 +10,7 @@ public final class SeleniumBootContext {
 
     private static volatile boolean initialized = false;
     private static SeleniumBootConfig config;
+    private static final ThreadLocal<String> CURRENT_TEST = new ThreadLocal<>();
 
     private SeleniumBootContext() {
         // utility class
@@ -24,6 +25,14 @@ public final class SeleniumBootContext {
         initialized = true;
     }
 
+    // ==========================================================
+    // Config
+    // ==========================================================
+
+    public static void setConfig(SeleniumBootConfig config) {
+        SeleniumBootContext.config = config;
+    }
+
     public static SeleniumBootConfig getConfig() {
         if (!initialized) {
             throw new IllegalStateException(
@@ -34,5 +43,21 @@ public final class SeleniumBootContext {
 
     public static boolean isInitialized() {
         return initialized;
+    }
+
+    // ==========================================================
+    // Current Test Tracking (Per Thread)
+    // ==========================================================
+
+    public static void setCurrentTestId(String testId) {
+        CURRENT_TEST.set(testId);
+    }
+
+    public static String getCurrentTestId() {
+        return CURRENT_TEST.get();
+    }
+
+    public static void clearCurrentTestId() {
+        CURRENT_TEST.remove();
     }
 }

@@ -1,6 +1,7 @@
 package com.seleniumboot.listeners;
 
 import com.seleniumboot.driver.DriverManager;
+import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.metrics.ExecutionMetrics;
 import com.seleniumboot.reporting.ScreenshotManager;
 import org.testng.ITestContext;
@@ -34,6 +35,7 @@ public final class TestExecutionListener implements ITestListener {
     @Override
     public void onTestStart(ITestResult result) {
         String testId = result.getMethod().getQualifiedName();
+        SeleniumBootContext.setCurrentTestId(testId);
         ExecutionMetrics.markStart(testId);
         DriverManager.createDriver();
     }
@@ -43,6 +45,7 @@ public final class TestExecutionListener implements ITestListener {
         String testId = result.getMethod().getQualifiedName();
         ExecutionMetrics.markEnd(testId);
         DriverManager.quitDriver();
+        SeleniumBootContext.clearCurrentTestId();
     }
 
     @Override
@@ -52,6 +55,7 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.markEnd(testId);
         ScreenshotManager.capture(testName);
         DriverManager.quitDriver();
+        SeleniumBootContext.clearCurrentTestId();
     }
 
     @Override
@@ -59,6 +63,7 @@ public final class TestExecutionListener implements ITestListener {
         String testId = result.getMethod().getQualifiedName();
         ExecutionMetrics.markEnd(testId);
         DriverManager.quitDriver();
+        SeleniumBootContext.clearCurrentTestId();
     }
 
     @Override
