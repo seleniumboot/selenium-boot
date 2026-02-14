@@ -7,7 +7,9 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class LocalFirefoxDriverProvider implements DriverProvider{
 
@@ -22,6 +24,13 @@ public class LocalFirefoxDriverProvider implements DriverProvider{
 
         if (arguments != null) {
             options.addArguments(arguments);
+        }
+
+        Map<String, Object> capabilities = config.getBrowser().getCapabilities();
+        CapabilityValidator.validate("firefox", capabilities);
+
+        if (capabilities != null) {
+            capabilities.forEach(options::setCapability);
         }
 
         if (config.getBrowser().isHeadless()) {

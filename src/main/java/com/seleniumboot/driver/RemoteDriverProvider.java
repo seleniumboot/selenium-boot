@@ -25,6 +25,8 @@ public class RemoteDriverProvider implements DriverProvider{
 
         BrowserArgumentValidator.validate(browser, config.getBrowser().getArguments());
 
+        CapabilityValidator.validate(browser, config.getBrowser().getCapabilities());
+
         try {
             URL url = new URL(gridUrl);
 
