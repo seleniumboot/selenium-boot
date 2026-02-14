@@ -45,12 +45,41 @@ public final class DriverManager {
         WebDriver driver = DRIVER.get();
         if (driver == null) {
             throw new IllegalStateException(
-                    "WebDriver not initialized for current thread. " +
-                            "Did you forget to call DriverManager.createDriver()?"
+                    "WebDriver not initialized for current thread."
             );
         }
+
+        if (!isDriverAlive()) {
+            System.err.println(
+                    "[Selenium Boot] Driver session invalid. Recreating..."
+            );
+            recreateDriver();
+            driver = DRIVER.get();
+        }
+
         driver.manage().window().maximize();
         return driver;
+    }
+
+    public static void recreateDriver() {
+        try {
+            quitDriver();
+        } catch (Exception ignored) {}
+
+        createDriver();
+    }
+
+    public static boolean isDriverAlive() {
+        WebDriver driver = DRIVER.get();
+        if (driver == null) {
+            return false;
+        }
+        try {
+            driver.getTitle();
+            return true;
+        }  catch (Exception e) {
+            return false;
+        }
     }
 
     /**
