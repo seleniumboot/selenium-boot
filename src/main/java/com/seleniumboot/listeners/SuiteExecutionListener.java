@@ -62,6 +62,7 @@ public final class SuiteExecutionListener implements ISuiteListener {
     @Override
     public void onFinish(ISuite suite) {
         ExecutionMetrics.printSummary();
+        ExecutionMetrics.exportToJson();
         DriverManager.quitDriver();
     }
 }

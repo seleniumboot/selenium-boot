@@ -1,20 +1,20 @@
 package com.seleniumboot.metrics;
 
 public class TestTiming {
-    private final String testid;
+    private final String testId;
     private final String threadName;
     private long testExecutionTime;
     private long totalTime;
 
-    public TestTiming(String testid, String threadName) {
-        this.testid = testid;
+    public TestTiming(String testId, String threadName) {
+        this.testId = testId;
         this.threadName = threadName;
     }
 
     private long driverStartupTime;
 
-    public String getTestid() {
-        return testid;
+    public String getTestId() {
+        return testId;
     }
 
     public String getThreadName() {

@@ -1,6 +1,11 @@
 package com.seleniumboot.metrics;
 
-import java.util.Comparator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -17,17 +22,17 @@ public final class ExecutionMetrics {
 
     private ExecutionMetrics() {}
 
-    // -----------------------------------------
+    // ==========================================================
     // Test Start
-    // -----------------------------------------
+    // ==========================================================
 
     public static void markStart(String testId) {
         START_TIMES.put(testId, System.currentTimeMillis());
     }
 
-    // -----------------------------------------
-    // Driver Startup Time
-    // -----------------------------------------
+    // ==========================================================
+    // Driver Startup
+    // ==========================================================
 
     public static void recordDriverStartup(String testId, long duration) {
 
@@ -39,9 +44,9 @@ public final class ExecutionMetrics {
         timing.setDriverStartupTime(duration);
     }
 
-    // -----------------------------------------
+    // ==========================================================
     // Test End
-    // -----------------------------------------
+    // ==========================================================
 
     public static void markEnd(String testId) {
 
@@ -63,9 +68,9 @@ public final class ExecutionMetrics {
         TOTAL_DURATION.addAndGet(total);
     }
 
-    // -----------------------------------------
-    // Summary
-    // -----------------------------------------
+    // ==========================================================
+    // Console Summary
+    // ==========================================================
 
     public static void printSummary() {
 
@@ -96,9 +101,68 @@ public final class ExecutionMetrics {
         System.out.println("===========================================\n");
     }
 
-    // -----------------------------------------
-    // Optional: Clear metrics between suites
-    // -----------------------------------------
+    // ==========================================================
+    // JSON Export
+    // ==========================================================
+
+    public static void exportToJson() {
+
+        Map<String, Object> report = new LinkedHashMap<>();
+
+        int totalTests = TIMINGS.size();
+        long totalTime = TOTAL_DURATION.get();
+
+        report.put("totalTests", totalTests);
+        report.put("totalTimeMs", totalTime);
+        report.put("averageTimeMs",
+                totalTests == 0 ? 0 : totalTime / totalTests);
+
+        List<Map<String, Object>> testList = new ArrayList<>();
+
+        for (TestTiming timing : TIMINGS.values()) {
+
+            Map<String, Object> testEntry = new LinkedHashMap<>();
+
+            testEntry.put("testId", timing.getTestId());
+            testEntry.put("thread", timing.getThreadName());
+            testEntry.put("driverStartupMs", timing.getDriverStartupTime());
+            testEntry.put("testLogicMs", timing.getTestExecutionTime());
+            testEntry.put("totalMs", timing.getTotalTime());
+
+            testList.add(testEntry);
+        }
+
+        report.put("tests", testList);
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+        try {
+
+            File outputDir = new File("target");
+            if (!outputDir.exists()) {
+                outputDir.mkdirs();
+            }
+
+            mapper.writeValue(
+                    new File("target/selenium-boot-metrics.json"),
+                    report
+            );
+
+            System.out.println(
+                    "[Selenium Boot] Metrics exported to target/selenium-boot-metrics.json"
+            );
+
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Failed to export metrics JSON", e
+            );
+        }
+    }
+
+    // ==========================================================
+    // Reset
+    // ==========================================================
 
     public static void reset() {
         START_TIMES.clear();
