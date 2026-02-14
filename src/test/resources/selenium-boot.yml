@@ -13,7 +13,8 @@ execution:
   mode: local
   baseUrl: https://panjatan.netlify.app/
   gridUrl: http://localhost:4444/wd/hub
-  parallel: none
+#  parallel: none/methods/classes
+  parallel: methods
   threadCount: 4
 
 retry:

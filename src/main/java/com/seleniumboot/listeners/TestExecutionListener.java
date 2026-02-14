@@ -18,34 +18,30 @@ public final class TestExecutionListener implements ITestListener {
     @Override
     public void onTestStart(ITestResult result) {
         DriverManager.createDriver();
-        result.getMethod().setRetryAnalyzerClass(RetryListener.class);
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
-        // Reserved for reporting hooks
+        DriverManager.quitDriver();
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
         String testName = result.getMethod().getMethodName();
         com.seleniumboot.reporting.ScreenshotManager.capture(testName);
+        DriverManager.quitDriver();
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
-        // No-op for MVP
+        DriverManager.quitDriver();
     }
 
     @Override
     public void onStart(ITestContext context) {
-        // Do NOT create WebDriver here
-        // Context-level initialization only
     }
 
     @Override
     public void onFinish(ITestContext context) {
-        // Quit WebDriver bound to current thread
-        DriverManager.quitDriver();
     }
 }

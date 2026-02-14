@@ -12,7 +12,7 @@ import org.openqa.selenium.WebDriver;
  */
 public final class DriverManager {
 
-    private static final ThreadLocal<WebDriver> DRIVER = new ThreadLocal<>();
+    private static final ThreadLocal<WebDriver> DRIVER = ThreadLocal.withInitial(()-> null);
 
     private DriverManager() {
         // utility class
@@ -30,6 +30,11 @@ public final class DriverManager {
         DriverProvider provider = DriverProviderFactory.getProvider();
         WebDriver driver = provider.createDriver();
 
+        if (driver == null) {
+            throw new IllegalStateException(
+                    "DriverProvider returned null WebDriver"
+            );
+        }
         DRIVER.set(driver);
     }
 
@@ -58,7 +63,8 @@ public final class DriverManager {
                 driver.quit();
             }
         } catch (Exception e) {
-            // Swallow quit exceptions to avoid blocking execution
+            System.err.println("[Selenium Boot] Driver quit failed: "
+                    + e.getMessage());
         } finally {
             DRIVER.remove();
         }

@@ -1,6 +1,7 @@
 package com.seleniumboot.listeners;
 
 import com.seleniumboot.config.SeleniumBootConfig;
+import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.lifecycle.FrameworkBootstrap;
 import org.testng.ISuite;
@@ -59,6 +60,6 @@ public final class SuiteExecutionListener implements ISuiteListener {
 
     @Override
     public void onFinish(ISuite suite) {
-        // Reserved for future framework-wide cleanup
+        DriverManager.quitDriver();
     }
 }
