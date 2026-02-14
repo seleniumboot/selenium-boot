@@ -16,6 +16,7 @@ execution:
 #  parallel: none/methods/classes
   parallel: methods
   threadCount: 4
+  maxActiveSessions: 4
 
 retry:
   enabled: true

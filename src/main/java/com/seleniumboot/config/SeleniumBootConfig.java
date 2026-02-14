@@ -89,6 +89,7 @@ public final class SeleniumBootConfig {
         private String gridUrl;
         private String parallel = "none";
         private int threadCount = 1;
+        private int maxActiveSessions = 5;
 
         public String getMode() {
             return mode;
@@ -129,6 +130,14 @@ public final class SeleniumBootConfig {
 
         public void setParallel(String parallel) {
             this.parallel = parallel;
+        }
+
+        public int getMaxActiveSessions() {
+            return maxActiveSessions;
+        }
+
+        public void setMaxActiveSessions(int maxActiveSessions) {
+            this.maxActiveSessions = maxActiveSessions;
         }
     }
 

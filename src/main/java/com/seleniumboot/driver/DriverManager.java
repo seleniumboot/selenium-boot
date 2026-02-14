@@ -1,6 +1,9 @@
 package com.seleniumboot.driver;
 
+import com.seleniumboot.internal.SeleniumBootContext;
 import org.openqa.selenium.WebDriver;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * DriverManager controls the WebDriver lifecycle.
@@ -13,6 +16,7 @@ import org.openqa.selenium.WebDriver;
 public final class DriverManager {
 
     private static final ThreadLocal<WebDriver> DRIVER = ThreadLocal.withInitial(()-> null);
+    private static final AtomicInteger ACTIVE_SESSIONS = new AtomicInteger(0);
 
     private DriverManager() {
         // utility class
@@ -27,15 +31,36 @@ public final class DriverManager {
             return;
         }
 
-        DriverProvider provider = DriverProviderFactory.getProvider();
-        WebDriver driver = provider.createDriver();
+        int maxSessions = SeleniumBootContext.getConfig().getExecution().getMaxActiveSessions();
+        int current = ACTIVE_SESSIONS.incrementAndGet();
 
-        if (driver == null) {
+        if (current > maxSessions) {
+            ACTIVE_SESSIONS.decrementAndGet();
+
             throw new IllegalStateException(
-                    "DriverProvider returned null WebDriver"
+                    "Max active sessions limit reached (" +
+                            maxSessions + ")"
             );
         }
-        DRIVER.set(driver);
+
+        try {
+                DriverProvider provider = DriverProviderFactory.getProvider();
+                WebDriver driver = provider.createDriver();
+
+                if (driver == null) {
+                    throw new IllegalStateException(
+                            "DriverProvider returned null WebDriver"
+                    );
+                }
+                DRIVER.set(driver);
+
+                System.out.println(
+                        "[Selenium Boot] Active sessions: "+ ACTIVE_SESSIONS.get()
+                );
+        } catch (Exception e) {
+            ACTIVE_SESSIONS.decrementAndGet();
+            throw e;
+        }
     }
 
     /**
@@ -43,6 +68,7 @@ public final class DriverManager {
      */
     public static WebDriver getDriver() {
         WebDriver driver = DRIVER.get();
+
         if (driver == null) {
             throw new IllegalStateException(
                     "WebDriver not initialized for current thread."
@@ -90,6 +116,7 @@ public final class DriverManager {
         try {
             if (driver != null) {
                 driver.quit();
+                ACTIVE_SESSIONS.decrementAndGet();
             }
         } catch (Exception e) {
             System.err.println("[Selenium Boot] Driver quit failed: "
@@ -97,5 +124,9 @@ public final class DriverManager {
         } finally {
             DRIVER.remove();
         }
+
+        System.out.println(
+                "[Selenium Boot] Active sessions: " + ACTIVE_SESSIONS.get()
+        );
     }
 }
