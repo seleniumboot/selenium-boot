@@ -112,22 +112,55 @@ public final class ExecutionMetrics {
         int totalTests = TIMINGS.size();
         long totalTime = TOTAL_DURATION.get();
 
+        List<Long> totalDurations = new ArrayList<>();
+        List<Long> driverDurations = new ArrayList<>();
+
+        for (TestTiming timing : TIMINGS.values()) {
+            totalDurations.add(timing.getTotalTime());
+            driverDurations.add(timing.getDriverStartupTime());
+        }
+
         report.put("totalTests", totalTests);
         report.put("totalTimeMs", totalTime);
         report.put("averageTimeMs",
                 totalTests == 0 ? 0 : totalTime / totalTests);
 
+        if (!totalDurations.isEmpty()) {
+
+            Map<String, Object> percentiles = new LinkedHashMap<>();
+
+            percentiles.put("p50", percentile(totalDurations, 50));
+            percentiles.put("p90", percentile(totalDurations, 90));
+            percentiles.put("p95", percentile(totalDurations, 95));
+            percentiles.put("p99", percentile(totalDurations, 99));
+
+            report.put("executionPercentilesMs", percentiles);
+
+            Map<String, Object> driverPercentiles = new LinkedHashMap<>();
+
+            driverPercentiles.put("p50", percentile(driverDurations, 50));
+            driverPercentiles.put("p90", percentile(driverDurations, 90));
+            driverPercentiles.put("p95", percentile(driverDurations, 95));
+            driverPercentiles.put("p99", percentile(driverDurations, 99));
+
+            report.put("driverStartupPercentilesMs", driverPercentiles);
+        }
+
         List<Map<String, Object>> testList = new ArrayList<>();
 
         for (TestTiming timing : TIMINGS.values()) {
 
-            Map<String, Object> testEntry = new LinkedHashMap<>();
+            Map<String, Object> testEntry =
+                    new LinkedHashMap<>();
 
             testEntry.put("testId", timing.getTestId());
             testEntry.put("thread", timing.getThreadName());
-            testEntry.put("driverStartupMs", timing.getDriverStartupTime());
-            testEntry.put("testLogicMs", timing.getTestExecutionTime());
-            testEntry.put("totalMs", timing.getTotalTime());
+            testEntry.put("driverStartupMs",
+                    timing.getDriverStartupTime());
+            testEntry.put("testLogicMs",
+                    timing.getTestExecutionTime());
+            testEntry.put("totalMs",
+                    timing.getTotalTime());
 
             testList.add(testEntry);
         }
@@ -150,7 +183,7 @@ public final class ExecutionMetrics {
             );
 
             System.out.println(
-                    "[Selenium Boot] Metrics exported to target/selenium-boot-metrics.json"
+                    "[Selenium Boot] Metrics exported with percentiles."
             );
 
         } catch (IOException e) {
@@ -168,5 +201,22 @@ public final class ExecutionMetrics {
         START_TIMES.clear();
         TIMINGS.clear();
         TOTAL_DURATION.set(0);
+    }
+
+    // ==========================================================
+    // Percentile Calculation
+    // ==========================================================
+
+    public static long percentile(List<Long> values, double percentile) {
+        if (values.isEmpty()) {
+            return 0;
+        }
+        Collections.sort(values);
+
+        int index = (int) Math.ceil(percentile / 100.0 * values.size());
+
+        index = Math.min(index - 1, values.size() - 1);
+
+        return values.get(index);
     }
 }
