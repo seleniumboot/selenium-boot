@@ -2,6 +2,8 @@ package com.seleniumboot.reporting;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.seleniumboot.config.SeleniumBootConfig;
+import com.seleniumboot.internal.SeleniumBootContext;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -48,6 +50,71 @@ public final class HtmlReportGenerator {
         }
     }
 
+    private static String buildMetadataSection(JsonNode root) {
+        String profile = System.getProperty("selenium.boot.profile", "default");
+        String buildNumber = System.getenv().getOrDefault("BUILD_NUMBER", "local");
+        String branch = System.getenv().getOrDefault("GIT_BRANCH", "local");
+        String commit = System.getenv().getOrDefault("GIT_COMMIT", "unknown");
+
+        SeleniumBootConfig config = SeleniumBootContext.getConfig();
+
+        SeleniumBootConfig.Browser browserCfg = config.getBrowser();
+        SeleniumBootConfig.Execution executionCfg = config.getExecution();
+        SeleniumBootConfig.Retry retryCfg = config.getRetry();
+        SeleniumBootConfig.Timeouts timeoutsCfg = config.getTimeouts();
+
+        String browser = browserCfg != null ? browserCfg.getName() : "unknown";
+        boolean headless = browserCfg != null && browserCfg.isHeadless();
+        String executionMode = executionCfg != null ? executionCfg.getMode() : "unknown";
+        String baseUrl = executionCfg != null ? executionCfg.getBaseUrl() : null;
+        String gridUrl = executionCfg != null ? executionCfg.getGridUrl() : null;
+        String parallel = executionCfg != null ? executionCfg.getParallel() : "none";
+        int threadCount = executionCfg != null ? executionCfg.getThreadCount() : 1;
+        int maxSessions = executionCfg != null ? executionCfg.getMaxActiveSessions() : 5;
+        boolean retryEnabled = retryCfg != null && retryCfg.isEnabled();
+        int maxAttempts = retryCfg != null ? retryCfg.getMaxAttempts() : 1;
+        int explicitTimeout = timeoutsCfg != null ? timeoutsCfg.getExplicit() : 10;
+        int pageLoadTimeout = timeoutsCfg != null ? timeoutsCfg.getPageLoad() : 30;
+
+        String timestamp = java.time.LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<div class=\"card metadata-card\" style=\"margin-bottom:24px;\">\n");
+        sb.append("  <div class=\"card-header\">Build Metadata</div>\n");
+        sb.append("  <div class=\"card-body\">\n");
+        sb.append("    <div class=\"meta-grid\">\n");
+
+        appendMetaItem(sb, "Profile", profile);
+        appendMetaItem(sb, "Execution Mode", executionMode);
+        appendMetaItem(sb, "Browser", browser + (headless ? " (headless)" : ""));
+        appendMetaItem(sb, "Base URL", baseUrl != null ? baseUrl : "—");
+        appendMetaItem(sb, "Grid URL", gridUrl != null ? gridUrl : "—");
+        appendMetaItem(sb, "Parallel", parallel);
+        appendMetaItem(sb, "Thread Count", String.valueOf(threadCount));
+        appendMetaItem(sb, "Max Sessions", String.valueOf(maxSessions));
+        appendMetaItem(sb, "Retry", retryEnabled ? "Enabled (max " + maxAttempts + ")" : "Disabled");
+        appendMetaItem(sb, "Explicit Timeout", explicitTimeout + "s");
+        appendMetaItem(sb, "Page Load Timeout", pageLoadTimeout + "s");
+        appendMetaItem(sb, "Build Number", buildNumber);
+        appendMetaItem(sb, "Branch", branch);
+        appendMetaItem(sb, "Commit", commit);
+        appendMetaItem(sb, "Generated At", timestamp);
+
+        sb.append("    </div>\n");
+        sb.append("  </div>\n");
+        sb.append("</div>\n");
+
+        return sb.toString();
+    }
+
+    private static void appendMetaItem(StringBuilder sb, String label, String value) {
+        sb.append("      <div class=\"meta-item\">\n");
+        sb.append("        <span class=\"meta-label\">").append(label).append("</span>\n");
+        sb.append("        <span class=\"meta-value\">").append(value).append("</span>\n");
+        sb.append("      </div>\n");
+    }
+
     private static String buildHtml(JsonNode root) {
 
         String executionPercentiles =
@@ -59,6 +126,8 @@ public final class HtmlReportGenerator {
                 root.has("driverStartupPercentilesMs")
                         ? root.get("driverStartupPercentilesMs").toString()
                         : "{}";
+
+        String metadataSection = buildMetadataSection(root);
 
         StringBuilder rows = new StringBuilder();
 
@@ -136,6 +205,26 @@ public final class HtmlReportGenerator {
         td.test-id { font-family: 'Roboto Mono', monospace; font-size: 13px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         td.numeric { text-align: right; font-variant-numeric: tabular-nums; }
 
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+        }
+        .meta-item {
+            display: flex; flex-direction: column;
+            padding: 12px 16px;
+            background: #f5f5f5; border-radius: 6px;
+            border-left: 3px solid #303f9f;
+        }
+        .meta-label {
+            font-size: 11px; font-weight: 500; color: #757575;
+            text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px;
+        }
+        .meta-value {
+            font-size: 14px; font-weight: 500; color: #212121;
+            word-break: break-all;
+        }
+
         .footer { text-align: center; padding: 16px; font-size: 12px; color: #9e9e9e; }
 
         @media (max-width: 768px) {
@@ -153,7 +242,7 @@ public final class HtmlReportGenerator {
 </div>
 
 <div class="content">
-
+    %s
     <div class="summary-row">
         <div class="card stat-card">
             <div class="stat-value">%d</div>
@@ -258,6 +347,7 @@ createChart('driverChart', 'Driver Startup (ms)', driverData, 'rgba(0,137,123,.2
 """;
 
         return String.format(htmlTemplate,
+                metadataSection,
                 totalTests,
                 totalTimeMs,
                 averageTimeMs,
