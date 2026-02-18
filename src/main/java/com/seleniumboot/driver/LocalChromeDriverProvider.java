@@ -7,7 +7,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,15 +34,6 @@ public class LocalChromeDriverProvider implements DriverProvider {
         }
         if (arguments != null) {
             options.addArguments(arguments);
-        }
-
-        if (config.getBrowser().getArguments() != null) {
-            options.addArguments(config.getBrowser().getArguments());
-        }
-
-        if (config.getBrowser().getCapabilities() != null) {
-            config.getBrowser().getCapabilities()
-                    .forEach(options::setCapability);
         }
 
         WebDriver driver = new ChromeDriver(options);

@@ -7,7 +7,6 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,15 +34,6 @@ public class LocalFirefoxDriverProvider implements DriverProvider{
 
         if (config.getBrowser().isHeadless()) {
             options.addArguments("-headless");
-        }
-
-        if (config.getBrowser().getArguments() != null) {
-            options.addArguments(config.getBrowser().getArguments());
-        }
-
-        if (config.getBrowser().getCapabilities() != null) {
-            config.getBrowser().getCapabilities()
-                    .forEach(options::setCapability);
         }
 
         WebDriver driver = new FirefoxDriver(options);
