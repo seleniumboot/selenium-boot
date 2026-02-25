@@ -155,7 +155,7 @@ constructor to prevent instantiation. This should match.
 | # | Item | Priority | Status |
 |---|---|---|---|
 | 1 | Test status tracking in metrics and HTML report | Blocker | Done |
-| 2 | RetryListener auto-wiring via IAnnotationTransformer | Blocker | Pending |
+| 2 | RetryListener auto-wiring via IAnnotationTransformer | Blocker | Done |
 | 3 | Remove / implement empty stub classes | Blocker | Pending |
 | 4 | Apply pageLoad timeout to WebDriver providers | Blocker | Pending |
 | 5 | Add maven-surefire-plugin configuration | Blocker | Pending |

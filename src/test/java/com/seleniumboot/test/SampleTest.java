@@ -1,5 +1,6 @@
 package com.seleniumboot.test;
 
+import com.seleniumboot.listeners.Retryable;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
@@ -18,7 +19,8 @@ public class SampleTest extends BaseTest{
         assertEquals(getDriver().getTitle(), "Google");
     }
 
-    @Test(enabled = false)
+    @Retryable
+    @Test
     public void flakyTest() {
         if (Math.random() < 0.7) {
             throw new RuntimeException("Random failure");
