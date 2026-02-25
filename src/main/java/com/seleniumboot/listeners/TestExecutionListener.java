@@ -43,6 +43,7 @@ public final class TestExecutionListener implements ITestListener {
     @Override
     public void onTestSuccess(ITestResult result) {
         String testId = result.getMethod().getQualifiedName();
+        ExecutionMetrics.recordStatus(testId, "PASSED");
         ExecutionMetrics.markEnd(testId);
         DriverManager.quitDriver();
         SeleniumBootContext.clearCurrentTestId();
@@ -52,6 +53,7 @@ public final class TestExecutionListener implements ITestListener {
     public void onTestFailure(ITestResult result) {
         String testName = result.getMethod().getMethodName();
         String testId = result.getMethod().getQualifiedName();
+        ExecutionMetrics.recordStatus(testId, "FAILED");
         ExecutionMetrics.markEnd(testId);
         ScreenshotManager.capture(testName);
         DriverManager.quitDriver();
@@ -61,6 +63,7 @@ public final class TestExecutionListener implements ITestListener {
     @Override
     public void onTestSkipped(ITestResult result) {
         String testId = result.getMethod().getQualifiedName();
+        ExecutionMetrics.recordStatus(testId, "SKIPPED");
         ExecutionMetrics.markEnd(testId);
         DriverManager.quitDriver();
         SeleniumBootContext.clearCurrentTestId();

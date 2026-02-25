@@ -154,7 +154,7 @@ constructor to prevent instantiation. This should match.
 
 | # | Item | Priority | Status |
 |---|---|---|---|
-| 1 | Test status tracking in metrics and HTML report | Blocker | Pending |
+| 1 | Test status tracking in metrics and HTML report | Blocker | Done |
 | 2 | RetryListener auto-wiring via IAnnotationTransformer | Blocker | Pending |
 | 3 | Remove / implement empty stub classes | Blocker | Pending |
 | 4 | Apply pageLoad timeout to WebDriver providers | Blocker | Pending |

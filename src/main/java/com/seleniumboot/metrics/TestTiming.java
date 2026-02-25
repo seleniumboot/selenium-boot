@@ -5,6 +5,7 @@ public class TestTiming {
     private final String threadName;
     private long testExecutionTime;
     private long totalTime;
+    private String status;
 
     public TestTiming(String testId, String threadName) {
         this.testId = testId;
@@ -43,5 +44,13 @@ public class TestTiming {
 
     public void setTotalTime(long totalTime) {
         this.totalTime = totalTime;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

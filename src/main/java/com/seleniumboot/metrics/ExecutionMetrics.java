@@ -45,6 +45,18 @@ public final class ExecutionMetrics {
     }
 
     // ==========================================================
+    // Test Status
+    // ==========================================================
+
+    public static void recordStatus(String testId, String status) {
+        TestTiming timing = TIMINGS.computeIfAbsent(
+                testId,
+                id -> new TestTiming(id, Thread.currentThread().getName())
+        );
+        timing.setStatus(status);
+    }
+
+    // ==========================================================
     // Test End
     // ==========================================================
 
@@ -77,9 +89,16 @@ public final class ExecutionMetrics {
         int totalTests = TIMINGS.size();
         long totalTime = TOTAL_DURATION.get();
 
+        long passed  = TIMINGS.values().stream().filter(t -> "PASSED".equals(t.getStatus())).count();
+        long failed  = TIMINGS.values().stream().filter(t -> "FAILED".equals(t.getStatus())).count();
+        long skipped = TIMINGS.values().stream().filter(t -> "SKIPPED".equals(t.getStatus())).count();
+
         System.out.println("\n===== Selenium Boot Execution Metrics =====");
-        System.out.println("Total Tests: " + totalTests);
-        System.out.println("Total Time: " + totalTime + " ms");
+        System.out.println("Total Tests : " + totalTests);
+        System.out.println("Passed      : " + passed);
+        System.out.println("Failed      : " + failed);
+        System.out.println("Skipped     : " + skipped);
+        System.out.println("Total Time  : " + totalTime + " ms");
 
         if (totalTests > 0) {
 
@@ -94,7 +113,7 @@ public final class ExecutionMetrics {
 
             if (slowest != null) {
                 System.out.println("Slowest Test: "
-                        + slowest+ " (" + slowest.getTotalTime() + " ms)");
+                        + slowest.getTestId() + " (" + slowest.getTotalTime() + " ms)");
             }
         }
 
@@ -120,7 +139,14 @@ public final class ExecutionMetrics {
             driverDurations.add(timing.getDriverStartupTime());
         }
 
+        long passed  = TIMINGS.values().stream().filter(t -> "PASSED".equals(t.getStatus())).count();
+        long failed  = TIMINGS.values().stream().filter(t -> "FAILED".equals(t.getStatus())).count();
+        long skipped = TIMINGS.values().stream().filter(t -> "SKIPPED".equals(t.getStatus())).count();
+
         report.put("totalTests", totalTests);
+        report.put("passedTests", passed);
+        report.put("failedTests", failed);
+        report.put("skippedTests", skipped);
         report.put("totalTimeMs", totalTime);
         report.put("averageTimeMs",
                 totalTests == 0 ? 0 : totalTime / totalTests);
@@ -155,6 +181,8 @@ public final class ExecutionMetrics {
 
             testEntry.put("testId", timing.getTestId());
             testEntry.put("thread", timing.getThreadName());
+            testEntry.put("status",
+                    timing.getStatus() != null ? timing.getStatus() : "UNKNOWN");
             testEntry.put("driverStartupMs",
                     timing.getDriverStartupTime());
             testEntry.put("testLogicMs",

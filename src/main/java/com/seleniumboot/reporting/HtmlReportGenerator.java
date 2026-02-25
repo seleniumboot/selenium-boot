@@ -133,18 +133,26 @@ public final class HtmlReportGenerator {
 
         for (JsonNode test : root.get("tests")) {
 
+            String status = test.has("status") ? test.get("status").asText() : "UNKNOWN";
+            String statusClass = "status-" + status.toLowerCase();
+
             rows.append("<tr>")
                     .append("<td class=\"test-id\">").append(test.get("testId").asText()).append("</td>")
                     .append("<td>").append(test.get("thread").asText()).append("</td>")
+                    .append("<td><span class=\"status-badge ").append(statusClass).append("\">")
+                    .append(status).append("</span></td>")
                     .append("<td class=\"numeric\">").append(test.get("driverStartupMs").asLong()).append("</td>")
                     .append("<td class=\"numeric\">").append(test.get("testLogicMs").asLong()).append("</td>")
                     .append("<td class=\"numeric\">").append(test.get("totalMs").asLong()).append("</td>")
                     .append("</tr>");
         }
 
-        int totalTests = root.has("totalTests") ? root.get("totalTests").asInt() : 0;
-        long totalTimeMs = root.has("totalTimeMs") ? root.get("totalTimeMs").asLong() : 0L;
-        long averageTimeMs = root.has("averageTimeMs") ? root.get("averageTimeMs").asLong() : 0L;
+        int totalTests    = root.has("totalTests")    ? root.get("totalTests").asInt()    : 0;
+        int passedTests   = root.has("passedTests")   ? root.get("passedTests").asInt()   : 0;
+        int failedTests   = root.has("failedTests")   ? root.get("failedTests").asInt()   : 0;
+        int skippedTests  = root.has("skippedTests")  ? root.get("skippedTests").asInt()  : 0;
+        long totalTimeMs   = root.has("totalTimeMs")   ? root.get("totalTimeMs").asLong()  : 0L;
+        long averageTimeMs = root.has("averageTimeMs") ? root.get("averageTimeMs").asLong(): 0L;
 
         String htmlTemplate = """
 <!DOCTYPE html>
@@ -225,6 +233,16 @@ public final class HtmlReportGenerator {
             word-break: break-all;
         }
 
+        .passed-card  .stat-value { color: #2e7d32; }
+        .failed-card  .stat-value { color: #c62828; }
+        .skipped-card .stat-value { color: #e65100; }
+
+        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .status-passed  { background: #e8f5e9; color: #2e7d32; }
+        .status-failed  { background: #ffebee; color: #c62828; }
+        .status-skipped { background: #fff3e0; color: #e65100; }
+        .status-unknown { background: #f5f5f5; color: #757575; }
+
         .footer { text-align: center; padding: 16px; font-size: 12px; color: #9e9e9e; }
 
         @media (max-width: 768px) {
@@ -243,6 +261,20 @@ public final class HtmlReportGenerator {
 
 <div class="content">
     %s
+    <div class="summary-row">
+        <div class="card stat-card passed-card">
+            <div class="stat-value">%d</div>
+            <div class="stat-label">Passed</div>
+        </div>
+        <div class="card stat-card failed-card">
+            <div class="stat-value">%d</div>
+            <div class="stat-label">Failed</div>
+        </div>
+        <div class="card stat-card skipped-card">
+            <div class="stat-value">%d</div>
+            <div class="stat-label">Skipped</div>
+        </div>
+    </div>
     <div class="summary-row">
         <div class="card stat-card">
             <div class="stat-value">%d</div>
@@ -276,6 +308,7 @@ public final class HtmlReportGenerator {
                 <tr>
                     <th>Test</th>
                     <th>Thread</th>
+                    <th>Status</th>
                     <th>Driver Startup (ms)</th>
                     <th>Test Logic (ms)</th>
                     <th>Total (ms)</th>
@@ -348,6 +381,9 @@ createChart('driverChart', 'Driver Startup (ms)', driverData, 'rgba(0,137,123,.2
 
         return String.format(htmlTemplate,
                 metadataSection,
+                passedTests,
+                failedTests,
+                skippedTests,
                 totalTests,
                 totalTimeMs,
                 averageTimeMs,
