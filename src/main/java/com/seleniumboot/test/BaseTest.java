@@ -2,7 +2,6 @@ package com.seleniumboot.test;
 
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
-import com.seleniumboot.listeners.RetryAnnotationTransformer;
 import com.seleniumboot.listeners.SuiteExecutionListener;
 import com.seleniumboot.listeners.TestExecutionListener;
 import org.openqa.selenium.WebDriver;
@@ -20,8 +19,7 @@ import org.testng.annotations.Listeners;
  */
 @Listeners({
         SuiteExecutionListener.class,
-        TestExecutionListener.class,
-        RetryAnnotationTransformer.class
+        TestExecutionListener.class
 })
 public abstract class BaseTest {
 
