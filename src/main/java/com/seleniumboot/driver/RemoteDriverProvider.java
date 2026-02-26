@@ -48,6 +48,7 @@ public class RemoteDriverProvider implements DriverProvider{
 
                 WebDriver driver = new RemoteWebDriver(url, options);
                 driver.manage().timeouts().implicitlyWait(Duration.ZERO);
+                driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(config.getTimeouts().getPageLoad()));
                 return driver;
             }
 
@@ -70,6 +71,7 @@ public class RemoteDriverProvider implements DriverProvider{
 
                 WebDriver driver = new RemoteWebDriver(url, options);
                 driver.manage().timeouts().implicitlyWait(Duration.ZERO);
+                driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(config.getTimeouts().getPageLoad()));
                 return driver;
             }
             throw new IllegalStateException("Unsupported browser: " + browser);

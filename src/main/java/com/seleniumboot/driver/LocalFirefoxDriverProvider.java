@@ -39,6 +39,8 @@ public class LocalFirefoxDriverProvider implements DriverProvider{
         WebDriver driver = new FirefoxDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ZERO);
 
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(config.getTimeouts().getPageLoad()));
+
         return driver;
     }
 }

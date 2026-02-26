@@ -21,3 +21,7 @@ execution:
 retry:
   enabled: true
   maxAttempts: 2
+
+timeouts:
+  explicit: 10
+  pageLoad: 30

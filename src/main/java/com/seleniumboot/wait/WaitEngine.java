@@ -1,6 +1,5 @@
 package com.seleniumboot.wait;
 
-import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import org.openqa.selenium.By;
@@ -26,14 +25,7 @@ public final class WaitEngine {
 
     private static WebDriverWait createWait() {
         WebDriver driver = DriverManager.getDriver();
-        SeleniumBootConfig config = SeleniumBootContext.getConfig();
-
-        int timeoutSeconds = 10;
-
-        if (config.getTimeouts() != null) {
-            timeoutSeconds = config.getTimeouts().getExplicit();
-        }
-
+        int timeoutSeconds = SeleniumBootContext.getConfig().getTimeouts().getExplicit();
         return new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds));
     }
 

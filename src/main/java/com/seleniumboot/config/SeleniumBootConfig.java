@@ -162,8 +162,8 @@ public final class SeleniumBootConfig {
     }
 
     public static final class Timeouts {
-        private int explicit = 10;
-        private int pageLoad = 30;
+        private int explicit;
+        private int pageLoad;
 
         public int getExplicit() {
             return explicit;

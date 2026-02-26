@@ -50,5 +50,12 @@ public final class ConfigurationLoader {
         if (config.getExecution() == null || config.getExecution().getMode() == null) {
             throw new IllegalStateException("Execution mode must be specified");
         }
+
+        if (config.getTimeouts() == null
+                || config.getTimeouts().getExplicit() <= 0
+                || config.getTimeouts().getPageLoad() <= 0) {
+            throw new IllegalStateException(
+                    "timeouts.explicit and timeouts.pageLoad must be configured with positive values");
+        }
     }
 }
