@@ -116,15 +116,15 @@ The framework aims to grow into a stable ecosystem rather than a monolithic tool
 
 ## Project Status
 
-🚧 **Early Design / MVP Planning Phase**
+**v0.1.0 – Initial Release**
 
-Public roadmap, architecture documentation, and contribution guidelines will be added as the project evolves.
+Core framework is implemented and functional. Includes WebDriver lifecycle management, YAML-based configuration, parallel execution, automatic retry via `@Retryable`, explicit waits, screenshot capture on failure, and HTML execution reports.
 
 ---
 
 ## License
 
-This project will be released under an open-source license (TBD).
+Licensed under the [Apache License, Version 2.0](LICENSE).
 
 ---
 
