@@ -160,6 +160,6 @@ constructor to prevent instantiation. This should match.
 | 4 | Apply pageLoad timeout to WebDriver providers | Blocker | Done |
 | 5 | Add maven-surefire-plugin configuration | Blocker | Done |
 | 6 | Add LICENSE file | Blocker | Done |
-| 7 | Validate execution.mode values | Should Fix | Pending |
-| 8 | Fix DriverProviderFactory constructor visibility | Should Fix | Pending |
-| 9 | Set release version, update README status | Should Fix | Pending |
+| 7 | Validate execution.mode values | Should Fix | Done |
+| 8 | Fix DriverProviderFactory constructor visibility | Should Fix | Done |
+| 9 | Set release version, update README status | Should Fix | Done |

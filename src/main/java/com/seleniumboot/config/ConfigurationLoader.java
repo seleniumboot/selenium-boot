@@ -51,6 +51,12 @@ public final class ConfigurationLoader {
             throw new IllegalStateException("Execution mode must be specified");
         }
 
+        String mode = config.getExecution().getMode();
+        if (!"local".equalsIgnoreCase(mode) && !"remote".equalsIgnoreCase(mode)) {
+            throw new IllegalStateException(
+                    "execution.mode must be 'local' or 'remote', got: '" + mode + "'");
+        }
+
         if (config.getTimeouts() == null
                 || config.getTimeouts().getExplicit() <= 0
                 || config.getTimeouts().getPageLoad() <= 0) {

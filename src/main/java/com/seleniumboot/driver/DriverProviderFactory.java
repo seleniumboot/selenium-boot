@@ -4,7 +4,7 @@ import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.internal.SeleniumBootContext;
 
 public final class DriverProviderFactory {
-    public DriverProviderFactory() {}
+    private DriverProviderFactory() {}
 
     public static DriverProvider getProvider() {
         SeleniumBootConfig config = SeleniumBootContext.getConfig();
