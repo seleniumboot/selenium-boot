@@ -1,139 +1,130 @@
-# Selenium Boot – Getting Started (MVP)
+# Selenium Boot – Getting Started
 
 This guide walks through running your first Selenium Boot test with minimal setup.
-The goal is to achieve a successful test run in minutes, not hours.
 
 ---
 
 ## Prerequisites
 
-Before starting, ensure the following are installed:
-
-- Java 17 or later
+- Java 17+
 - Maven 3.8+
-- Git
-- A supported browser (Chrome, Firefox, or Edge)
+- Chrome or Firefox installed
 
-No WebDriver binaries are required.
-
----
-
-## Create a New Project
-
-Create a standard Maven project or clone the starter repository (when available).
-
-Basic project structure:
-```
-selenium-boot-project
-├── pom.xml
-├── selenium-boot.yml
-└── src/
-    └── test/
-        └── java/
-```
+No WebDriver binaries required — Selenium Manager handles it automatically.
 
 ---
 
-## Maven Configuration
+## Step 1: Add the Dependency
 
-Add Selenium Boot dependency to pom.xml:
 ```xml
 <dependency>
-  <groupId>com.seleniumboot</groupId>
-  <artifactId>selenium-boot-starter</artifactId>
-  <version>0.1.0</version>
+    <groupId>io.github.seleniumboot</groupId>
+    <artifactId>selenium-boot</artifactId>
+    <version>0.1.0</version>
+</dependency>
+
+<dependency>
+    <groupId>org.testng</groupId>
+    <artifactId>testng</artifactId>
+    <version>7.9.0</version>
 </dependency>
 ```
 
-TestNG must be included as the test runner.
+Also add the Surefire plugin:
 
----
-
-## Minimal Configuration
-
-Create selenium-boot.yml in the project root:
-
-```yaml
-selenium:
-  browser:
-    name: chrome
-  execution:
-    mode: local
-
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.2.5</version>
+        </plugin>
+    </plugins>
+</build>
 ```
 
-All other settings use default values.
+---
+
+## Step 2: Create `selenium-boot.yml`
+
+Place this file at your **project root** (same level as `pom.xml`):
+
+```yaml
+execution:
+  mode: local
+  baseUrl: https://example.com
+  parallel: methods
+  threadCount: 4
+
+browser:
+  name: chrome
+  headless: false
+
+retry:
+  enabled: true
+  maxAttempts: 2
+
+timeouts:
+  explicit: 10
+  pageLoad: 30
+```
 
 ---
 
-## First Test Example
-
-Create a simple TestNG test:
+## Step 3: Write Your First Test
 
 ```java
-public class SampleTest {
+import com.seleniumboot.test.BaseTest;
+import org.testng.annotations.Test;
 
-  @Test
-  public void openHomePage() {
-    driver.get("https://example.com");
-    assertEquals(driver.getTitle(), "Example Domain");
-  }
+import static org.testng.Assert.assertEquals;
+
+public class SampleTest extends BaseTest {
+
+    @Test
+    public void homepageTitleCheck() {
+        open();   // navigates to baseUrl
+        assertEquals(getDriver().getTitle(), "Example Domain");
+    }
 }
 ```
 
-Selenium Boot automatically manages:
-- WebDriver lifecycle
-- Waits and retries
-- Reporting
-- Parallel execution
+- Extend `BaseTest` — no other setup needed
+- Use `open()` to go to `baseUrl`, or `open("/path")` for a sub-path
+- Use `getDriver()` to access the WebDriver instance
+- Never create or quit WebDriver manually
 
 ---
 
-## Run Tests
+## Step 4: Run Tests
 
-Execute tests using Maven:
-
-```
+```bash
 mvn test
 ```
 
-Selenium Boot handles setup, execution, and cleanup.
-
 ---
 
-## Test Reports
+## Step 5: View the Report
 
-After execution, reports are generated at:
+After execution, two files are generated in the `target/` folder:
 
-target/reports
+| File | Description |
+|---|---|
+| `target/selenium-boot-report.html` | Full HTML report — open in any browser |
+| `target/selenium-boot-metrics.json` | Raw metrics in JSON format |
 
-Reports include:
-- Test results summary
-- Failure screenshots
-- Execution metadata
-
----
-
-## Common First-Run Issues
-
-- Browser not installed
-- Corporate proxy restrictions
-- Insufficient system resources
+The HTML report includes:
+- Suite summary with total / passed / failed / skipped counts
+- Per-test status with color coding
+- Execution time per test and slowest test highlight
+- Failure screenshots linked inline
 
 ---
 
 ## Next Steps
 
-After the first successful run:
-
-- Adopt the opinionated project structure
-- Externalize test data
-- Enable parallel execution tuning
-- Integrate into CI pipelines
-
----
-
-## Summary
-
-Selenium Boot is designed to get you from zero to a passing test fast.
-Once running, teams can incrementally adopt advanced features without reworking their test suites.
+- Add Page Objects — see the [README](../README.md) for an example
+- Enable `@Retryable` on flaky tests
+- Switch to remote/Grid execution by changing `execution.mode: remote` and adding `gridUrl`
+- Use environment profiles (`selenium-boot-staging.yml`) for multi-environment setups
