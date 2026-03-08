@@ -1,5 +1,6 @@
 package com.seleniumboot.exceptions;
 
-public class ConfigurationException {
-    // TODO: Implementation to be added
+public class ConfigurationException extends RuntimeException {
+    public ConfigurationException(String message) { super(message); }
+    public ConfigurationException(String message, Throwable cause) { super(message, cause); }
 }
