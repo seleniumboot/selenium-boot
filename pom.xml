@@ -4,18 +4,42 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.seleniumboot</groupId>
+    <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
     <version>0.1.0</version>
     <packaging>jar</packaging>
 
     <name>Selenium Boot</name>
     <description>Opinionated Selenium framework inspired by Spring Boot</description>
+    <url>https://github.com/seleniumboot/selenium-boot</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>seleniumboot</id>
+            <name>Selenium Boot</name>
+            <url>https://github.com/seleniumboot</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/seleniumboot/selenium-boot.git</connection>
+        <developerConnection>scm:git:ssh://github.com/seleniumboot/selenium-boot.git</developerConnection>
+        <url>https://github.com/seleniumboot/selenium-boot/tree/master</url>
+    </scm>
 
     <properties>
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
@@ -30,16 +54,17 @@
             <artifactId>testng</artifactId>
             <version>7.9.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>2.2</version>
         </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.21.0</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -54,6 +79,7 @@
                     <target>17</target>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -65,6 +91,68 @@
                             <value>com.seleniumboot.listeners.RetryAnnotationTransformer</value>
                         </property>
                     </properties>
+                </configuration>
+            </plugin>
+
+            <!-- Required by Maven Central: sources jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Required by Maven Central: javadoc jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <doclint>none</doclint>
+                </configuration>
+            </plugin>
+
+            <!-- Required by Maven Central: GPG signing -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven Central publisher (new Central Portal) -->
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.4.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <tokenAuth>true</tokenAuth>
+                    <autoPublish>false</autoPublish>
                 </configuration>
             </plugin>
         </plugins>
