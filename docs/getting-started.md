@@ -20,7 +20,7 @@ No WebDriver binaries required — Selenium Manager handles it automatically.
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 </dependency>
 
 <dependency>

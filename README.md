@@ -48,7 +48,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 </dependency>
 
 <dependency>
@@ -346,6 +346,24 @@ mvn test -Denv=staging
 ---
 
 ## Project Status
+
+**v0.2.0 – Enhancements Release**
+
+Stability and usability improvements across the core framework:
+
+- **Thread-safety** — `SeleniumBootContext` now uses `AtomicReference` for lock-free, race-free config publishing
+- **Session management** — `DriverManager` session limit uses a fair `Semaphore` (30s timeout) instead of fail-fast; parallel tests wait for a slot rather than erroring
+- **Global retry** — `retry.enabled=true` in YAML now retries all tests without requiring `@Retryable` per method
+- **WaitEngine** — expanded with `waitForInvisible`, `waitForStaleness`, `waitForText`, `waitForAttributeContains`, `waitForPageLoad`, and a custom `wait(ExpectedCondition)` escape hatch
+- **BasePage** — pre-built interaction helpers (`click`, `type`, `getText`, `getAttribute`, `isDisplayed`) eliminate boilerplate in page objects
+- **Screenshots embedded** — failure screenshots are now base64-encoded into the HTML report (click to expand); no broken links when sharing reports
+- **Metrics history** — timestamped JSON copies written to `target/metrics-history/` for CI archiving; primary `selenium-boot-metrics.json` unchanged
+- **Config fallback** — `ConfigurationLoader` supports `-Dselenium.boot.config=`, working-directory file, then classpath (priority order)
+- **JUnit 5 support** — `SeleniumBootExtension`, `@EnableSeleniumBoot`, and `BaseJUnit5Test` allow JUnit 5 projects to use the framework alongside TestNG users
+- **HTML report template** — extracted to `src/main/resources/report-template.html`; editable without recompiling
+- **Unit tests** — framework internals covered by `ExecutionMetricsTest`, `SeleniumBootContextTest`, `ConfigurationLoaderTest`, `RetryListenerTest`
+
+---
 
 **v0.1.0 – Initial Release**
 
