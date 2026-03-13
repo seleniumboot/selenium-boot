@@ -7,6 +7,8 @@ import com.seleniumboot.internal.SeleniumBootContext;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.nio.file.Files;
+import java.util.Base64;
 
 public final class HtmlReportGenerator {
 
@@ -108,6 +110,27 @@ public final class HtmlReportGenerator {
         return sb.toString();
     }
 
+    private static String buildScreenshotCell(JsonNode test) {
+        if (!test.has("screenshotPath")) {
+            return "<span style=\"color:#bdbdbd\">—</span>";
+        }
+        File screenshotFile = new File(test.get("screenshotPath").asText());
+        if (!screenshotFile.exists()) {
+            return "<span style=\"color:#bdbdbd\">—</span>";
+        }
+        try {
+            byte[] bytes = Files.readAllBytes(screenshotFile.toPath());
+            String base64 = Base64.getEncoder().encodeToString(bytes);
+            return "<img src=\"data:image/png;base64," + base64 + "\" " +
+                   "style=\"max-width:160px;max-height:90px;border-radius:4px;" +
+                   "border:1px solid #e0e0e0;cursor:pointer\" " +
+                   "onclick=\"this.style.maxWidth=this.style.maxWidth==='none'?'160px':'none'\" " +
+                   "title=\"Click to expand\" />";
+        } catch (Exception e) {
+            return "<span style=\"color:#e53935\">load error</span>";
+        }
+    }
+
     private static void appendMetaItem(StringBuilder sb, String label, String value) {
         sb.append("      <div class=\"meta-item\">\n");
         sb.append("        <span class=\"meta-label\">").append(label).append("</span>\n");
@@ -136,6 +159,8 @@ public final class HtmlReportGenerator {
             String status = test.has("status") ? test.get("status").asText() : "UNKNOWN";
             String statusClass = "status-" + status.toLowerCase();
 
+            String screenshotCell = buildScreenshotCell(test);
+
             rows.append("<tr>")
                     .append("<td class=\"test-id\">").append(test.get("testId").asText()).append("</td>")
                     .append("<td>").append(test.get("thread").asText()).append("</td>")
@@ -144,6 +169,7 @@ public final class HtmlReportGenerator {
                     .append("<td class=\"numeric\">").append(test.get("driverStartupMs").asLong()).append("</td>")
                     .append("<td class=\"numeric\">").append(test.get("testLogicMs").asLong()).append("</td>")
                     .append("<td class=\"numeric\">").append(test.get("totalMs").asLong()).append("</td>")
+                    .append("<td>").append(screenshotCell).append("</td>")
                     .append("</tr>");
         }
 
@@ -312,6 +338,7 @@ public final class HtmlReportGenerator {
                     <th>Driver Startup (ms)</th>
                     <th>Test Logic (ms)</th>
                     <th>Total (ms)</th>
+                    <th>Screenshot</th>
                 </tr>
             </thead>
             <tbody>

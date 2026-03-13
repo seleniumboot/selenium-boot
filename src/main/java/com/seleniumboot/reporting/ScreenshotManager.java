@@ -26,12 +26,16 @@ public final class ScreenshotManager {
     private ScreenshotManager() {
     }
 
-    public static void capture(String testName) {
+    /**
+     * Captures a screenshot for the given test and returns the absolute path
+     * of the saved file, or {@code null} if capture failed.
+     */
+    public static String capture(String testName) {
         WebDriver driver = DriverManager.getDriver();
 
         if (!(driver instanceof TakesScreenshot)) {
             System.err.println("[ScreenshotManager] Driver does not support screenshots for test: " + testName);
-            return;
+            return null;
         }
 
         String testId = SeleniumBootContext.getCurrentTestId();
@@ -48,10 +52,12 @@ public final class ScreenshotManager {
             );
 
             Files.copy(srcFile.toPath(), destination);
+            return destination.toAbsolutePath().toString();
 
         } catch (WebDriverException | IOException e) {
             System.err.printf("[ScreenshotManager] Failed to capture screenshot for [%s] (%s): %s%n",
                     context, e.getClass().getSimpleName(), e.getMessage());
+            return null;
         }
     }
 

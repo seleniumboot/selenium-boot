@@ -6,6 +6,7 @@ public class TestTiming {
     private long testExecutionTime;
     private long totalTime;
     private String status;
+    private String screenshotPath;
 
     public TestTiming(String testId, String threadName) {
         this.testId = testId;
@@ -52,5 +53,13 @@ public class TestTiming {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getScreenshotPath() {
+        return screenshotPath;
+    }
+
+    public void setScreenshotPath(String screenshotPath) {
+        this.screenshotPath = screenshotPath;
     }
 }

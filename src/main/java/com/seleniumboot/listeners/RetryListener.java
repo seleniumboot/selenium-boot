@@ -4,14 +4,23 @@ import com.seleniumboot.internal.SeleniumBootContext;
 import org.testng.IRetryAnalyzer;
 import org.testng.ITestResult;
 
+import java.lang.reflect.Method;
+
 /**
  * Controls retry behavior for failed test methods.
  *
- * Rules:
+ * <p>Decision logic (evaluated in order):
+ * <ol>
+ *   <li>{@code retry.enabled=false} in config → never retry (global kill switch)</li>
+ *   <li>{@code retry.enabled=true} → retry ALL tests up to {@code maxAttempts}</li>
+ *   <li>Method is annotated with {@link Retryable} → retry up to {@code maxAttempts}
+ *       (allows per-method opt-in when global retry is off)</li>
+ * </ol>
+ *
+ * <p>Rules:
  * <li>Retry count comes from configuration</li>
  * <li>Retries apply only to test methods</li>
- * <li>No infinite retries</li>
- * <li>Final failure must surface</li>
+ * <li>No infinite retries — final failure always surfaces</li>
  */
 public final class RetryListener implements IRetryAnalyzer {
 
@@ -20,13 +29,23 @@ public final class RetryListener implements IRetryAnalyzer {
     @Override
     public boolean retry(ITestResult result) {
 
-        var config = SeleniumBootContext.getConfig();
+        var retryConfig = SeleniumBootContext.getConfig().getRetry();
 
-        if (config.getRetry() == null || !config.getRetry().isEnabled()) {
+        // Master kill switch — if retry is disabled nothing retries, including @Retryable
+        if (retryConfig == null || !retryConfig.isEnabled()) {
             return false;
         }
 
-        int maxAttempts = config.getRetry().getMaxAttempts();
+        // Global mode: all tests retry. Method-level: only @Retryable tests retry.
+        Method method = result.getMethod().getConstructorOrMethod().getMethod();
+        boolean isGlobalRetry = retryConfig.isEnabled();
+        boolean isAnnotated = method != null && method.isAnnotationPresent(Retryable.class);
+
+        if (!isGlobalRetry && !isAnnotated) {
+            return false;
+        }
+
+        int maxAttempts = retryConfig.getMaxAttempts();
 
         if (attempt < maxAttempts) {
             attempt++;

@@ -45,6 +45,19 @@ public final class ExecutionMetrics {
     }
 
     // ==========================================================
+    // Screenshot
+    // ==========================================================
+
+    public static void recordScreenshot(String testId, String path) {
+        if (path == null) return;
+        TestTiming timing = TIMINGS.computeIfAbsent(
+                testId,
+                id -> new TestTiming(id, Thread.currentThread().getName())
+        );
+        timing.setScreenshotPath(path);
+    }
+
+    // ==========================================================
     // Test Status
     // ==========================================================
 
@@ -189,6 +202,9 @@ public final class ExecutionMetrics {
                     timing.getTestExecutionTime());
             testEntry.put("totalMs",
                     timing.getTotalTime());
+            if (timing.getScreenshotPath() != null) {
+                testEntry.put("screenshotPath", timing.getScreenshotPath());
+            }
 
             testList.add(testEntry);
         }
@@ -205,14 +221,24 @@ public final class ExecutionMetrics {
                 outputDir.mkdirs();
             }
 
+            // Primary output — always overwritten; used by HtmlReportGenerator
+            File primary = new File("target/selenium-boot-metrics.json");
+            mapper.writeValue(primary, report);
+
+            // Timestamped copy for historical retention across CI runs
+            String timestamp = java.time.LocalDateTime.now()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+            File historyDir = new File("target/metrics-history");
+            if (!historyDir.exists()) {
+                historyDir.mkdirs();
+            }
             mapper.writeValue(
-                    new File("target/selenium-boot-metrics.json"),
+                    new File(historyDir, "selenium-boot-metrics-" + timestamp + ".json"),
                     report
             );
 
-            System.out.println(
-                    "[Selenium Boot] Metrics exported with percentiles."
-            );
+            System.out.println("[Selenium Boot] Metrics exported → " + primary.getPath());
+            System.out.println("[Selenium Boot] History copy     → target/metrics-history/selenium-boot-metrics-" + timestamp + ".json");
 
         } catch (IOException e) {
             throw new RuntimeException(

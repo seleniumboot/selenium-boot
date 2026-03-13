@@ -55,7 +55,8 @@ public final class TestExecutionListener implements ITestListener {
         String testId = result.getMethod().getQualifiedName();
         ExecutionMetrics.recordStatus(testId, "FAILED");
         ExecutionMetrics.markEnd(testId);
-        ScreenshotManager.capture(testName);
+        String screenshotPath = ScreenshotManager.capture(testName);
+        ExecutionMetrics.recordScreenshot(testId, screenshotPath);
         DriverManager.quitDriver();
         SeleniumBootContext.clearCurrentTestId();
     }

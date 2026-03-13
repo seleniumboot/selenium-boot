@@ -7,11 +7,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 /**
- * Injects {@link RetryListener} on any test method annotated with {@link Retryable}.
+ * Injects {@link RetryListener} on every test method.
  *
- * This transformer is the only wiring between the {@code @Retryable} annotation
- * and TestNG's retry mechanism. It does not read config — retry count and the
- * master kill switch are enforced inside {@link RetryListener} at runtime.
+ * <p>Injecting on all methods is intentional: {@link RetryListener#retry} enforces
+ * the master kill switch and max-attempts limit at runtime, so this transformer
+ * does not need to know which methods should actually retry. Selective retry
+ * behaviour is controlled entirely through configuration and the {@link Retryable}
+ * annotation — see {@link RetryListener} for the decision logic.
  */
 public final class RetryAnnotationTransformer implements IAnnotationTransformer {
 
@@ -21,7 +23,7 @@ public final class RetryAnnotationTransformer implements IAnnotationTransformer 
                           Constructor testConstructor,
                           Method testMethod) {
 
-        if (testMethod != null && testMethod.isAnnotationPresent(Retryable.class)) {
+        if (testMethod != null) {
             annotation.setRetryAnalyzer(RetryListener.class);
         }
     }
