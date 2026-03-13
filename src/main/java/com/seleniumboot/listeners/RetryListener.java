@@ -29,6 +29,11 @@ public final class RetryListener implements IRetryAnalyzer {
     @Override
     public boolean retry(ITestResult result) {
 
+        // Guard: framework may not be initialized when running unit tests
+        if (!SeleniumBootContext.isInitialized()) {
+            return false;
+        }
+
         var retryConfig = SeleniumBootContext.getConfig().getRetry();
 
         // Master kill switch — if retry is disabled nothing retries, including @Retryable

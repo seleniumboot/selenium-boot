@@ -66,6 +66,25 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.21.0</version>
         </dependency>
+
+        <!--
+            JUnit 5 support — optional so it is NOT pulled transitively for TestNG users.
+            Consumers who use JUnit 5 must add junit-jupiter to their own project.
+        -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.10.2</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Unit-test tooling (test scope only) -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.11.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
