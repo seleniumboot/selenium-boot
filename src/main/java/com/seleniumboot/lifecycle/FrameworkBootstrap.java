@@ -2,8 +2,13 @@ package com.seleniumboot.lifecycle;
 
 import com.seleniumboot.config.ConfigurationLoader;
 import com.seleniumboot.config.SeleniumBootConfig;
+import com.seleniumboot.config.SeleniumBootDefaults;
+import com.seleniumboot.driver.DriverProviderRegistry;
 import com.seleniumboot.execution.ExecutionValidator;
+import com.seleniumboot.extension.PluginRegistry;
+import com.seleniumboot.hooks.HookRegistry;
 import com.seleniumboot.internal.SeleniumBootContext;
+import com.seleniumboot.reporting.ReportAdapterRegistry;
 
 /**
  * FrameworkBootstrap is responsible for initializing Selenium Boot
@@ -22,8 +27,15 @@ public final class FrameworkBootstrap {
             return;
         }
         SeleniumBootConfig config = ConfigurationLoader.load();
+        SeleniumBootDefaults.applyMissing(config);
         ExecutionValidator.validate(config.getExecution());
 
         SeleniumBootContext.initialize(config);
+
+        // Load all SPI-registered extension points
+        DriverProviderRegistry.loadAll();
+        HookRegistry.loadAll();
+        ReportAdapterRegistry.loadAll();
+        PluginRegistry.loadAll(config);
     }
 }

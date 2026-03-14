@@ -15,6 +15,12 @@ public final class DriverProviderFactory {
             return new RemoteDriverProvider();
         }
 
+        // Custom providers registered via SPI or programmatically take precedence
+        DriverProvider custom = DriverProviderRegistry.find(browser);
+        if (custom != null) {
+            return custom;
+        }
+
         if ("chrome".equalsIgnoreCase(browser)) {
             return new LocalChromeDriverProvider();
         }
@@ -23,6 +29,9 @@ public final class DriverProviderFactory {
             return new LocalFirefoxDriverProvider();
         }
 
-        throw new IllegalStateException("Unsupported browser: " + browser);
+        throw new IllegalStateException(
+            "Unsupported browser: " + browser +
+            ". Register a NamedDriverProvider via SPI or DriverProviderRegistry.register()."
+        );
     }
 }

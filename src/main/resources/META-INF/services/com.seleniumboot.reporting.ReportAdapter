@@ -1,0 +1,4 @@
+# Register ReportAdapter implementations here, one fully-qualified class name per line.
+# The built-in HTML adapter is always included automatically.
+# Example:
+# com.example.reporting.SlackReportAdapter

@@ -1,0 +1,3 @@
+# Register NamedDriverProvider implementations here, one fully-qualified class name per line.
+# Example:
+# com.example.driver.EdgeDriverProvider

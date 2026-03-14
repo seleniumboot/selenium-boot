@@ -5,7 +5,9 @@ import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.lifecycle.FrameworkBootstrap;
 import com.seleniumboot.metrics.ExecutionMetrics;
-import com.seleniumboot.reporting.HtmlReportGenerator;
+import com.seleniumboot.extension.PluginRegistry;
+import com.seleniumboot.hooks.HookRegistry;
+import com.seleniumboot.reporting.ReportAdapterRegistry;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
 import org.testng.xml.XmlSuite;
@@ -53,6 +55,8 @@ public final class SuiteExecutionListener implements ISuiteListener {
                 );
             }
 
+            HookRegistry.onSuiteStart();
+
         } catch (Exception e) {
             // Abort entire suite on bootstrap failure
             throw new IllegalStateException(
@@ -64,7 +68,9 @@ public final class SuiteExecutionListener implements ISuiteListener {
     public void onFinish(ISuite suite) {
         ExecutionMetrics.printSummary();
         ExecutionMetrics.exportToJson();
-        HtmlReportGenerator.generate();
+        ReportAdapterRegistry.generateAll();
         DriverManager.quitDriver();
+        HookRegistry.onSuiteEnd();
+        PluginRegistry.unloadAll();
     }
 }

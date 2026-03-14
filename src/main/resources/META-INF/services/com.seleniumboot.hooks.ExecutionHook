@@ -1,0 +1,3 @@
+# Register ExecutionHook implementations here, one fully-qualified class name per line.
+# Example:
+# com.example.hooks.TimingHook
