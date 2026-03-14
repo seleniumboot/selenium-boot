@@ -48,7 +48,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
 </dependency>
 
 <dependency>
@@ -345,7 +345,170 @@ mvn test -Denv=staging
 
 ---
 
+## Extending the Framework
+
+Selenium Boot 0.3.0 exposes four extension points. All support both **Java SPI** (automatic discovery) and **programmatic registration**.
+
+---
+
+### Custom Driver Provider
+
+Support browsers beyond Chrome and Firefox (Edge, Safari, Opera, etc.) without forking the framework.
+
+**1. Implement `NamedDriverProvider`:**
+
+```java
+public class EdgeDriverProvider implements NamedDriverProvider {
+
+    @Override
+    public String browserName() { return "edge"; }
+
+    @Override
+    public WebDriver createDriver() {
+        EdgeOptions options = new EdgeOptions();
+        return new EdgeDriver(options);
+    }
+}
+```
+
+**2a. Register via SPI** — create `src/main/resources/META-INF/services/com.seleniumboot.driver.NamedDriverProvider` containing:
+```
+com.yourcompany.driver.EdgeDriverProvider
+```
+
+**2b. Or register programmatically** (before framework boot):
+```java
+DriverProviderRegistry.register(new EdgeDriverProvider());
+```
+
+**3. Set in config:**
+```yaml
+browser:
+  name: edge
+```
+
+---
+
+### Custom Report Adapter
+
+Deliver test results to any destination — Slack, email, Allure, etc.
+
+```java
+public class SlackReportAdapter implements ReportAdapter {
+
+    @Override
+    public String getName() { return "slack"; }
+
+    @Override
+    public void generate(File metricsJson) {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(metricsJson);
+        int failed = root.get("failedTests").asInt();
+        if (failed > 0) slackClient.post("❌ " + failed + " test(s) failed");
+    }
+}
+```
+
+Register via SPI (`com.seleniumboot.reporting.ReportAdapter`) or:
+```java
+ReportAdapterRegistry.register(new SlackReportAdapter());
+```
+
+The built-in HTML report is always generated; custom adapters run after it.
+
+---
+
+### Lifecycle Hooks
+
+React to suite and test events without subclassing any framework class.
+
+```java
+public class TimingHook implements ExecutionHook {
+
+    @Override
+    public void onTestEnd(String testId, String status) {
+        observability.record(testId, status);
+    }
+
+    @Override
+    public void onTestFailure(String testId, Throwable cause) {
+        alerting.notify(testId, cause.getMessage());
+    }
+}
+```
+
+Available events: `onSuiteStart`, `onSuiteEnd`, `onTestStart(testId)`, `onTestEnd(testId, status)`, `onTestFailure(testId, cause)`.
+
+Register via SPI (`com.seleniumboot.hooks.ExecutionHook`) or:
+```java
+HookRegistry.register(new TimingHook());
+```
+
+---
+
+### Plugin System
+
+Plugins combine driver providers, report adapters, and hooks into a single deployable unit, and gain access to the full framework config at load time.
+
+```java
+public class MyPlugin implements SeleniumBootPlugin {
+
+    @Override
+    public String getName() { return "my-plugin"; }
+
+    @Override
+    public void onLoad(SeleniumBootConfig config) {
+        // read config, register adapters/hooks/providers
+        ReportAdapterRegistry.register(new SlackReportAdapter());
+        HookRegistry.register(new TimingHook());
+    }
+
+    @Override
+    public void onUnload() {
+        // flush resources, close connections
+    }
+}
+```
+
+Register via SPI (`com.seleniumboot.extension.SeleniumBootPlugin`) or:
+```java
+PluginRegistry.register(new MyPlugin(), config);
+```
+
+---
+
+### Framework-safe Config Defaults
+
+Override framework defaults programmatically — ideal for shared test-base JARs that establish org-wide baselines, which individual projects override via their own `selenium-boot.yml`.
+
+```java
+// Call this before FrameworkBootstrap runs (e.g., in a static initializer)
+SeleniumBootDefaults.set("browser.name", "edge");
+SeleniumBootDefaults.set("timeouts.explicit", 15);
+SeleniumBootDefaults.set("execution.maxActiveSessions", 10);
+```
+
+YAML values always win over defaults set here.
+
+**Supported keys:** `browser.name`, `timeouts.explicit`, `timeouts.pageLoad`, `execution.maxActiveSessions`, `execution.threadCount`, `retry.maxAttempts`.
+
+---
+
 ## Project Status
+
+**v0.3.0 – Extensibility Release**
+
+Full extensibility layer — extend any part of the framework without forking it:
+
+- **Plugin system** — `SeleniumBootPlugin` + `PluginRegistry`; plugins discovered via Java SPI, activated at framework boot, unloaded after suite finish
+- **Custom driver providers** — `NamedDriverProvider` + `DriverProviderRegistry`; register Edge, Safari, or any browser provider via SPI or programmatically; takes precedence over built-in Chrome/Firefox providers
+- **Custom report adapters** — `ReportAdapter` + `ReportAdapterRegistry`; deliver results to Slack, email, Allure, or any destination; built-in HTML adapter always runs first
+- **Lifecycle hooks** — `ExecutionHook` + `HookRegistry`; react to `onSuiteStart`, `onSuiteEnd`, `onTestStart`, `onTestEnd`, `onTestFailure` without subclassing anything
+- **Framework-safe defaults** — `SeleniumBootDefaults`; programmatically set config defaults before YAML is applied; ideal for shared test-base JARs
+- **SPI descriptors** — four `META-INF/services/` files ready to populate for zero-config extension discovery
+- **Unit tests** — all five extension points covered: `PluginRegistryTest`, `HookRegistryTest`, `ReportAdapterRegistryTest`, `DriverProviderRegistryTest`, `SeleniumBootDefaultsTest`
+
+---
 
 **v0.2.0 – Enhancements Release**
 

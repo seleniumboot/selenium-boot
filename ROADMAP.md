@@ -16,9 +16,9 @@ The roadmap is intentionally opinionated and incremental. Each phase focuses on 
 
 ---
 
-## Phase 0 – Foundation (Current)
+## Phase 0 – Foundation
 
-**Status:** In Progress  
+**Status:** Complete
 **Goal:** Establish core vision, scope, and structure
 
 ### Deliverables
@@ -31,6 +31,7 @@ The roadmap is intentionally opinionated and incremental. Each phase focuses on 
 
 ## Phase 1 – MVP Core (v0.1)
 
+**Status:** Complete — released as v0.1.0
 **Goal:** Enable teams to run Selenium tests with minimal setup
 
 ### Features
@@ -54,6 +55,7 @@ The roadmap is intentionally opinionated and incremental. Each phase focuses on 
 
 ## Phase 2 – Stability & Observability (v0.2)
 
+**Status:** Complete — released as v0.2.0
 **Goal:** Improve reliability and execution transparency
 
 ### Features
@@ -68,19 +70,21 @@ The roadmap is intentionally opinionated and incremental. Each phase focuses on 
 
 ## Phase 3 – Extensibility Layer (v0.3)
 
+**Status:** Complete — releasing as v0.3.0
 **Goal:** Allow controlled customization without breaking conventions
 
 ### Features
-- Plugin-style extension points
-- Custom driver providers
-- Custom reporting adapters
-- Hook system for execution lifecycle events
-- Framework-safe overrides for defaults
+- ✅ Plugin-style extension points (`SeleniumBootPlugin` + `PluginRegistry`)
+- ✅ Custom driver providers (`NamedDriverProvider` + `DriverProviderRegistry`)
+- ✅ Custom reporting adapters (`ReportAdapter` + `ReportAdapterRegistry`)
+- ✅ Hook system for execution lifecycle events (`ExecutionHook` + `HookRegistry`)
+- ✅ Framework-safe overrides for defaults (`SeleniumBootDefaults`)
 
 ---
 
 ## Phase 4 – CI/CD & Enterprise Readiness (v0.4)
 
+**Status:** Next
 **Goal:** Seamless integration into enterprise pipelines
 
 ### Features
