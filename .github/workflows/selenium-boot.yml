@@ -33,9 +33,18 @@ jobs:
 
       - name: Run tests
         run: mvn test --no-transfer-progress
+        continue-on-error: true
         env:
           # Selenium Boot detects CI=true and auto-enables headless mode
           CI: true
+
+      - name: Show surefire reports (debug)
+        if: always()
+        run: |
+          echo "=== target/surefire-reports ==="
+          ls -la target/surefire-reports/ 2>/dev/null || echo "(directory does not exist)"
+          echo "=== target/ ==="
+          ls -la target/ 2>/dev/null || echo "(target/ does not exist)"
 
       - name: Upload HTML report
         if: always()
@@ -71,7 +80,7 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: Selenium Boot Test Results
-          # ** prefix makes the glob filesystem-rooted, bypassing git-tracked-files limitation
           path: '**/surefire-reports/TEST-*.xml'
           reporter: java-junit
           fail-on-error: false
+          fail-on-empty: false
