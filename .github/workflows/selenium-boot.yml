@@ -7,6 +7,11 @@ on:
     branches: [ master, main ]
   workflow_dispatch:
 
+# dorny/test-reporter needs checks:write to create Check Runs
+permissions:
+  checks: write
+  contents: read
+
 jobs:
   test:
     name: Run Selenium Tests
@@ -38,6 +43,7 @@ jobs:
         with:
           name: selenium-boot-report
           path: target/selenium-boot-report.html
+          if-no-files-found: ignore
           retention-days: 14
 
       - name: Upload JUnit XML results
@@ -46,6 +52,7 @@ jobs:
         with:
           name: test-results-xml
           path: target/surefire-reports/
+          if-no-files-found: ignore
           retention-days: 14
 
       - name: Upload metrics JSON
@@ -56,6 +63,7 @@ jobs:
           path: |
             target/selenium-boot-metrics.json
             target/metrics-history/
+          if-no-files-found: ignore
           retention-days: 30
 
       - name: Publish test results
@@ -63,5 +71,7 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: Selenium Boot Test Results
-          path: target/surefire-reports/TEST-*.xml
+          # ** prefix makes the glob filesystem-rooted, bypassing git-tracked-files limitation
+          path: '**/surefire-reports/TEST-*.xml'
           reporter: java-junit
+          fail-on-error: false
