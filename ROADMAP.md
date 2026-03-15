@@ -84,16 +84,16 @@ The roadmap is intentionally opinionated and incremental. Each phase focuses on 
 
 ## Phase 4 – CI/CD & Enterprise Readiness (v0.4)
 
-**Status:** Next
+**Status:** In Progress — releasing as v0.4.0
 **Goal:** Seamless integration into enterprise pipelines
 
 ### Features
-- CI-friendly execution modes
-- Parallel execution tuning for CI environments
-- Machine-readable execution outputs
-- Build failure strategies and thresholds
-- Docker-friendly execution support
-- Sample CI templates (GitHub Actions, Jenkins)
+- ✅ CI-friendly execution modes (`CiEnvironmentDetector` — GitHub Actions, Jenkins, CircleCI, GitLab CI, Travis, TeamCity, Bitbucket)
+- ✅ Parallel execution tuning for CI environments (thread count auto-derived from CPU cores)
+- ✅ Machine-readable execution outputs (`JUnitXmlReporter` → `target/surefire-reports/TEST-SeleniumBoot.xml`)
+- ✅ Build failure strategies and thresholds (`BuildThresholdEnforcer` — pass rate gate, flaky test gate)
+- ✅ Docker-friendly execution support (`--no-sandbox`, `--disable-dev-shm-usage` auto-applied in containers)
+- ✅ Sample CI templates (`.github/workflows/selenium-boot.yml`, `ci/Jenkinsfile`)
 
 ---
 

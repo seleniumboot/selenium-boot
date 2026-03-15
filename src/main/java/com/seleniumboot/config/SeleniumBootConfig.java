@@ -9,6 +9,7 @@ public final class SeleniumBootConfig {
     private Execution execution;
     private Retry retry;
     private Timeouts timeouts;
+    private Ci ci;
 
     // --- getters ---
     public Browser getBrowser() {
@@ -40,6 +41,13 @@ public final class SeleniumBootConfig {
     }
     public void setTimeouts(Timeouts timeouts) {
         this.timeouts = timeouts;
+    }
+
+    public Ci getCi() {
+        return ci;
+    }
+    public void setCi(Ci ci) {
+        this.ci = ci;
     }
     // =========================
 
@@ -179,6 +187,38 @@ public final class SeleniumBootConfig {
 
         public void setPageLoad(int pageLoad) {
             this.pageLoad = pageLoad;
+        }
+    }
+
+    /**
+     * CI/CD build quality gates.
+     * All thresholds are disabled by default (0 / -1).
+     */
+    public static final class Ci {
+        /**
+         * Minimum pass rate (0–100) required to pass the build.
+         * 0 means disabled. Example: 80 → build fails if fewer than 80% of tests pass.
+         */
+        private double failOnPassRateBelow = 0;
+
+        /**
+         * Maximum number of flaky tests (retried but eventually passed) allowed.
+         * -1 means disabled.
+         */
+        private int maxFlakyTests = -1;
+
+        public double getFailOnPassRateBelow() {
+            return failOnPassRateBelow;
+        }
+        public void setFailOnPassRateBelow(double failOnPassRateBelow) {
+            this.failOnPassRateBelow = failOnPassRateBelow;
+        }
+
+        public int getMaxFlakyTests() {
+            return maxFlakyTests;
+        }
+        public void setMaxFlakyTests(int maxFlakyTests) {
+            this.maxFlakyTests = maxFlakyTests;
         }
     }
 }

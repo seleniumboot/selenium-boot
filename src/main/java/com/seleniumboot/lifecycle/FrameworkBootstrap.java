@@ -1,5 +1,6 @@
 package com.seleniumboot.lifecycle;
 
+import com.seleniumboot.ci.CiEnvironmentDetector;
 import com.seleniumboot.config.ConfigurationLoader;
 import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.config.SeleniumBootDefaults;
@@ -28,6 +29,7 @@ public final class FrameworkBootstrap {
         }
         SeleniumBootConfig config = ConfigurationLoader.load();
         SeleniumBootDefaults.applyMissing(config);
+        applyCiOverrides(config);
         ExecutionValidator.validate(config.getExecution());
 
         SeleniumBootContext.initialize(config);
@@ -37,5 +39,41 @@ public final class FrameworkBootstrap {
         HookRegistry.loadAll();
         ReportAdapterRegistry.loadAll();
         PluginRegistry.loadAll(config);
+    }
+
+    /**
+     * When running in CI, auto-apply headless mode and tune thread count
+     * to available CPU cores — unless the user has explicitly configured them.
+     */
+    private static void applyCiOverrides(SeleniumBootConfig config) {
+        if (!CiEnvironmentDetector.isCI()) {
+            return;
+        }
+
+        System.out.println("[Selenium Boot] CI environment detected: "
+                + CiEnvironmentDetector.ciName());
+
+        // Force headless — CI agents never have a display
+        if (!config.getBrowser().isHeadless()) {
+            config.getBrowser().setHeadless(true);
+            System.out.println("[Selenium Boot] CI override: browser.headless=true");
+        }
+
+        // Auto-tune thread count to CPU cores when the user left the default (1)
+        SeleniumBootConfig.Execution execution = config.getExecution();
+        if (execution.getThreadCount() == 1 && !"none".equalsIgnoreCase(execution.getParallel())) {
+            int recommended = CiEnvironmentDetector.recommendedThreadCount(
+                    execution.getMaxActiveSessions());
+            if (recommended > 1) {
+                execution.setThreadCount(recommended);
+                System.out.println("[Selenium Boot] CI override: threadCount=" + recommended
+                        + " (derived from available CPU cores)");
+            }
+        }
+
+        if (CiEnvironmentDetector.isContainer()) {
+            System.out.println("[Selenium Boot] Container environment detected — "
+                    + "Docker/sandbox flags will be applied to browser options.");
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.seleniumboot.listeners;
 
+import com.seleniumboot.ci.BuildThresholdEnforcer;
 import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
@@ -7,6 +8,7 @@ import com.seleniumboot.lifecycle.FrameworkBootstrap;
 import com.seleniumboot.metrics.ExecutionMetrics;
 import com.seleniumboot.extension.PluginRegistry;
 import com.seleniumboot.hooks.HookRegistry;
+import com.seleniumboot.reporting.JUnitXmlReporter;
 import com.seleniumboot.reporting.ReportAdapterRegistry;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
@@ -68,9 +70,20 @@ public final class SuiteExecutionListener implements ISuiteListener {
     public void onFinish(ISuite suite) {
         ExecutionMetrics.printSummary();
         ExecutionMetrics.exportToJson();
+
+        // Machine-readable JUnit XML for CI test result parsing
+        JUnitXmlReporter.export(
+                ExecutionMetrics.getTimings(),
+                suite.getAllInvokedMethods().size() > 0
+                        ? System.currentTimeMillis() : 0L);
+
         ReportAdapterRegistry.generateAll();
         DriverManager.quitDriver();
         HookRegistry.onSuiteEnd();
         PluginRegistry.unloadAll();
+
+        // Build quality gates — must run last so all metrics are recorded
+        SeleniumBootConfig config = SeleniumBootContext.getConfig();
+        BuildThresholdEnforcer.enforce(config, ExecutionMetrics.getTimings());
     }
 }

@@ -14,6 +14,7 @@ public class TestTiming {
     }
 
     private long driverStartupTime;
+    private int retryCount;
 
     public String getTestId() {
         return testId;
@@ -61,5 +62,13 @@ public class TestTiming {
 
     public void setScreenshotPath(String screenshotPath) {
         this.screenshotPath = screenshotPath;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
+    }
+
+    public void incrementRetryCount() {
+        this.retryCount++;
     }
 }

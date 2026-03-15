@@ -58,6 +58,24 @@ public final class ExecutionMetrics {
     }
 
     // ==========================================================
+    // Retry Tracking
+    // ==========================================================
+
+    public static void recordRetry(String testId) {
+        TIMINGS.computeIfAbsent(testId,
+                id -> new TestTiming(id, Thread.currentThread().getName()))
+               .incrementRetryCount();
+    }
+
+    // ==========================================================
+    // Timings Snapshot (for reporters)
+    // ==========================================================
+
+    public static java.util.Collection<TestTiming> getTimings() {
+        return java.util.Collections.unmodifiableCollection(TIMINGS.values());
+    }
+
+    // ==========================================================
     // Test Status
     // ==========================================================
 

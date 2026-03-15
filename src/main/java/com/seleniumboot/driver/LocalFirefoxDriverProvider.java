@@ -1,5 +1,6 @@
 package com.seleniumboot.driver;
 
+import com.seleniumboot.ci.CiEnvironmentDetector;
 import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.internal.SeleniumBootContext;
 import org.openqa.selenium.WebDriver;
@@ -34,6 +35,11 @@ public class LocalFirefoxDriverProvider implements DriverProvider{
 
         if (config.getBrowser().isHeadless()) {
             options.addArguments("-headless");
+        }
+
+        // Docker/container: set explicit window size for consistent rendering
+        if (CiEnvironmentDetector.isContainer()) {
+            options.addArguments("--width=1920", "--height=1080");
         }
 
         WebDriver driver = new FirefoxDriver(options);

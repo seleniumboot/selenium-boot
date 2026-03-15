@@ -1,5 +1,6 @@
 package com.seleniumboot.driver;
 
+import com.seleniumboot.ci.CiEnvironmentDetector;
 import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.internal.SeleniumBootContext;
 import org.openqa.selenium.WebDriver;
@@ -32,6 +33,17 @@ public class LocalChromeDriverProvider implements DriverProvider {
         if (config.getBrowser().isHeadless()) {
             options.addArguments("--headless=new");
         }
+
+        // Docker/container: Chrome requires these flags to run without a real display
+        if (CiEnvironmentDetector.isContainer()) {
+            options.addArguments(
+                    "--no-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
+                    "--window-size=1920,1080"
+            );
+        }
+
         if (arguments != null) {
             options.addArguments(arguments);
         }
