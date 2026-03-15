@@ -15,6 +15,9 @@ public class TestTiming {
 
     private long driverStartupTime;
     private int retryCount;
+    private String errorMessage;
+    private String stackTrace;
+    private String testClassName;
 
     public String getTestId() {
         return testId;
@@ -71,4 +74,17 @@ public class TestTiming {
     public void incrementRetryCount() {
         this.retryCount++;
     }
+
+    public String getErrorMessage() { return errorMessage; }
+    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+
+    public String getStackTrace() { return stackTrace; }
+    public void setStackTrace(String stackTrace) { this.stackTrace = stackTrace; }
+
+    public String getTestClassName() { return testClassName; }
+    public void setTestClassName(String testClassName) { this.testClassName = testClassName; }
+
+    private String description;
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 }

@@ -38,6 +38,8 @@ public final class TestExecutionListener implements ITestListener {
         String testId = result.getMethod().getQualifiedName();
         SeleniumBootContext.setCurrentTestId(testId);
         ExecutionMetrics.markStart(testId);
+        ExecutionMetrics.recordTestClass(testId, result.getTestClass().getRealClass().getSimpleName());
+        ExecutionMetrics.recordDescription(testId, result.getMethod().getDescription());
         DriverManager.createDriver();
         HookRegistry.onTestStart(testId);
     }
@@ -58,6 +60,9 @@ public final class TestExecutionListener implements ITestListener {
         String testId = result.getMethod().getQualifiedName();
         ExecutionMetrics.recordStatus(testId, "FAILED");
         ExecutionMetrics.markEnd(testId);
+        if (result.getThrowable() != null) {
+            ExecutionMetrics.recordError(testId, result.getThrowable());
+        }
         HookRegistry.onTestFailure(testId, result.getThrowable());
         String screenshotPath = ScreenshotManager.capture(testName);
         ExecutionMetrics.recordScreenshot(testId, screenshotPath);

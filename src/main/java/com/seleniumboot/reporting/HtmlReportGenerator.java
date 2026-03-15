@@ -114,22 +114,20 @@ public final class HtmlReportGenerator {
 
     private static String buildScreenshotCell(JsonNode test) {
         if (!test.has("screenshotPath")) {
-            return "<span style=\"color:#bdbdbd\">—</span>";
+            return "<span class=\"no-screenshot\">—</span>";
         }
         File screenshotFile = new File(test.get("screenshotPath").asText());
         if (!screenshotFile.exists()) {
-            return "<span style=\"color:#bdbdbd\">—</span>";
+            return "<span class=\"no-screenshot\">—</span>";
         }
         try {
             byte[] bytes = Files.readAllBytes(screenshotFile.toPath());
             String base64 = Base64.getEncoder().encodeToString(bytes);
-            return "<img src=\"data:image/png;base64," + base64 + "\" " +
-                   "style=\"max-width:160px;max-height:90px;border-radius:4px;" +
-                   "border:1px solid #e0e0e0;cursor:pointer\" " +
-                   "onclick=\"this.style.maxWidth=this.style.maxWidth==='none'?'160px':'none'\" " +
-                   "title=\"Click to expand\" />";
-        } catch (Exception e) {
-            return "<span style=\"color:#e53935\">load error</span>";
+            String src = "data:image/png;base64," + base64;
+            return "<img src=\"" + src + "\" class=\"screenshot-thumb\" "
+                   + "onclick=\"openLightbox(this.src)\" title=\"Click to view full size\" />";
+        } catch (java.io.IOException e) {
+            return "<span class=\"screenshot-error\">load error</span>";
         }
     }
 
@@ -147,33 +145,7 @@ public final class HtmlReportGenerator {
                         ? root.get("executionPercentilesMs").toString()
                         : "{}";
 
-        String driverPercentiles =
-                root.has("driverStartupPercentilesMs")
-                        ? root.get("driverStartupPercentilesMs").toString()
-                        : "{}";
-
         String metadataSection = buildMetadataSection(root);
-
-        StringBuilder rows = new StringBuilder();
-
-        for (JsonNode test : root.get("tests")) {
-
-            String status = test.has("status") ? test.get("status").asText() : "UNKNOWN";
-            String statusClass = "status-" + status.toLowerCase();
-
-            String screenshotCell = buildScreenshotCell(test);
-
-            rows.append("<tr>")
-                    .append("<td class=\"test-id\">").append(test.get("testId").asText()).append("</td>")
-                    .append("<td>").append(test.get("thread").asText()).append("</td>")
-                    .append("<td><span class=\"status-badge ").append(statusClass).append("\">")
-                    .append(status).append("</span></td>")
-                    .append("<td class=\"numeric\">").append(test.get("driverStartupMs").asLong()).append("</td>")
-                    .append("<td class=\"numeric\">").append(test.get("testLogicMs").asLong()).append("</td>")
-                    .append("<td class=\"numeric\">").append(test.get("totalMs").asLong()).append("</td>")
-                    .append("<td>").append(screenshotCell).append("</td>")
-                    .append("</tr>");
-        }
 
         int totalTests    = root.has("totalTests")    ? root.get("totalTests").asInt()    : 0;
         int passedTests   = root.has("passedTests")   ? root.get("passedTests").asInt()   : 0;
@@ -181,6 +153,43 @@ public final class HtmlReportGenerator {
         int skippedTests  = root.has("skippedTests")  ? root.get("skippedTests").asInt()  : 0;
         long totalTimeMs   = root.has("totalTimeMs")   ? root.get("totalTimeMs").asLong()  : 0L;
         long averageTimeMs = root.has("averageTimeMs") ? root.get("averageTimeMs").asLong(): 0L;
+        double passRate    = root.has("passRate")       ? root.get("passRate").asDouble()   : 0.0;
+        int flakyTests     = root.has("flakyTests")     ? root.get("flakyTests").asInt()    : 0;
+        int recoveredTests = root.has("recoveredTests") ? root.get("recoveredTests").asInt(): 0;
+
+        String passRateClass = passRate >= 80 ? "rate-good" : passRate >= 60 ? "rate-warn" : "rate-bad";
+        String passRateStr   = String.format("%.1f", passRate);
+
+        String donutData = String.format(
+                "{\"passed\":%d,\"failed\":%d,\"skipped\":%d}", passedTests, failedTests, skippedTests);
+
+        JsonNode tests = root.has("tests") ? root.get("tests") : null;
+
+        StringBuilder rows = new StringBuilder();
+        if (tests != null) {
+            // Group tests by class name preserving insertion order
+            java.util.Map<String, java.util.List<JsonNode>> byClass = new java.util.LinkedHashMap<>();
+            for (JsonNode test : tests) {
+                String cls = test.has("testClassName") ? test.get("testClassName").asText() : "";
+                if (cls.isEmpty()) cls = "Unknown";
+                byClass.computeIfAbsent(cls, k -> new java.util.ArrayList<>()).add(test);
+            }
+            int rowIndex = 0;
+            for (java.util.Map.Entry<String, java.util.List<JsonNode>> entry : byClass.entrySet()) {
+                String groupId  = entry.getKey();
+                java.util.List<JsonNode> members = entry.getValue();
+                long groupPassed  = members.stream().filter(t -> "PASSED".equals(t.has("status") ? t.get("status").asText() : "")).count();
+                long groupFailed  = members.stream().filter(t -> "FAILED".equals(t.has("status") ? t.get("status").asText() : "")).count();
+                long groupSkipped = members.stream().filter(t -> "SKIPPED".equals(t.has("status") ? t.get("status").asText() : "")).count();
+                rows.append(buildGroupHeader(groupId, members.size(), groupPassed, groupFailed, groupSkipped));
+                for (JsonNode test : members) {
+                    rows.append(buildRow(test, rowIndex++, groupId));
+                }
+            }
+        }
+
+        String retrySection   = buildRetrySection(flakyTests, recoveredTests);
+        String slowestSection = tests != null ? buildSlowestTests(tests) : "";
 
         String template = loadTemplate();
 
@@ -192,9 +201,134 @@ public final class HtmlReportGenerator {
                 .replace("{{TOTAL_TESTS}}", String.valueOf(totalTests))
                 .replace("{{TOTAL_TIME_MS}}", String.valueOf(totalTimeMs))
                 .replace("{{AVG_TIME_MS}}", String.valueOf(averageTimeMs))
+                .replace("{{PASS_RATE}}", passRateStr)
+                .replace("{{PASS_RATE_CLASS}}", passRateClass)
+                .replace("{{FLAKY_TESTS}}", String.valueOf(flakyTests))
+                .replace("{{RECOVERED_TESTS}}", String.valueOf(recoveredTests))
+                .replace("{{RETRY_SECTION}}", retrySection)
+                .replace("{{SLOWEST_TESTS}}", slowestSection)
+                .replace("{{DONUT_DATA}}", donutData)
                 .replace("{{ROWS}}", rows.toString())
-                .replace("{{EXECUTION_PERCENTILES}}", executionPercentiles.replace("'", "\\'"))
-                .replace("{{DRIVER_PERCENTILES}}", driverPercentiles.replace("'", "\\'"));
+                .replace("{{EXECUTION_PERCENTILES}}", executionPercentiles.replace("'", "\\'"));
+    }
+
+    private static String buildGroupHeader(String groupId, int total, long passed, long failed, long skipped) {
+        String groupKey = escapeHtml(groupId);
+        String badges = "";
+        if (passed  > 0) badges += "<span class=\"status-badge status-passed\">"  + passed  + " passed</span> ";
+        if (failed  > 0) badges += "<span class=\"status-badge status-failed\">"  + failed  + " failed</span> ";
+        if (skipped > 0) badges += "<span class=\"status-badge status-skipped\">" + skipped + " skipped</span>";
+        // collapsed by default — icon starts with 'closed' class, members start hidden
+        return "<tr class=\"group-header\" data-group=\"" + groupKey + "\" onclick=\"toggleGroup('" + groupKey + "')\">"
+                + "<td colspan=\"7\">"
+                + "<span class=\"group-icon closed\" id=\"gicon-" + groupKey + "\">&#x25BC;</span> "
+                + "<strong>" + groupKey + "</strong>"
+                + "<span class=\"group-count\"> &mdash; " + total + " test" + (total != 1 ? "s" : "") + "</span>"
+                + " &nbsp;" + badges
+                + "</td>"
+                + "</tr>";
+    }
+
+    private static String buildRow(JsonNode test, int rowIndex, String groupId) {
+        String status      = test.has("status")      ? test.get("status").asText()      : "UNKNOWN";
+        String statusClass = "status-" + status.toLowerCase();
+        String rawTestId   = test.has("testId")      ? test.get("testId").asText()      : "";
+        int lastDot        = rawTestId.lastIndexOf('.');
+        String methodName  = escapeHtml(lastDot >= 0 ? rawTestId.substring(lastDot + 1) : rawTestId);
+        String description = test.has("description") ? escapeHtml(test.get("description").asText()) : "";
+        long   logicMs     = test.has("testLogicMs") ? test.get("testLogicMs").asLong() : 0L;
+        long   totalMs     = test.has("totalMs")     ? test.get("totalMs").asLong()     : 0L;
+        int    retryCount  = test.has("retryCount")  ? test.get("retryCount").asInt()   : 0;
+        String errorMsg    = test.has("errorMessage") ? test.get("errorMessage").asText() : null;
+        String stackTrace  = test.has("stackTrace")   ? test.get("stackTrace").asText()  : null;
+        String screenshotCell = buildScreenshotCell(test);
+        String groupKey    = escapeHtml(groupId);
+
+        String retryBadge = retryCount > 0
+                ? "<span class=\"retry-badge\">&#x21bb; " + retryCount + "x</span> "
+                : "";
+
+        boolean hasDetail = errorMsg != null || stackTrace != null;
+        String detailRow = "";
+        if (hasDetail) {
+            String errorHtml = errorMsg   != null ? "<div class=\"error-msg\">"   + escapeHtml(errorMsg)   + "</div>" : "";
+            String traceHtml = stackTrace != null ? "<pre class=\"stack-trace\">" + escapeHtml(stackTrace) + "</pre>" : "";
+            detailRow = "<tr class=\"detail-row group-member\" data-group=\"" + groupKey + "\" id=\"detail-" + rowIndex + "\" style=\"display:none\">"
+                    + "<td colspan=\"7\"><div class=\"detail-panel\">" + errorHtml + traceHtml + "</div></td>"
+                    + "</tr>";
+        }
+
+        String rowClass  = "group-member" + (hasDetail ? " expandable" : "");
+        String clickAttr = hasDetail ? " onclick=\"toggleDetail(" + rowIndex + ")\"" : "";
+
+        // members start hidden — collapsed by default
+        return "<tr class=\"" + rowClass + "\""
+                + clickAttr
+                + " style=\"display:none\""
+                + " data-group=\"" + groupKey + "\""
+                + " data-status=\"" + status + "\""
+                + " data-test=\"" + methodName.toLowerCase() + "\">"
+                + "<td class=\"test-id\">" + retryBadge + methodName + "</td>"
+                + "<td class=\"desc-cell\">" + description + "</td>"
+                + "<td><span class=\"status-badge " + statusClass + "\">" + status + "</span></td>"
+                + "<td class=\"numeric\">" + logicMs + "</td>"
+                + "<td class=\"numeric\">" + totalMs + "</td>"
+                + "<td>" + screenshotCell + "</td>"
+                + "<td>" + (hasDetail ? "<span class=\"expand-icon\" id=\"icon-" + rowIndex + "\">&#x25BC;</span>" : "") + "</td>"
+                + "</tr>"
+                + detailRow;
+    }
+
+    private static String buildRetrySection(int flakyTests, int recoveredTests) {
+        if (flakyTests == 0) return "";
+        int stillFailing = flakyTests - recoveredTests;
+        return "<div class=\"card section-mb\">"
+                + "<div class=\"card-header\">Retry Summary</div>"
+                + "<div class=\"card-body\">"
+                + "<div class=\"summary-row retry-summary-row\">"
+                + "<div class=\"card stat-card\"><div class=\"stat-value stat-value-warn\">" + flakyTests + "</div><div class=\"stat-label\">Retried</div></div>"
+                + "<div class=\"card stat-card\"><div class=\"stat-value stat-value-good\">" + recoveredTests + "</div><div class=\"stat-label\">Recovered</div></div>"
+                + "<div class=\"card stat-card\"><div class=\"stat-value stat-value-bad\">"  + stillFailing + "</div><div class=\"stat-label\">Still Failing</div></div>"
+                + "</div></div></div>";
+    }
+
+    private static String buildSlowestTests(JsonNode tests) {
+        java.util.List<JsonNode> list = new java.util.ArrayList<>();
+        tests.forEach(list::add);
+        list.sort((a, b) -> Long.compare(
+                b.has("totalMs") ? b.get("totalMs").asLong() : 0L,
+                a.has("totalMs") ? a.get("totalMs").asLong() : 0L));
+        int count = Math.min(5, list.size());
+        long max = count > 0 && list.get(0).has("totalMs") ? list.get(0).get("totalMs").asLong() : 1L;
+        if (max == 0) max = 1L;
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            JsonNode t = list.get(i);
+            String rawId = t.has("testId") ? t.get("testId").asText() : "unknown";
+            int dot      = rawId.lastIndexOf('.');
+            String name  = escapeHtml(dot >= 0 ? rawId.substring(dot + 1) : rawId);
+            long   ms    = t.has("totalMs") ? t.get("totalMs").asLong() : 0L;
+            int    pct   = (int) (ms * 100 / max);
+            sb.append("<div class=\"slow-item\">")
+              .append("<span class=\"slow-name\">").append(name).append("</span>")
+              .append("<div class=\"slow-bar-wrap\"><div class=\"slow-bar\" style=\"width:").append(pct).append("%\"></div></div>")
+              .append("<span class=\"slow-ms\">").append(ms).append(" ms</span>")
+              .append("</div>");
+        }
+        return sb.toString();
+    }
+
+    private static String escapeHtml(String value) {
+        if (value == null) return "";
+        return value.replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                    .replace("\"", "&quot;");
+    }
+
+    private static String safeStr(JsonNode node, String field) {
+        return node.has(field) ? node.get(field).asText("") : "";
     }
 
     private static String loadTemplate() {

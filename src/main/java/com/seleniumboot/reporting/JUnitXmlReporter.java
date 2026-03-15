@@ -50,10 +50,12 @@ public final class JUnitXmlReporter {
 
             switch (status) {
                 case "FAILED":
+                    String msg = t.getErrorMessage() != null ? t.getErrorMessage() : "Test failed";
+                    String trace = t.getStackTrace() != null ? t.getStackTrace() : t.getTestId() + " FAILED";
                     xml.append(">\n");
-                    xml.append("    <failure message=\"Test failed\">")
-                       .append(escapeXml(t.getTestId()))
-                       .append(" FAILED</failure>\n");
+                    xml.append("    <failure message=\"").append(escapeXml(msg)).append("\">")
+                       .append(escapeXml(trace))
+                       .append("</failure>\n");
                     xml.append("  </testcase>\n");
                     break;
                 case "SKIPPED":

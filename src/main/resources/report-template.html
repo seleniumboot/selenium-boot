@@ -4,106 +4,221 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Selenium Boot Report</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" onerror="window.Chart=function(){this.destroy=function(){}};Chart.prototype={};"></script>
     <style>
+        :root {
+            --bg: #f5f5f5;
+            --surface: #ffffff;
+            --surface2: #fafafa;
+            --text: #212121;
+            --text-secondary: #757575;
+            --border: #e0e0e0;
+            --primary: #303f9f;
+            --primary-light: #e8eaf6;
+            --hover: #e8eaf6;
+            --good: #2e7d32;
+            --warn: #e65100;
+            --bad: #c62828;
+            --good-bg: #e8f5e9;
+            --warn-bg: #fff3e0;
+            --bad-bg: #ffebee;
+            --code-bg: #263238;
+            --code-text: #eceff1;
+        }
+        [data-theme="dark"] {
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --surface2: #252525;
+            --text: #e0e0e0;
+            --text-secondary: #9e9e9e;
+            --border: #333333;
+            --primary: #5c6bc0;
+            --primary-light: #1a237e22;
+            --hover: #2a2a3a;
+            --good: #66bb6a;
+            --warn: #ffa726;
+            --bad: #ef5350;
+            --good-bg: #1b3a1e;
+            --warn-bg: #3e2200;
+            --bad-bg: #3b1212;
+            --code-bg: #1a1a1a;
+            --code-text: #cfd8dc;
+        }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Roboto', sans-serif; background: #f5f5f5; color: #212121; }
+        body { font-family: 'Roboto', sans-serif; background: var(--bg); color: var(--text); transition: background .2s, color .2s; }
 
         .app-bar {
-            background: #303f9f;
+            background: var(--primary);
             color: #fff;
-            padding: 24px 32px;
-            box-shadow: 0 2px 4px rgba(0,0,0,.14), 0 3px 4px rgba(0,0,0,.12), 0 1px 5px rgba(0,0,0,.2);
-            position: sticky; top: 0; z-index: 10;
+            padding: 20px 32px;
+            box-shadow: 0 2px 4px rgba(0,0,0,.2);
+            position: sticky; top: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
         }
-        .app-bar h1 { font-size: 20px; font-weight: 500; letter-spacing: .5px; }
-        .app-bar p  { font-size: 14px; font-weight: 300; opacity: .85; margin-top: 4px; }
+        .app-bar-left h1 { font-size: 20px; font-weight: 500; letter-spacing: .5px; }
+        .app-bar-left p  { font-size: 13px; font-weight: 300; opacity: .85; margin-top: 2px; }
+        .dark-toggle {
+            background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+            color: #fff; border-radius: 20px; padding: 6px 14px; font-size: 13px;
+            cursor: pointer; transition: background .2s;
+        }
+        .dark-toggle:hover { background: rgba(255,255,255,.25); }
 
-        .content { max-width: 1200px; margin: 0 auto; padding: 24px 16px 48px; }
+        .content { max-width: 1280px; margin: 0 auto; padding: 24px 16px 56px; }
 
         .card {
-            background: #fff; border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.06);
-            transition: box-shadow .2s, transform .2s;
+            background: var(--surface); border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+            transition: box-shadow .2s, transform .2s, background .2s;
         }
-        .card:hover {
-            box-shadow: 0 4px 6px rgba(0,0,0,.12), 0 2px 4px rgba(0,0,0,.08);
-            transform: translateY(-2px);
-        }
-        .card-header { padding: 16px 24px; font-size: 16px; font-weight: 500; color: #424242; border-bottom: 1px solid #e0e0e0; }
-        .card-body   { padding: 24px; }
+        .card:hover { box-shadow: 0 4px 8px rgba(0,0,0,.1); transform: translateY(-1px); }
+        .card-header { padding: 14px 24px; font-size: 15px; font-weight: 500; color: var(--text); border-bottom: 1px solid var(--border); }
+        .card-body   { padding: 20px 24px; }
 
-        .summary-row { display: flex; gap: 16px; margin-bottom: 24px; }
-        .stat-card   { flex: 1; text-align: center; padding: 24px 16px; }
-        .stat-value  { font-size: 36px; font-weight: 700; color: #303f9f; }
-        .stat-label  { font-size: 13px; font-weight: 400; color: #757575; margin-top: 8px; text-transform: uppercase; letter-spacing: .5px; }
+        /* ── Stat cards ── */
+        .summary-row { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+        .stat-card   { flex: 1; min-width: 120px; text-align: center; padding: 20px 12px; }
+        .stat-value  { font-size: 34px; font-weight: 700; color: var(--primary); }
+        .stat-label  { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-top: 6px; text-transform: uppercase; letter-spacing: .6px; }
+        .passed-card  .stat-value { color: var(--good); }
+        .failed-card  .stat-value { color: var(--bad); }
+        .skipped-card .stat-value { color: var(--warn); }
+        .rate-good { color: var(--good) !important; }
+        .rate-warn { color: var(--warn) !important; }
+        .rate-bad  { color: var(--bad)  !important; }
 
-        .charts-row { display: flex; gap: 16px; margin-bottom: 24px; }
-        .chart-card { flex: 1; }
-        .chart-card canvas { width: 100% !important; height: 280px !important; }
+        /* ── Charts ── */
+        .charts-row { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+        .chart-card { flex: 1; min-width: 280px; }
+        .chart-card canvas { width: 100% !important; height: 260px !important; }
 
-        .table-card { margin-bottom: 24px; overflow: hidden; }
+        /* ── Slowest tests ── */
+        .slow-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .slow-name { font-size: 13px; color: var(--text); min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'Roboto Mono', monospace; }
+        .slow-bar-wrap { width: 160px; height: 8px; background: var(--border); border-radius: 4px; flex-shrink: 0; }
+        .slow-bar { height: 8px; background: var(--primary); border-radius: 4px; }
+        .slow-ms { font-size: 12px; color: var(--text-secondary); width: 70px; text-align: right; flex-shrink: 0; }
+
+        /* ── Layout helpers ── */
+        .card-body-centered { display: flex; justify-content: center; align-items: center; padding: 20px 24px; }
+        .donut-canvas { max-width: 260px; max-height: 260px; }
+        .section-mb { margin-bottom: 20px; }
+        .search-icon { color: var(--text-secondary); margin-right: 6px; }
+        .retry-summary-row { margin-bottom: 0; }
+        .stat-value-warn { color: var(--warn); }
+        .stat-value-good { color: var(--good); }
+        .stat-value-bad  { color: var(--bad); }
+
+        /* ── Group header rows ── */
+        .group-header { background: var(--primary-light) !important; cursor: pointer; -webkit-user-select: none; user-select: none; }
+        .group-header td { padding: 10px 16px; font-size: 13px; font-weight: 500; color: var(--text); border-bottom: 2px solid var(--primary); }
+        .group-header:hover { background: var(--hover) !important; }
+        .group-icon { font-size: 10px; margin-right: 6px; display: inline-block; transition: transform .2s; }
+        .group-icon.closed { transform: rotate(-90deg); }
+        .group-count { font-weight: 400; color: var(--text-secondary); font-size: 12px; }
+        .group-member td { padding-left: 28px; }
+        .desc-cell { font-size: 12px; color: var(--text-secondary); font-style: italic; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* ── Screenshot thumbnail ── */
+        .screenshot-thumb { width: 120px; height: 68px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); cursor: zoom-in; transition: opacity .15s; display: block; }
+        .screenshot-thumb:hover { opacity: .85; }
+        .screenshot-error { font-size: 12px; color: var(--bad); }
+        .no-screenshot { color: var(--border); }
+
+        /* ── Lightbox ── */
+        .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 9999; align-items: center; justify-content: center; }
+        .lightbox.open { display: flex; }
+        .lightbox img { max-width: 92vw; max-height: 92vh; border-radius: 6px; box-shadow: 0 8px 40px rgba(0,0,0,.6); }
+        .lightbox-close { position: fixed; top: 18px; right: 24px; color: #fff; font-size: 32px; cursor: pointer; line-height: 1; opacity: .8; }
+        .lightbox-close:hover { opacity: 1; }
+
+        /* ── Filter + search bar ── */
+        .filter-bar { display: flex; align-items: center; gap: 10px; padding: 14px 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+        .filter-btn { border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); border-radius: 16px; padding: 4px 14px; font-size: 13px; cursor: pointer; transition: all .15s; }
+        .filter-btn:hover, .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .search-wrap { margin-left: auto; display: flex; align-items: center; border: 1px solid var(--border); border-radius: 20px; padding: 4px 14px; background: var(--surface2); }
+        .search-wrap input { border: none; background: transparent; outline: none; font-size: 13px; color: var(--text); width: 200px; }
+        .search-wrap input::placeholder { color: var(--text-secondary); }
+
+        /* ── Table ── */
+        .table-card { margin-bottom: 20px; overflow: hidden; }
+        .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         thead th {
-            background: #303f9f; color: #fff;
-            padding: 12px 16px; font-size: 13px; font-weight: 500;
+            background: var(--primary); color: #fff;
+            padding: 11px 14px; font-size: 12px; font-weight: 500;
             text-transform: uppercase; letter-spacing: .5px; text-align: left;
+            white-space: nowrap;
         }
-        tbody td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid #e0e0e0; }
-        tbody tr:nth-child(even) { background: #fafafa; }
-        tbody tr:hover { background: #e8eaf6; }
-        td.test-id { font-family: 'Roboto Mono', monospace; font-size: 13px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        tbody td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+        tbody tr:nth-child(even):not(.detail-row) { background: var(--surface2); }
+        tbody tr.expandable:hover { background: var(--hover); cursor: pointer; }
+        td.test-id { font-family: 'Roboto Mono', monospace; font-size: 12px; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         td.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+        .hidden-row { display: none; }
 
-        .meta-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 16px;
-        }
-        .meta-item {
-            display: flex; flex-direction: column;
-            padding: 12px 16px;
-            background: #f5f5f5; border-radius: 6px;
-            border-left: 3px solid #303f9f;
-        }
-        .meta-label {
-            font-size: 11px; font-weight: 500; color: #757575;
-            text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px;
-        }
-        .meta-value {
-            font-size: 14px; font-weight: 500; color: #212121;
-            word-break: break-all;
+        /* ── Status badges ── */
+        .status-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; letter-spacing: .3px; }
+        .status-passed  { background: var(--good-bg); color: var(--good); }
+        .status-failed  { background: var(--bad-bg);  color: var(--bad); }
+        .status-skipped { background: var(--warn-bg); color: var(--warn); }
+        .status-unknown { background: var(--border);  color: var(--text-secondary); }
+
+        /* ── Retry badge ── */
+        .retry-badge { display: inline-block; background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 1px 7px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+
+        /* ── Expand icon ── */
+        .expand-icon { color: var(--text-secondary); font-size: 11px; transition: transform .2s; }
+        .expand-icon.open { transform: rotate(180deg); display: inline-block; }
+
+        /* ── Detail / error panel ── */
+        .detail-row td { padding: 0; }
+        .detail-panel { padding: 16px 24px; background: var(--surface2); border-top: 2px solid var(--bad); }
+        .error-msg { font-size: 13px; font-weight: 600; color: var(--bad); margin-bottom: 10px; }
+        .stack-trace {
+            font-family: 'Roboto Mono', monospace; font-size: 12px; color: var(--code-text);
+            background: var(--code-bg); padding: 14px; border-radius: 6px;
+            max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
         }
 
-        .passed-card  .stat-value { color: #2e7d32; }
-        .failed-card  .stat-value { color: #c62828; }
-        .skipped-card .stat-value { color: #e65100; }
+        /* ── Metadata ── */
+        .meta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+        .meta-item { display: flex; flex-direction: column; padding: 10px 14px; background: var(--surface2); border-radius: 6px; border-left: 3px solid var(--primary); }
+        .meta-label { font-size: 11px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+        .meta-value { font-size: 13px; font-weight: 500; color: var(--text); word-break: break-all; }
 
-        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
-        .status-passed  { background: #e8f5e9; color: #2e7d32; }
-        .status-failed  { background: #ffebee; color: #c62828; }
-        .status-skipped { background: #fff3e0; color: #e65100; }
-        .status-unknown { background: #f5f5f5; color: #757575; }
-
-        .footer { text-align: center; padding: 16px; font-size: 12px; color: #9e9e9e; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: var(--text-secondary); }
 
         @media (max-width: 768px) {
             .summary-row, .charts-row { flex-direction: column; }
-            .app-bar { padding: 16px; }
-            .content  { padding: 16px 8px; }
+            .app-bar { padding: 14px 16px; }
+            .content  { padding: 14px 8px; }
+            .search-wrap input { width: 140px; }
         }
     </style>
 </head>
 <body>
 
 <div class="app-bar">
-    <h1>Selenium Boot Report</h1>
-    <p>Execution Metrics &amp; Performance Analysis</p>
+    <div class="app-bar-left">
+        <h1>Selenium Boot Report</h1>
+        <p>Execution Metrics &amp; Performance Analysis</p>
+    </div>
+    <button type="button" class="dark-toggle" onclick="toggleDark()">&#9790; Dark Mode</button>
+</div>
+
+<!-- Lightbox modal -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+    <img id="lightbox-img" src="" alt="Screenshot">
 </div>
 
 <div class="content">
+
     {{METADATA}}
+
+    <!-- Pass rate + stat cards -->
     <div class="summary-row">
         <div class="card stat-card passed-card">
             <div class="stat-value">{{PASSED}}</div>
@@ -117,15 +232,13 @@
             <div class="stat-value">{{SKIPPED}}</div>
             <div class="stat-label">Skipped</div>
         </div>
-    </div>
-    <div class="summary-row">
         <div class="card stat-card">
             <div class="stat-value">{{TOTAL_TESTS}}</div>
             <div class="stat-label">Total Tests</div>
         </div>
         <div class="card stat-card">
-            <div class="stat-value">{{TOTAL_TIME_MS}}</div>
-            <div class="stat-label">Total Time (ms)</div>
+            <div class="stat-value {{PASS_RATE_CLASS}}">{{PASS_RATE}}%</div>
+            <div class="stat-label">Pass Rate</div>
         </div>
         <div class="card stat-card">
             <div class="stat-value">{{AVG_TIME_MS}}</div>
@@ -133,90 +246,189 @@
         </div>
     </div>
 
+    <!-- Charts row -->
     <div class="charts-row">
         <div class="card chart-card">
-            <div class="card-header">Execution Time Percentiles</div>
-            <div class="card-body"><canvas id="executionChart"></canvas></div>
+            <div class="card-header">Pass / Fail / Skip</div>
+            <div class="card-body-centered">
+                <canvas id="donutChart" class="donut-canvas"></canvas>
+            </div>
         </div>
         <div class="card chart-card">
-            <div class="card-header">Driver Startup Percentiles</div>
-            <div class="card-body"><canvas id="driverChart"></canvas></div>
+            <div class="card-header">Execution Time Percentiles (ms)</div>
+            <div class="card-body"><canvas id="executionChart"></canvas></div>
         </div>
     </div>
 
+    <!-- Retry summary (rendered only when flakyTests > 0) -->
+    {{RETRY_SECTION}}
+
+    <!-- Slowest 5 tests -->
+    <div class="card section-mb">
+        <div class="card-header">Slowest 5 Tests</div>
+        <div class="card-body">
+            {{SLOWEST_TESTS}}
+        </div>
+    </div>
+
+    <!-- Test details table -->
     <div class="card table-card">
         <div class="card-header">Test Details</div>
-        <table>
+        <div class="filter-bar">
+            <button type="button" class="filter-btn active" onclick="setFilter('ALL', this)">All</button>
+            <button type="button" class="filter-btn" onclick="setFilter('PASSED', this)">Passed</button>
+            <button type="button" class="filter-btn" onclick="setFilter('FAILED', this)">Failed</button>
+            <button type="button" class="filter-btn" onclick="setFilter('SKIPPED', this)">Skipped</button>
+            <button type="button" class="filter-btn" onclick="setFilter('FLAKY', this)">Flaky</button>
+            <div class="search-wrap">
+                <span class="search-icon">&#128269;</span>
+                <input type="text" id="searchInput" placeholder="Search by test or class..." oninput="applySearch()">
+            </div>
+        </div>
+        <div class="table-wrap">
+        <table id="testTable">
             <thead>
                 <tr>
                     <th>Test</th>
-                    <th>Thread</th>
+                    <th>Description</th>
                     <th>Status</th>
-                    <th>Driver Startup (ms)</th>
-                    <th>Test Logic (ms)</th>
+                    <th>Logic (ms)</th>
                     <th>Total (ms)</th>
                     <th>Screenshot</th>
+                    <th>Detail</th>
                 </tr>
             </thead>
             <tbody>
                 {{ROWS}}
             </tbody>
         </table>
+        </div>
     </div>
 
-    <div class="footer">Report generated by Selenium Boot</div>
-
+    <div class="footer">Report generated by <strong>Selenium Boot</strong> &mdash; {{TOTAL_TIME_MS}} ms total execution time</div>
 </div>
 
 <script>
+// ── Lightbox ──
+function openLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.getElementById('lightbox-img').src = '';
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+});
 
-const executionData = JSON.parse('{{EXECUTION_PERCENTILES}}');
-const driverData = JSON.parse('{{DRIVER_PERCENTILES}}');
-
-function safeValue(obj, key) {
-    return obj && obj[key] ? obj[key] : 0;
+// ── Dark mode ──
+(function() {
+    if (localStorage.getItem('sb-theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+})();
+function toggleDark() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    localStorage.setItem('sb-theme', isDark ? 'light' : 'dark');
 }
 
-function createChart(canvasId, label, dataObj, bgColor, borderColor) {
+// ── Charts ──
+const executionData = JSON.parse('{{EXECUTION_PERCENTILES}}');
+const donutData     = {{DONUT_DATA}};
 
-    const ctx = document.getElementById(canvasId);
-    if (!ctx) return;
+function safeVal(obj, key) { return obj && obj[key] ? obj[key] : 0; }
 
-    new Chart(ctx, {
+if (window.Chart) {
+    // Donut
+    new Chart(document.getElementById('donutChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Passed', 'Failed', 'Skipped'],
+            datasets: [{ data: [donutData.passed, donutData.failed, donutData.skipped],
+                backgroundColor: ['#43a047','#e53935','#fb8c00'],
+                borderWidth: 2, borderColor: '#fff' }]
+        },
+        options: { responsive: true, maintainAspectRatio: true, cutout: '65%',
+            plugins: { legend: { position: 'bottom', labels: { font: { family: 'Roboto', size: 12 } } } } }
+    });
+
+    // Execution percentiles bar
+    new Chart(document.getElementById('executionChart'), {
         type: 'bar',
         data: {
             labels: ['P50', 'P90', 'P95', 'P99'],
-            datasets: [{
-                label: label,
-                data: [
-                    safeValue(dataObj, 'p50'),
-                    safeValue(dataObj, 'p90'),
-                    safeValue(dataObj, 'p95'),
-                    safeValue(dataObj, 'p99')
-                ],
-                backgroundColor: bgColor,
-                borderColor: borderColor,
-                borderWidth: 1,
-                borderRadius: 4
-            }]
+            datasets: [{ label: 'Execution Time (ms)',
+                data: [safeVal(executionData,'p50'), safeVal(executionData,'p90'),
+                       safeVal(executionData,'p95'), safeVal(executionData,'p99')],
+                backgroundColor: 'rgba(48,63,159,.25)', borderColor: '#303f9f',
+                borderWidth: 1, borderRadius: 4 }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { labels: { font: { family: 'Roboto', size: 13 } } }
-            },
-            scales: {
-                x: { ticks: { font: { family: 'Roboto' } }, grid: { display: false } },
-                y: { ticks: { font: { family: 'Roboto' } }, grid: { color: '#e0e0e0' }, beginAtZero: true }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { font: { family: 'Roboto', size: 13 } } } },
+            scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
     });
 }
 
-createChart('executionChart', 'Execution Time (ms)', executionData, 'rgba(48,63,159,.25)', '#303f9f');
-createChart('driverChart', 'Driver Startup (ms)', driverData, 'rgba(0,137,123,.25)', '#00897b');
+// ── Collapse / expand class groups ──
+function toggleGroup(groupId) {
+    const members = document.querySelectorAll(`.group-member[data-group="${groupId}"]`);
+    const icon    = document.getElementById('gicon-' + groupId);
+    const isOpen  = icon && !icon.classList.contains('closed');
+    members.forEach(r => { r.style.display = isOpen ? 'none' : ''; });
+    if (icon) icon.classList.toggle('closed', isOpen);
+}
 
+// ── Expand / collapse detail rows ──
+function toggleDetail(idx) {
+    const row  = document.getElementById('detail-' + idx);
+    const icon = document.getElementById('icon-' + idx);
+    if (!row) return;
+    const isOpen = row.style.display !== 'none';
+    row.style.display = isOpen ? 'none' : '';
+    if (icon) icon.classList.toggle('open', !isOpen);
+}
+
+// ── Filter + search ──
+let activeFilter = 'ALL';
+function setFilter(status, btn) {
+    activeFilter = status;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applySearch();
+}
+function applySearch() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    // Process member rows
+    const members = document.querySelectorAll('#testTable tbody tr.group-member:not(.detail-row)');
+    const visibleGroups = new Set();
+    members.forEach(row => {
+        const rowStatus = row.getAttribute('data-status') || '';
+        const rowTest   = row.getAttribute('data-test')   || '';
+        const groupId   = row.getAttribute('data-group')  || '';
+        const hasRetry  = row.querySelector('.retry-badge') !== null;
+        const matchFilter = activeFilter === 'ALL'
+            || activeFilter === rowStatus
+            || (activeFilter === 'FLAKY' && hasRetry);
+        const matchSearch = !q || rowTest.includes(q) || groupId.toLowerCase().includes(q);
+        const show = matchFilter && matchSearch;
+        row.style.display = show ? '' : 'none';
+        if (show) visibleGroups.add(groupId);
+        // keep detail row hidden when parent hidden
+        const next = row.nextElementSibling;
+        if (next && next.classList.contains('detail-row') && !show) {
+            next.style.display = 'none';
+        }
+    });
+    // Show/hide group headers based on whether they have visible members
+    document.querySelectorAll('#testTable tbody tr.group-header').forEach(hdr => {
+        const groupId = hdr.getAttribute('data-group') || '';
+        hdr.style.display = visibleGroups.has(groupId) ? '' : 'none';
+    });
+}
 </script>
 
 </body>

@@ -58,6 +58,37 @@ public final class ExecutionMetrics {
     }
 
     // ==========================================================
+    // Error Recording
+    // ==========================================================
+
+    public static void recordError(String testId, Throwable t) {
+        TIMINGS.computeIfPresent(testId, (k, v) -> {
+            v.setErrorMessage(t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName());
+            v.setStackTrace(buildStackTrace(t));
+            return v;
+        });
+    }
+
+    public static void recordDescription(String testId, String description) {
+        if (description == null || description.isEmpty()) return;
+        TIMINGS.computeIfAbsent(testId,
+                id -> new TestTiming(id, Thread.currentThread().getName()))
+               .setDescription(description);
+    }
+
+    public static void recordTestClass(String testId, String className) {
+        TIMINGS.computeIfAbsent(testId,
+                id -> new TestTiming(id, Thread.currentThread().getName()))
+               .setTestClassName(className);
+    }
+
+    private static String buildStackTrace(Throwable t) {
+        java.io.StringWriter sw = new java.io.StringWriter();
+        t.printStackTrace(new java.io.PrintWriter(sw));
+        return sw.toString();
+    }
+
+    // ==========================================================
     // Retry Tracking
     // ==========================================================
 
@@ -170,14 +201,22 @@ public final class ExecutionMetrics {
             driverDurations.add(timing.getDriverStartupTime());
         }
 
-        long passed  = TIMINGS.values().stream().filter(t -> "PASSED".equals(t.getStatus())).count();
-        long failed  = TIMINGS.values().stream().filter(t -> "FAILED".equals(t.getStatus())).count();
-        long skipped = TIMINGS.values().stream().filter(t -> "SKIPPED".equals(t.getStatus())).count();
+        long passed   = TIMINGS.values().stream().filter(t -> "PASSED".equals(t.getStatus())).count();
+        long failed   = TIMINGS.values().stream().filter(t -> "FAILED".equals(t.getStatus())).count();
+        long skipped  = TIMINGS.values().stream().filter(t -> "SKIPPED".equals(t.getStatus())).count();
+        long flaky    = TIMINGS.values().stream().filter(t -> t.getRetryCount() > 0).count();
+        long recovered = TIMINGS.values().stream()
+                .filter(t -> t.getRetryCount() > 0 && "PASSED".equals(t.getStatus())).count();
+        double passRate = totalTests == 0 ? 0.0
+                : Math.round((passed * 1000.0) / totalTests) / 10.0;
 
         report.put("totalTests", totalTests);
         report.put("passedTests", passed);
         report.put("failedTests", failed);
         report.put("skippedTests", skipped);
+        report.put("passRate", passRate);
+        report.put("flakyTests", flaky);
+        report.put("recoveredTests", recovered);
         report.put("totalTimeMs", totalTime);
         report.put("averageTimeMs",
                 totalTests == 0 ? 0 : totalTime / totalTests);
@@ -210,18 +249,25 @@ public final class ExecutionMetrics {
             Map<String, Object> testEntry =
                     new LinkedHashMap<>();
 
-            testEntry.put("testId", timing.getTestId());
-            testEntry.put("thread", timing.getThreadName());
-            testEntry.put("status",
-                    timing.getStatus() != null ? timing.getStatus() : "UNKNOWN");
-            testEntry.put("driverStartupMs",
-                    timing.getDriverStartupTime());
-            testEntry.put("testLogicMs",
-                    timing.getTestExecutionTime());
-            testEntry.put("totalMs",
-                    timing.getTotalTime());
+            testEntry.put("testId",        timing.getTestId());
+            testEntry.put("testClassName", timing.getTestClassName() != null ? timing.getTestClassName() : "");
+            testEntry.put("thread",        timing.getThreadName());
+            testEntry.put("status",        timing.getStatus() != null ? timing.getStatus() : "UNKNOWN");
+            testEntry.put("retryCount",    timing.getRetryCount());
+            testEntry.put("driverStartupMs", timing.getDriverStartupTime());
+            testEntry.put("testLogicMs",   timing.getTestExecutionTime());
+            testEntry.put("totalMs",       timing.getTotalTime());
             if (timing.getScreenshotPath() != null) {
                 testEntry.put("screenshotPath", timing.getScreenshotPath());
+            }
+            if (timing.getDescription() != null) {
+                testEntry.put("description", timing.getDescription());
+            }
+            if (timing.getErrorMessage() != null) {
+                testEntry.put("errorMessage", timing.getErrorMessage());
+            }
+            if (timing.getStackTrace() != null) {
+                testEntry.put("stackTrace", timing.getStackTrace());
             }
 
             testList.add(testEntry);
@@ -287,7 +333,7 @@ public final class ExecutionMetrics {
 
         int index = (int) Math.ceil(percentile / 100.0 * values.size());
 
-        index = Math.min(index - 1, values.size() - 1);
+        index = Math.max(0, Math.min(index - 1, values.size() - 1));
 
         return values.get(index);
     }
