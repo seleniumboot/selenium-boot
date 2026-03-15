@@ -48,7 +48,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.0</version>
 </dependency>
 
 <dependency>
@@ -494,7 +494,61 @@ YAML values always win over defaults set here.
 
 ---
 
+## CI/CD Integration
+
+Selenium Boot auto-detects CI environments and applies sensible defaults — no YAML changes required.
+
+### What Happens Automatically in CI
+
+When `CI`, `GITHUB_ACTIONS`, `JENKINS_URL`, or any other well-known CI env var is set:
+
+- `browser.headless` is forced to `true` (CI agents have no display)
+- `threadCount` is auto-derived from available CPU cores (when left at default `1` with parallel mode enabled)
+- Docker/container flags (`--no-sandbox`, `--disable-dev-shm-usage`) are auto-applied to Chrome when running inside a container
+
+### JUnit XML Output
+
+Every run produces `target/surefire-reports/TEST-SeleniumBoot.xml` — parsed natively by Jenkins, GitHub Actions, GitLab CI, and most CI systems without plugins.
+
+### Build Quality Gates
+
+Optionally fail the build if test quality drops below a threshold. Add to `selenium-boot.yml`:
+
+```yaml
+ci:
+  failOnPassRateBelow: 80   # fail build if pass rate drops below 80%
+  maxFlakyTests: 3          # fail build if more than 3 tests were retried before passing
+```
+
+Both thresholds are disabled by default (`failOnPassRateBelow: 0`, `maxFlakyTests: -1`).
+
+### CI Templates
+
+Ready-to-use templates are included:
+
+| Template | Location |
+|---|---|
+| GitHub Actions | `.github/workflows/selenium-boot.yml` |
+| Jenkins | `ci/Jenkinsfile` |
+
+Both templates handle Chrome setup, test execution, artifact upload (HTML report, JUnit XML, metrics JSON), and test result publishing automatically.
+
+---
+
 ## Project Status
+
+**v0.4.0 – CI/CD & Enterprise Readiness**
+
+Seamless integration into enterprise pipelines — zero config changes needed in most CI environments:
+
+- **CI auto-detection** — `CiEnvironmentDetector` identifies GitHub Actions, Jenkins, CircleCI, GitLab CI, Travis, TeamCity, and Bitbucket Pipelines; forces headless and tunes thread count automatically
+- **Container detection** — detects Docker (via `/.dockerenv`) and Kubernetes (via `KUBERNETES_SERVICE_HOST`); auto-applies `--no-sandbox`, `--disable-dev-shm-usage` to Chrome
+- **JUnit XML report** — `JUnitXmlReporter` writes `target/surefire-reports/TEST-SeleniumBoot.xml` on every run; parsed natively by all major CI platforms
+- **Build quality gates** — `BuildThresholdEnforcer` enforces pass-rate and flaky-test thresholds; breaching a gate throws `BuildQualityGateException` which fails the Maven build
+- **CI templates** — `.github/workflows/selenium-boot.yml` (GitHub Actions) and `ci/Jenkinsfile` (Jenkins) included out of the box with report upload and test result publishing
+- **Unit tests** — all Phase 4 classes covered: `CiEnvironmentDetectorTest`, `BuildThresholdEnforcerTest`, `JUnitXmlReporterTest`
+
+---
 
 **v0.3.0 – Extensibility Release**
 

@@ -84,7 +84,7 @@ The roadmap is intentionally opinionated and incremental. Each phase focuses on 
 
 ## Phase 4 – CI/CD & Enterprise Readiness (v0.4)
 
-**Status:** In Progress — releasing as v0.4.0
+**Status:** Complete — releasing as v0.4.0
 **Goal:** Seamless integration into enterprise pipelines
 
 ### Features
@@ -99,6 +99,7 @@ The roadmap is intentionally opinionated and incremental. Each phase focuses on 
 
 ## Phase 5 – Ecosystem & Community (v1.0)
 
+**Status:** Next
 **Goal:** Establish Selenium Boot as a stable ecosystem
 
 ### Features
