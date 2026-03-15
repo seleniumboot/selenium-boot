@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 
 /**
  * Handles screenshot capture for failed tests.
@@ -57,6 +58,25 @@ public final class ScreenshotManager {
         } catch (WebDriverException | IOException e) {
             System.err.printf("[ScreenshotManager] Failed to capture screenshot for [%s] (%s): %s%n",
                     context, e.getClass().getSimpleName(), e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Captures a screenshot and returns it as a base64-encoded PNG string
+     * without writing any file to disk. Returns {@code null} if capture failed.
+     * Used by {@code StepLogger} for step-level screenshots.
+     */
+    public static String captureAsBase64() {
+        WebDriver driver = DriverManager.getDriver();
+        if (!(driver instanceof TakesScreenshot)) {
+            return null;
+        }
+        try {
+            byte[] bytes = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+            return Base64.getEncoder().encodeToString(bytes);
+        } catch (WebDriverException e) {
+            System.err.printf("[ScreenshotManager] captureAsBase64 failed: %s%n", e.getMessage());
             return null;
         }
     }

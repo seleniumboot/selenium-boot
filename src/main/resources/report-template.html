@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js" onerror="window.Chart=function(){this.destroy=function(){}};Chart.prototype={};"></script>
     <style>
         :root {
+            --appbar-h: 70px;
+            --sidebar-w: 220px;
             --bg: #f5f5f5;
             --surface: #ffffff;
             --surface2: #fafafa;
@@ -46,15 +48,20 @@
             --code-text: #cfd8dc;
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Roboto', sans-serif; background: var(--bg); color: var(--text); transition: background .2s, color .2s; }
+        body {
+            font-family: 'Roboto', sans-serif; background: var(--bg); color: var(--text);
+            transition: background .2s, color .2s;
+            display: flex; flex-direction: column; min-height: 100vh;
+        }
 
+        /* ── App bar ── */
         .app-bar {
-            background: var(--primary);
-            color: #fff;
-            padding: 20px 32px;
+            background: var(--primary); color: #fff;
+            padding: 0 32px; height: var(--appbar-h);
             box-shadow: 0 2px 4px rgba(0,0,0,.2);
             position: sticky; top: 0; z-index: 100;
             display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0;
         }
         .app-bar-left h1 { font-size: 20px; font-weight: 500; letter-spacing: .5px; }
         .app-bar-left p  { font-size: 13px; font-weight: 300; opacity: .85; margin-top: 2px; }
@@ -65,8 +72,61 @@
         }
         .dark-toggle:hover { background: rgba(255,255,255,.25); }
 
-        .content { max-width: 1280px; margin: 0 auto; padding: 24px 16px 56px; }
+        /* ── Layout ── */
+        .layout { display: flex; flex: 1; min-height: 0; }
 
+        /* ── Sidebar ── */
+        .sidebar {
+            width: var(--sidebar-w); flex-shrink: 0;
+            background: var(--surface); border-right: 1px solid var(--border);
+            position: sticky; top: var(--appbar-h);
+            height: calc(100vh - var(--appbar-h));
+            overflow-y: auto;
+            display: flex; flex-direction: column;
+        }
+        .sidebar-brand {
+            padding: 18px 20px 16px; font-size: 13px; font-weight: 600;
+            color: var(--primary); border-bottom: 1px solid var(--border);
+            letter-spacing: .3px; flex-shrink: 0;
+        }
+        .nav-list { list-style: none; padding: 8px 0; flex: 1; }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 20px; cursor: pointer; font-size: 14px;
+            color: var(--text-secondary); transition: background .15s, color .15s;
+            border-left: 3px solid transparent; -webkit-user-select: none; user-select: none;
+        }
+        .nav-item:hover { background: var(--hover); color: var(--text); }
+        .nav-item.active {
+            background: var(--primary-light); color: var(--primary);
+            border-left-color: var(--primary); font-weight: 500;
+        }
+        .nav-icon  { font-size: 15px; flex-shrink: 0; }
+        .nav-label { flex: 1; }
+        .nav-count {
+            font-size: 11px; background: var(--border); color: var(--text-secondary);
+            border-radius: 10px; padding: 1px 8px; font-weight: 600; flex-shrink: 0;
+        }
+        .nav-count-fail { background: var(--bad-bg); color: var(--bad); }
+        .sidebar-stats {
+            padding: 14px 20px; border-top: 1px solid var(--border);
+            font-size: 12px; color: var(--text-secondary); flex-shrink: 0;
+        }
+        .sidebar-stats div { margin-bottom: 3px; }
+        .sidebar-stats strong { color: var(--text); }
+
+        /* ── Main content ── */
+        .main-content { flex: 1; padding: 24px 20px 56px; min-width: 0; overflow: hidden; }
+
+        /* ── Tab panes ── */
+        .tab-pane  { display: none; }
+        .tab-pane.active { display: block; }
+        .tab-heading {
+            font-size: 18px; font-weight: 500; color: var(--text);
+            margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+        }
+
+        /* ── Cards ── */
         .card {
             background: var(--surface); border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
@@ -78,7 +138,7 @@
 
         /* ── Stat cards ── */
         .summary-row { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
-        .stat-card   { flex: 1; min-width: 120px; text-align: center; padding: 20px 12px; }
+        .stat-card   { flex: 1; min-width: 110px; text-align: center; padding: 20px 12px; }
         .stat-value  { font-size: 34px; font-weight: 700; color: var(--primary); }
         .stat-label  { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-top: 6px; text-transform: uppercase; letter-spacing: .6px; }
         .passed-card  .stat-value { color: var(--good); }
@@ -87,11 +147,16 @@
         .rate-good { color: var(--good) !important; }
         .rate-warn { color: var(--warn) !important; }
         .rate-bad  { color: var(--bad)  !important; }
+        .stat-value-warn { color: var(--warn); }
+        .stat-value-good { color: var(--good); }
+        .stat-value-bad  { color: var(--bad); }
 
         /* ── Charts ── */
         .charts-row { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
-        .chart-card { flex: 1; min-width: 280px; }
+        .chart-card { flex: 1; min-width: 260px; }
         .chart-card canvas { width: 100% !important; height: 260px !important; }
+        .card-body-centered { display: flex; justify-content: center; align-items: center; padding: 20px 24px; }
+        .donut-canvas { max-width: 260px; max-height: 260px; }
 
         /* ── Slowest tests ── */
         .slow-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -101,24 +166,9 @@
         .slow-ms { font-size: 12px; color: var(--text-secondary); width: 70px; text-align: right; flex-shrink: 0; }
 
         /* ── Layout helpers ── */
-        .card-body-centered { display: flex; justify-content: center; align-items: center; padding: 20px 24px; }
-        .donut-canvas { max-width: 260px; max-height: 260px; }
         .section-mb { margin-bottom: 20px; }
-        .search-icon { color: var(--text-secondary); margin-right: 6px; }
         .retry-summary-row { margin-bottom: 0; }
-        .stat-value-warn { color: var(--warn); }
-        .stat-value-good { color: var(--good); }
-        .stat-value-bad  { color: var(--bad); }
-
-        /* ── Group header rows ── */
-        .group-header { background: var(--primary-light) !important; cursor: pointer; -webkit-user-select: none; user-select: none; }
-        .group-header td { padding: 10px 16px; font-size: 13px; font-weight: 500; color: var(--text); border-bottom: 2px solid var(--primary); }
-        .group-header:hover { background: var(--hover) !important; }
-        .group-icon { font-size: 10px; margin-right: 6px; display: inline-block; transition: transform .2s; }
-        .group-icon.closed { transform: rotate(-90deg); }
-        .group-count { font-weight: 400; color: var(--text-secondary); font-size: 12px; }
-        .group-member td { padding-left: 28px; }
-        .desc-cell { font-size: 12px; color: var(--text-secondary); font-style: italic; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .search-icon { color: var(--text-secondary); margin-right: 6px; }
 
         /* ── Screenshot thumbnail ── */
         .screenshot-thumb { width: 120px; height: 68px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); cursor: zoom-in; transition: opacity .15s; display: block; }
@@ -148,15 +198,23 @@
         thead th {
             background: var(--primary); color: #fff;
             padding: 11px 14px; font-size: 12px; font-weight: 500;
-            text-transform: uppercase; letter-spacing: .5px; text-align: left;
-            white-space: nowrap;
+            text-transform: uppercase; letter-spacing: .5px; text-align: left; white-space: nowrap;
         }
         tbody td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
         tbody tr:nth-child(even):not(.detail-row) { background: var(--surface2); }
         tbody tr.expandable:hover { background: var(--hover); cursor: pointer; }
-        td.test-id { font-family: 'Roboto Mono', monospace; font-size: 12px; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        td.test-id { font-family: 'Roboto Mono', monospace; font-size: 12px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         td.numeric { text-align: right; font-variant-numeric: tabular-nums; }
-        .hidden-row { display: none; }
+
+        /* ── Group header rows ── */
+        .group-header { background: var(--primary-light) !important; cursor: pointer; -webkit-user-select: none; user-select: none; }
+        .group-header td { padding: 10px 16px; font-size: 13px; font-weight: 500; color: var(--text); border-bottom: 2px solid var(--primary); }
+        .group-header:hover { background: var(--hover) !important; }
+        .group-icon { font-size: 10px; margin-right: 6px; display: inline-block; transition: transform .2s; }
+        .group-icon.closed { transform: rotate(-90deg); }
+        .group-count { font-weight: 400; color: var(--text-secondary); font-size: 12px; }
+        .group-member td { padding-left: 28px; }
+        .desc-cell { font-size: 12px; color: var(--text-secondary); font-style: italic; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         /* ── Status badges ── */
         .status-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; letter-spacing: .3px; }
@@ -182,6 +240,24 @@
             max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
         }
 
+        /* ── Step timeline ── */
+        .step-timeline-section { margin-bottom: 14px; }
+        .step-timeline-header { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+        .step-timeline { display: flex; flex-direction: column; gap: 6px; }
+        .step-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; background: var(--surface); border-radius: 6px; border-left: 3px solid var(--border); }
+        .step-num { font-size: 11px; font-weight: 700; color: var(--text-secondary); min-width: 20px; text-align: right; flex-shrink: 0; }
+        .step-name { font-size: 13px; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .step-offset { font-size: 11px; color: var(--text-secondary); font-family: 'Roboto Mono', monospace; min-width: 64px; text-align: right; flex-shrink: 0; }
+        .step-badge { display: inline-block; padding: 1px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; letter-spacing: .4px; flex-shrink: 0; }
+        .step-badge-info { background: var(--primary-light); color: var(--primary); }
+        .step-badge-pass { background: var(--good-bg); color: var(--good); }
+        .step-badge-fail { background: var(--bad-bg);  color: var(--bad); }
+        .step-thumb { width: 80px; height: 45px; object-fit: cover; border-radius: 3px; border: 1px solid var(--border); cursor: zoom-in; flex-shrink: 0; transition: opacity .15s; }
+        .step-thumb:hover { opacity: .8; }
+
+        /* ── No failures ── */
+        .no-failures-msg { text-align: center; padding: 56px; color: var(--good); font-size: 15px; }
+
         /* ── Metadata ── */
         .meta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
         .meta-item { display: flex; flex-direction: column; padding: 10px 14px; background: var(--surface2); border-radius: 6px; border-left: 3px solid var(--primary); }
@@ -190,10 +266,20 @@
 
         .footer { text-align: center; padding: 20px; font-size: 12px; color: var(--text-secondary); }
 
+        /* ── Responsive ── */
         @media (max-width: 768px) {
+            .layout { flex-direction: column; }
+            .sidebar {
+                width: 100%; height: auto; position: relative; top: auto;
+                flex-direction: row; overflow-x: auto; overflow-y: hidden;
+            }
+            .sidebar-brand, .sidebar-stats { display: none; }
+            .nav-list { display: flex; flex-direction: row; padding: 0; white-space: nowrap; }
+            .nav-item { border-left: none; border-bottom: 3px solid transparent; padding: 12px 16px; }
+            .nav-item.active { border-bottom-color: var(--primary); border-left-color: transparent; }
             .summary-row, .charts-row { flex-direction: column; }
-            .app-bar { padding: 14px 16px; }
-            .content  { padding: 14px 8px; }
+            .app-bar { padding: 0 16px; }
+            .main-content { padding: 14px 8px; }
             .search-wrap input { width: 140px; }
         }
     </style>
@@ -214,101 +300,180 @@
     <img id="lightbox-img" src="" alt="Screenshot">
 </div>
 
-<div class="content">
+<div class="layout">
 
-    {{METADATA}}
+    <!-- ── Left sidebar ── -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">&#9889; Selenium Boot</div>
+        <ul class="nav-list">
+            <li class="nav-item active" onclick="showTab('dashboard', this)">
+                <span class="nav-icon">&#128200;</span>
+                <span class="nav-label">Dashboard</span>
+            </li>
+            <li class="nav-item" onclick="showTab('tests', this)">
+                <span class="nav-icon">&#9635;</span>
+                <span class="nav-label">Test Cases</span>
+                <span class="nav-count">{{TOTAL_TESTS}}</span>
+            </li>
+            <li class="nav-item" onclick="showTab('failures', this)">
+                <span class="nav-icon">&#10005;</span>
+                <span class="nav-label">Failures</span>
+                {{FAILURE_BADGE}}
+            </li>
+        </ul>
+        <div class="sidebar-stats">
+            <div>Duration: <strong>{{TOTAL_TIME_MS}} ms</strong></div>
+            <div>Pass rate: <strong class="{{PASS_RATE_CLASS}}">{{PASS_RATE}}%</strong></div>
+        </div>
+    </nav>
 
-    <!-- Pass rate + stat cards -->
-    <div class="summary-row">
-        <div class="card stat-card passed-card">
-            <div class="stat-value">{{PASSED}}</div>
-            <div class="stat-label">Passed</div>
-        </div>
-        <div class="card stat-card failed-card">
-            <div class="stat-value">{{FAILED}}</div>
-            <div class="stat-label">Failed</div>
-        </div>
-        <div class="card stat-card skipped-card">
-            <div class="stat-value">{{SKIPPED}}</div>
-            <div class="stat-label">Skipped</div>
-        </div>
-        <div class="card stat-card">
-            <div class="stat-value">{{TOTAL_TESTS}}</div>
-            <div class="stat-label">Total Tests</div>
-        </div>
-        <div class="card stat-card">
-            <div class="stat-value {{PASS_RATE_CLASS}}">{{PASS_RATE}}%</div>
-            <div class="stat-label">Pass Rate</div>
-        </div>
-        <div class="card stat-card">
-            <div class="stat-value">{{AVG_TIME_MS}}</div>
-            <div class="stat-label">Avg Time (ms)</div>
-        </div>
-    </div>
+    <!-- ── Main content ── -->
+    <main class="main-content">
 
-    <!-- Charts row -->
-    <div class="charts-row">
-        <div class="card chart-card">
-            <div class="card-header">Pass / Fail / Skip</div>
-            <div class="card-body-centered">
-                <canvas id="donutChart" class="donut-canvas"></canvas>
+        <!-- ═══════════════ DASHBOARD TAB ═══════════════ -->
+        <div id="tab-dashboard" class="tab-pane active">
+            <div class="tab-heading">Dashboard</div>
+
+            {{METADATA}}
+
+            <!-- Stat cards -->
+            <div class="summary-row">
+                <div class="card stat-card passed-card">
+                    <div class="stat-value">{{PASSED}}</div>
+                    <div class="stat-label">Passed</div>
+                </div>
+                <div class="card stat-card failed-card">
+                    <div class="stat-value">{{FAILED}}</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+                <div class="card stat-card skipped-card">
+                    <div class="stat-value">{{SKIPPED}}</div>
+                    <div class="stat-label">Skipped</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-value">{{TOTAL_TESTS}}</div>
+                    <div class="stat-label">Total Tests</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-value {{PASS_RATE_CLASS}}">{{PASS_RATE}}%</div>
+                    <div class="stat-label">Pass Rate</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-value">{{AVG_TIME_MS}}</div>
+                    <div class="stat-label">Avg Time (ms)</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-row">
+                <div class="card chart-card">
+                    <div class="card-header">Pass / Fail / Skip</div>
+                    <div class="card-body-centered">
+                        <canvas id="donutChart" class="donut-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="card chart-card">
+                    <div class="card-header">Execution Time Percentiles (ms)</div>
+                    <div class="card-body"><canvas id="executionChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Retry summary -->
+            {{RETRY_SECTION}}
+
+            <!-- Slowest 5 -->
+            <div class="card section-mb">
+                <div class="card-header">Slowest 5 Tests</div>
+                <div class="card-body">{{SLOWEST_TESTS}}</div>
+            </div>
+
+            <div class="footer">Report generated by <strong>Selenium Boot</strong> &mdash; {{TOTAL_TIME_MS}} ms total execution time</div>
+        </div>
+
+        <!-- ═══════════════ TEST CASES TAB ═══════════════ -->
+        <div id="tab-tests" class="tab-pane">
+            <div class="tab-heading">Test Cases</div>
+            <div class="card table-card">
+                <div class="filter-bar">
+                    <button type="button" class="filter-btn active" onclick="setFilter('ALL', this)">All</button>
+                    <button type="button" class="filter-btn" onclick="setFilter('PASSED', this)">Passed</button>
+                    <button type="button" class="filter-btn" onclick="setFilter('FAILED', this)">Failed</button>
+                    <button type="button" class="filter-btn" onclick="setFilter('SKIPPED', this)">Skipped</button>
+                    <button type="button" class="filter-btn" onclick="setFilter('FLAKY', this)">Flaky</button>
+                    <div class="search-wrap">
+                        <span class="search-icon">&#128269;</span>
+                        <input type="text" id="searchInput" placeholder="Search by test or class..." oninput="applySearch()">
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table id="testTable">
+                        <thead>
+                            <tr>
+                                <th>Test</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Logic (ms)</th>
+                                <th>Total (ms)</th>
+                                <th>Screenshot</th>
+                                <th>Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ROWS}}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-        <div class="card chart-card">
-            <div class="card-header">Execution Time Percentiles (ms)</div>
-            <div class="card-body"><canvas id="executionChart"></canvas></div>
-        </div>
-    </div>
 
-    <!-- Retry summary (rendered only when flakyTests > 0) -->
-    {{RETRY_SECTION}}
-
-    <!-- Slowest 5 tests -->
-    <div class="card section-mb">
-        <div class="card-header">Slowest 5 Tests</div>
-        <div class="card-body">
-            {{SLOWEST_TESTS}}
-        </div>
-    </div>
-
-    <!-- Test details table -->
-    <div class="card table-card">
-        <div class="card-header">Test Details</div>
-        <div class="filter-bar">
-            <button type="button" class="filter-btn active" onclick="setFilter('ALL', this)">All</button>
-            <button type="button" class="filter-btn" onclick="setFilter('PASSED', this)">Passed</button>
-            <button type="button" class="filter-btn" onclick="setFilter('FAILED', this)">Failed</button>
-            <button type="button" class="filter-btn" onclick="setFilter('SKIPPED', this)">Skipped</button>
-            <button type="button" class="filter-btn" onclick="setFilter('FLAKY', this)">Flaky</button>
-            <div class="search-wrap">
-                <span class="search-icon">&#128269;</span>
-                <input type="text" id="searchInput" placeholder="Search by test or class..." oninput="applySearch()">
+        <!-- ═══════════════ FAILURES TAB ═══════════════ -->
+        <div id="tab-failures" class="tab-pane">
+            <div class="tab-heading">Failures <span style="font-size:14px;font-weight:400;color:var(--text-secondary)">({{FAILED}} failed)</span></div>
+            <div class="card table-card">
+                <div class="table-wrap">
+                    <table id="failureTable">
+                        <thead>
+                            <tr>
+                                <th>Test</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Logic (ms)</th>
+                                <th>Total (ms)</th>
+                                <th>Screenshot</th>
+                                <th>Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{FAILURE_ROWS}}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-        <div class="table-wrap">
-        <table id="testTable">
-            <thead>
-                <tr>
-                    <th>Test</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th>Logic (ms)</th>
-                    <th>Total (ms)</th>
-                    <th>Screenshot</th>
-                    <th>Detail</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{ROWS}}
-            </tbody>
-        </table>
-        </div>
-    </div>
 
-    <div class="footer">Report generated by <strong>Selenium Boot</strong> &mdash; {{TOTAL_TIME_MS}} ms total execution time</div>
+    </main>
 </div>
 
 <script>
+// ── Tab navigation ──
+function showTab(tabId, el) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    if (el) el.classList.add('active');
+    try { localStorage.setItem('sb-tab', tabId); } catch(e) {}
+}
+// Restore last active tab on load
+(function() {
+    try {
+        const last = localStorage.getItem('sb-tab');
+        if (last && document.getElementById('tab-' + last)) {
+            const el = document.querySelector('.nav-item[onclick*="\'' + last + '\'"]');
+            showTab(last, el);
+        }
+    } catch(e) {}
+})();
+
 // ── Lightbox ──
 function openLightbox(src) {
     document.getElementById('lightbox-img').src = src;
@@ -326,37 +491,29 @@ document.addEventListener('keydown', function(e) {
 
 // ── Dark mode ──
 (function() {
-    if (localStorage.getItem('sb-theme') === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-    }
+    try { if (localStorage.getItem('sb-theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch(e) {}
 })();
 function toggleDark() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    localStorage.setItem('sb-theme', isDark ? 'light' : 'dark');
+    try { localStorage.setItem('sb-theme', isDark ? 'light' : 'dark'); } catch(e) {}
 }
 
 // ── Charts ──
 const executionData = JSON.parse('{{EXECUTION_PERCENTILES}}');
 const donutData     = {{DONUT_DATA}};
-
 function safeVal(obj, key) { return obj && obj[key] ? obj[key] : 0; }
-
 if (window.Chart) {
-    // Donut
     new Chart(document.getElementById('donutChart'), {
         type: 'doughnut',
         data: {
             labels: ['Passed', 'Failed', 'Skipped'],
             datasets: [{ data: [donutData.passed, donutData.failed, donutData.skipped],
-                backgroundColor: ['#43a047','#e53935','#fb8c00'],
-                borderWidth: 2, borderColor: '#fff' }]
+                backgroundColor: ['#43a047','#e53935','#fb8c00'], borderWidth: 2, borderColor: '#fff' }]
         },
         options: { responsive: true, maintainAspectRatio: true, cutout: '65%',
             plugins: { legend: { position: 'bottom', labels: { font: { family: 'Roboto', size: 12 } } } } }
     });
-
-    // Execution percentiles bar
     new Chart(document.getElementById('executionChart'), {
         type: 'bar',
         data: {
@@ -364,8 +521,7 @@ if (window.Chart) {
             datasets: [{ label: 'Execution Time (ms)',
                 data: [safeVal(executionData,'p50'), safeVal(executionData,'p90'),
                        safeVal(executionData,'p95'), safeVal(executionData,'p99')],
-                backgroundColor: 'rgba(48,63,159,.25)', borderColor: '#303f9f',
-                borderWidth: 1, borderRadius: 4 }]
+                backgroundColor: 'rgba(48,63,159,.25)', borderColor: '#303f9f', borderWidth: 1, borderRadius: 4 }]
         },
         options: { responsive: true, maintainAspectRatio: false,
             plugins: { legend: { labels: { font: { family: 'Roboto', size: 13 } } } },
@@ -392,7 +548,7 @@ function toggleDetail(idx) {
     if (icon) icon.classList.toggle('open', !isOpen);
 }
 
-// ── Filter + search ──
+// ── Filter + search (Test Cases tab) ──
 let activeFilter = 'ALL';
 function setFilter(status, btn) {
     activeFilter = status;
@@ -402,7 +558,6 @@ function setFilter(status, btn) {
 }
 function applySearch() {
     const q = document.getElementById('searchInput').value.toLowerCase();
-    // Process member rows
     const members = document.querySelectorAll('#testTable tbody tr.group-member:not(.detail-row)');
     const visibleGroups = new Set();
     members.forEach(row => {
@@ -417,13 +572,9 @@ function applySearch() {
         const show = matchFilter && matchSearch;
         row.style.display = show ? '' : 'none';
         if (show) visibleGroups.add(groupId);
-        // keep detail row hidden when parent hidden
         const next = row.nextElementSibling;
-        if (next && next.classList.contains('detail-row') && !show) {
-            next.style.display = 'none';
-        }
+        if (next && next.classList.contains('detail-row') && !show) next.style.display = 'none';
     });
-    // Show/hide group headers based on whether they have visible members
     document.querySelectorAll('#testTable tbody tr.group-header').forEach(hdr => {
         const groupId = hdr.getAttribute('data-group') || '';
         hdr.style.display = visibleGroups.has(groupId) ? '' : 'none';

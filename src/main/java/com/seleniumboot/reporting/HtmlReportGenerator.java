@@ -181,15 +181,19 @@ public final class HtmlReportGenerator {
                 long groupPassed  = members.stream().filter(t -> "PASSED".equals(t.has("status") ? t.get("status").asText() : "")).count();
                 long groupFailed  = members.stream().filter(t -> "FAILED".equals(t.has("status") ? t.get("status").asText() : "")).count();
                 long groupSkipped = members.stream().filter(t -> "SKIPPED".equals(t.has("status") ? t.get("status").asText() : "")).count();
-                rows.append(buildGroupHeader(groupId, members.size(), groupPassed, groupFailed, groupSkipped));
+                rows.append(buildGroupHeader(groupId, members.size(), groupPassed, groupFailed, groupSkipped, true));
                 for (JsonNode test : members) {
-                    rows.append(buildRow(test, rowIndex++, groupId));
+                    rows.append(buildRow(test, rowIndex++, groupId, true));
                 }
             }
         }
 
         String retrySection   = buildRetrySection(flakyTests, recoveredTests);
         String slowestSection = tests != null ? buildSlowestTests(tests) : "";
+        String failureRows    = buildFailureRows(tests);
+        String failureBadge   = failedTests > 0
+                ? "<span class=\"nav-count nav-count-fail\">" + failedTests + "</span>"
+                : "";
 
         String template = loadTemplate();
 
@@ -209,19 +213,21 @@ public final class HtmlReportGenerator {
                 .replace("{{SLOWEST_TESTS}}", slowestSection)
                 .replace("{{DONUT_DATA}}", donutData)
                 .replace("{{ROWS}}", rows.toString())
+                .replace("{{FAILURE_ROWS}}", failureRows)
+                .replace("{{FAILURE_BADGE}}", failureBadge)
                 .replace("{{EXECUTION_PERCENTILES}}", executionPercentiles.replace("'", "\\'"));
     }
 
-    private static String buildGroupHeader(String groupId, int total, long passed, long failed, long skipped) {
+    private static String buildGroupHeader(String groupId, int total, long passed, long failed, long skipped, boolean collapsed) {
         String groupKey = escapeHtml(groupId);
         String badges = "";
         if (passed  > 0) badges += "<span class=\"status-badge status-passed\">"  + passed  + " passed</span> ";
         if (failed  > 0) badges += "<span class=\"status-badge status-failed\">"  + failed  + " failed</span> ";
         if (skipped > 0) badges += "<span class=\"status-badge status-skipped\">" + skipped + " skipped</span>";
-        // collapsed by default — icon starts with 'closed' class, members start hidden
+        String iconClass = collapsed ? "group-icon closed" : "group-icon";
         return "<tr class=\"group-header\" data-group=\"" + groupKey + "\" onclick=\"toggleGroup('" + groupKey + "')\">"
                 + "<td colspan=\"7\">"
-                + "<span class=\"group-icon closed\" id=\"gicon-" + groupKey + "\">&#x25BC;</span> "
+                + "<span class=\"" + iconClass + "\" id=\"gicon-" + groupKey + "\">&#x25BC;</span> "
                 + "<strong>" + groupKey + "</strong>"
                 + "<span class=\"group-count\"> &mdash; " + total + " test" + (total != 1 ? "s" : "") + "</span>"
                 + " &nbsp;" + badges
@@ -229,7 +235,7 @@ public final class HtmlReportGenerator {
                 + "</tr>";
     }
 
-    private static String buildRow(JsonNode test, int rowIndex, String groupId) {
+    private static String buildRow(JsonNode test, int rowIndex, String groupId, boolean collapsed) {
         String status      = test.has("status")      ? test.get("status").asText()      : "UNKNOWN";
         String statusClass = "status-" + status.toLowerCase();
         String rawTestId   = test.has("testId")      ? test.get("testId").asText()      : "";
@@ -248,23 +254,31 @@ public final class HtmlReportGenerator {
                 ? "<span class=\"retry-badge\">&#x21bb; " + retryCount + "x</span> "
                 : "";
 
-        boolean hasDetail = errorMsg != null || stackTrace != null;
-        String detailRow = "";
+        String stepsHtml   = buildStepTimeline(test);
+        boolean hasDetail  = errorMsg != null || stackTrace != null || !stepsHtml.isEmpty();
+        String detailRow   = "";
         if (hasDetail) {
             String errorHtml = errorMsg   != null ? "<div class=\"error-msg\">"   + escapeHtml(errorMsg)   + "</div>" : "";
             String traceHtml = stackTrace != null ? "<pre class=\"stack-trace\">" + escapeHtml(stackTrace) + "</pre>" : "";
-            detailRow = "<tr class=\"detail-row group-member\" data-group=\"" + groupKey + "\" id=\"detail-" + rowIndex + "\" style=\"display:none\">"
-                    + "<td colspan=\"7\"><div class=\"detail-panel\">" + errorHtml + traceHtml + "</div></td>"
+            String stepsSection = !stepsHtml.isEmpty()
+                    ? "<div class=\"step-timeline-section\"><div class=\"step-timeline-header\">Steps (" + test.get("steps").size() + ")</div>"
+                      + "<div class=\"step-timeline\">" + stepsHtml + "</div></div>"
+                    : "";
+            String detailDisplay = collapsed ? " style=\"display:none\"" : "";
+            String iconOpen      = collapsed ? "" : " open";
+            detailRow = "<tr class=\"detail-row group-member\" data-group=\"" + groupKey + "\" id=\"detail-" + rowIndex + "\"" + detailDisplay + ">"
+                    + "<td colspan=\"7\"><div class=\"detail-panel\">" + stepsSection + errorHtml + traceHtml + "</div></td>"
                     + "</tr>";
         }
 
-        String rowClass  = "group-member" + (hasDetail ? " expandable" : "");
-        String clickAttr = hasDetail ? " onclick=\"toggleDetail(" + rowIndex + ")\"" : "";
+        String rowClass    = "group-member" + (hasDetail ? " expandable" : "");
+        String clickAttr   = hasDetail ? " onclick=\"toggleDetail(" + rowIndex + ")\"" : "";
+        String memberStyle = collapsed ? " style=\"display:none\"" : "";
+        String iconOpen    = (!collapsed && hasDetail) ? " open" : "";
 
-        // members start hidden — collapsed by default
         return "<tr class=\"" + rowClass + "\""
                 + clickAttr
-                + " style=\"display:none\""
+                + memberStyle
                 + " data-group=\"" + groupKey + "\""
                 + " data-status=\"" + status + "\""
                 + " data-test=\"" + methodName.toLowerCase() + "\">"
@@ -274,9 +288,43 @@ public final class HtmlReportGenerator {
                 + "<td class=\"numeric\">" + logicMs + "</td>"
                 + "<td class=\"numeric\">" + totalMs + "</td>"
                 + "<td>" + screenshotCell + "</td>"
-                + "<td>" + (hasDetail ? "<span class=\"expand-icon\" id=\"icon-" + rowIndex + "\">&#x25BC;</span>" : "") + "</td>"
+                + "<td>" + (hasDetail ? "<span class=\"expand-icon" + iconOpen + "\" id=\"icon-" + rowIndex + "\">&#x25BC;</span>" : "") + "</td>"
                 + "</tr>"
                 + detailRow;
+    }
+
+    private static String buildFailureRows(JsonNode tests) {
+        if (tests == null) return noFailuresRow();
+        java.util.Map<String, java.util.List<JsonNode>> byClass = new java.util.LinkedHashMap<>();
+        for (JsonNode test : tests) {
+            if (!"FAILED".equals(test.has("status") ? test.get("status").asText() : "")) continue;
+            String cls = test.has("testClassName") ? test.get("testClassName").asText() : "";
+            if (cls.isEmpty()) cls = "Unknown";
+            byClass.computeIfAbsent(cls, k -> new java.util.ArrayList<>()).add(test);
+        }
+        if (byClass.isEmpty()) return noFailuresRow();
+
+        StringBuilder rows = new StringBuilder();
+        int rowIndex = 50000; // offset avoids ID conflicts with the test-cases table
+        for (java.util.Map.Entry<String, java.util.List<JsonNode>> entry : byClass.entrySet()) {
+            String groupKey = escapeHtml(entry.getKey());
+            int total = entry.getValue().size();
+            // Non-collapsible group header for failures (always expanded)
+            rows.append("<tr class=\"group-header\">"
+                    + "<td colspan=\"7\">"
+                    + "<span class=\"group-icon\">&#x25BC;</span> "
+                    + "<strong>" + groupKey + "</strong>"
+                    + "<span class=\"group-count\"> &mdash; " + total + " failure" + (total != 1 ? "s" : "") + "</span>"
+                    + "</td></tr>");
+            for (JsonNode test : entry.getValue()) {
+                rows.append(buildRow(test, rowIndex++, entry.getKey(), false));
+            }
+        }
+        return rows.toString();
+    }
+
+    private static String noFailuresRow() {
+        return "<tr><td colspan=\"7\" class=\"no-failures-msg\">&#10003; No failures in this run</td></tr>";
     }
 
     private static String buildRetrySection(int flakyTests, int recoveredTests) {
@@ -314,6 +362,36 @@ public final class HtmlReportGenerator {
               .append("<span class=\"slow-name\">").append(name).append("</span>")
               .append("<div class=\"slow-bar-wrap\"><div class=\"slow-bar\" style=\"width:").append(pct).append("%\"></div></div>")
               .append("<span class=\"slow-ms\">").append(ms).append(" ms</span>")
+              .append("</div>");
+        }
+        return sb.toString();
+    }
+
+    private static String buildStepTimeline(JsonNode test) {
+        if (!test.has("steps") || test.get("steps").size() == 0) return "";
+        StringBuilder sb = new StringBuilder();
+        int i = 1;
+        for (JsonNode step : test.get("steps")) {
+            String name     = step.has("name")     ? escapeHtml(step.get("name").asText())   : "";
+            String status   = step.has("status")   ? step.get("status").asText().toUpperCase() : "INFO";
+            long   offsetMs = step.has("offsetMs") ? step.get("offsetMs").asLong()            : 0L;
+            String badgeClass = "step-badge-info";
+            if ("PASS".equals(status)) badgeClass = "step-badge-pass";
+            else if ("FAIL".equals(status)) badgeClass = "step-badge-fail";
+
+            String thumbHtml = "";
+            if (step.has("screenshotBase64")) {
+                String src = "data:image/png;base64," + step.get("screenshotBase64").asText();
+                thumbHtml = "<img src=\"" + src + "\" class=\"step-thumb\" "
+                          + "onclick=\"openLightbox(this.src)\" title=\"Click to view full size\" />";
+            }
+
+            sb.append("<div class=\"step-item\">")
+              .append("<span class=\"step-num\">").append(i++).append("</span>")
+              .append("<span class=\"step-name\">").append(name).append("</span>")
+              .append("<span class=\"step-offset\">+").append(offsetMs).append("ms</span>")
+              .append("<span class=\"step-badge ").append(badgeClass).append("\">").append(status).append("</span>")
+              .append(thumbHtml)
               .append("</div>");
         }
         return sb.toString();

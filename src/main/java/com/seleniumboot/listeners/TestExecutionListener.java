@@ -37,6 +37,7 @@ public final class TestExecutionListener implements ITestListener {
     public void onTestStart(ITestResult result) {
         String testId = result.getMethod().getQualifiedName();
         SeleniumBootContext.setCurrentTestId(testId);
+        ExecutionMetrics.clearSteps(testId);   // discard stale steps from prior retry attempt
         ExecutionMetrics.markStart(testId);
         ExecutionMetrics.recordTestClass(testId, result.getTestClass().getRealClass().getSimpleName());
         ExecutionMetrics.recordDescription(testId, result.getMethod().getDescription());

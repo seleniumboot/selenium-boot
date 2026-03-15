@@ -87,4 +87,13 @@ public class TestTiming {
     private String description;
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    private final java.util.List<com.seleniumboot.steps.StepRecord> steps =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    public void addStep(com.seleniumboot.steps.StepRecord step) { steps.add(step); }
+    public void clearSteps() { steps.clear(); }
+    public java.util.List<com.seleniumboot.steps.StepRecord> getSteps() {
+        return java.util.Collections.unmodifiableList(steps);
+    }
 }

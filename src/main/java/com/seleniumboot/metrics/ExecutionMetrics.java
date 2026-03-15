@@ -30,6 +30,27 @@ public final class ExecutionMetrics {
         START_TIMES.put(testId, System.currentTimeMillis());
     }
 
+    /** Returns the wall-clock start time for the test, or 0 if not found. */
+    public static long getTestStartTime(String testId) {
+        Long t = START_TIMES.get(testId);
+        return t != null ? t : 0L;
+    }
+
+    // ==========================================================
+    // Step Logging
+    // ==========================================================
+
+    public static void recordStep(String testId, com.seleniumboot.steps.StepRecord step) {
+        TIMINGS.computeIfAbsent(testId,
+                id -> new TestTiming(id, Thread.currentThread().getName()))
+               .addStep(step);
+    }
+
+    public static void clearSteps(String testId) {
+        TestTiming t = TIMINGS.get(testId);
+        if (t != null) t.clearSteps();
+    }
+
     // ==========================================================
     // Driver Startup
     // ==========================================================
@@ -268,6 +289,20 @@ public final class ExecutionMetrics {
             }
             if (timing.getStackTrace() != null) {
                 testEntry.put("stackTrace", timing.getStackTrace());
+            }
+            if (!timing.getSteps().isEmpty()) {
+                List<Map<String, Object>> stepList = new ArrayList<>();
+                for (com.seleniumboot.steps.StepRecord s : timing.getSteps()) {
+                    Map<String, Object> stepEntry = new LinkedHashMap<>();
+                    stepEntry.put("name",     s.getName());
+                    stepEntry.put("offsetMs", s.getOffsetMs());
+                    stepEntry.put("status",   s.getStatus());
+                    if (s.getScreenshotBase64() != null) {
+                        stepEntry.put("screenshotBase64", s.getScreenshotBase64());
+                    }
+                    stepList.add(stepEntry);
+                }
+                testEntry.put("steps", stepList);
             }
 
             testList.add(testEntry);
