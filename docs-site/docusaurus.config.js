@@ -5,7 +5,7 @@ const { themes } = require('prism-react-renderer');
 const config = {
   title: 'Selenium Boot',
   tagline: 'Zero-boilerplate Java test automation — inspired by Spring Boot',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/logo.svg',
 
   url: 'https://seleniumboot.github.io',
   baseUrl: '/selenium-boot/',
