@@ -67,6 +67,6 @@ No `WebDriver` setup. No `@AfterMethod` teardown. No wait helpers. No retry conf
 
 ## Next steps
 
-- [Getting Started](./getting-started) — install and run your first test in under 5 minutes
-- [Configuration Reference](./configuration) — full YAML config documentation
-- [Core Guides](./guides/base-test) — deep dives into each feature
+- [Getting Started](/docs/getting-started) — install and run your first test in under 5 minutes
+- [Configuration Reference](/docs/configuration) — full YAML config documentation
+- [Core Guides](/docs/guides/base-test) — deep dives into each feature
