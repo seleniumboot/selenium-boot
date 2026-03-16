@@ -1,0 +1,62 @@
+:root {
+  --ifm-color-primary: #303f9f;
+  --ifm-color-primary-dark: #2b3990;
+  --ifm-color-primary-darker: #283688;
+  --ifm-color-primary-darkest: #212c70;
+  --ifm-color-primary-light: #3546ae;
+  --ifm-color-primary-lighter: #3849b6;
+  --ifm-color-primary-lightest: #4254c4;
+  --ifm-code-font-size: 92%;
+  --docusaurus-highlighted-code-line-bg: rgba(48, 63, 159, 0.08);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #7986cb;
+  --ifm-color-primary-dark: #677ac6;
+  --ifm-color-primary-darker: #5f72c3;
+  --ifm-color-primary-darkest: #4459b8;
+  --ifm-color-primary-light: #8b92d0;
+  --ifm-color-primary-lighter: #939ad3;
+  --ifm-color-primary-lightest: #aeb3df;
+  --docusaurus-highlighted-code-line-bg: rgba(121, 134, 203, 0.12);
+}
+
+/* Hero */
+.hero--primary {
+  background: linear-gradient(135deg, #303f9f 0%, #1a237e 100%);
+}
+
+/* Feature cards */
+.feature-card {
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.feature-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+/* Code tabs */
+.tabs__item--active {
+  border-bottom-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+}
+
+/* Badge */
+.badge--version {
+  background: var(--ifm-color-primary);
+  color: #fff;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* Admonitions */
+.alert--info {
+  border-left-color: var(--ifm-color-primary);
+}

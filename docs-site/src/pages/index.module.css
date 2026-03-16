@@ -1,0 +1,121 @@
+.heroBanner { padding: 4rem 0; }
+
+.heroInner {
+  display: flex;
+  align-items: flex-start;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+
+.heroText { flex: 1; min-width: 300px; }
+
+.heroBadge {
+  display: inline-block;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.heroTitle {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.75rem;
+  line-height: 1.1;
+}
+
+.heroSubtitle {
+  font-size: 1.15rem;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 1.5rem;
+  max-width: 480px;
+}
+
+.heroButtons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.heroSnippet pre {
+  background: rgba(0,0,0,0.25);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-size: 13px;
+  color: #e8eaf6;
+  margin: 0;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.heroCode {
+  flex: 1;
+  min-width: 320px;
+  max-width: 520px;
+}
+
+.heroCode pre {
+  background: rgba(0,0,0,0.3);
+  border-radius: 10px;
+  padding: 1.5rem;
+  font-size: 13px;
+  color: #e8eaf6;
+  margin: 0;
+  border: 1px solid rgba(255,255,255,0.15);
+  line-height: 1.6;
+}
+
+.featuresSection {
+  padding: 4rem 0;
+  background: var(--ifm-background-surface-color);
+}
+
+.sectionTitle {
+  text-align: center;
+  font-size: 1.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.featureCol { margin-bottom: 1.5rem; }
+
+.featureIcon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+.featureTitle { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+
+.featureDesc { font-size: 14px; color: var(--ifm-color-emphasis-700); margin: 0; }
+
+.quickStart {
+  padding: 4rem 0;
+  background: var(--ifm-color-emphasis-100);
+}
+
+.quickStartInner {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+
+.quickStartInner > div:first-child { flex: 1; min-width: 280px; }
+.quickStartInner > div:first-child p { margin: 1rem 0 1.5rem; color: var(--ifm-color-emphasis-700); }
+
+.quickStartCode { flex: 1; min-width: 280px; }
+
+.quickStartCode pre {
+  background: var(--ifm-code-background);
+  border-radius: 8px;
+  padding: 1.5rem;
+  font-size: 13px;
+  margin: 0;
+  border: 1px solid var(--ifm-color-emphasis-200);
+}
+
+@media (max-width: 768px) {
+  .heroTitle { font-size: 2rem; }
+  .heroCode { display: none; }
+}
