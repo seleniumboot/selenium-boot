@@ -57,6 +57,17 @@ public final class SeleniumBootConfig {
         private List<String> arguments;
         private Map<String, Object> capabilities;
 
+        /**
+         * Controls when the WebDriver session is closed.
+         * <ul>
+         *   <li>{@code per-test}  (default) — browser closes after every test method</li>
+         *   <li>{@code per-suite} — browser stays open for the entire suite; one instance
+         *       per thread, closed only when the suite finishes. Saves startup time on
+         *       large sequential suites.</li>
+         * </ul>
+         */
+        private String lifecycle = "per-test";
+
         public List<String> getArguments() {
             return arguments;
         }
@@ -89,6 +100,9 @@ public final class SeleniumBootConfig {
         public void setHeadless(boolean headless) {
             this.headless = headless;
         }
+
+        public String getLifecycle() { return lifecycle; }
+        public void setLifecycle(String lifecycle) { this.lifecycle = lifecycle; }
     }
 
     public static final class Execution {

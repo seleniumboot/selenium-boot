@@ -78,7 +78,8 @@ public final class SuiteExecutionListener implements ISuiteListener {
                         ? System.currentTimeMillis() : 0L);
 
         ReportAdapterRegistry.generateAll();
-        DriverManager.quitDriver();
+        DriverManager.quitAllSuiteDrivers(); // per-suite lifecycle — quits all kept-alive drivers
+        DriverManager.quitDriver();          // per-test safety net — no-op if already quit
         HookRegistry.onSuiteEnd();
         PluginRegistry.unloadAll();
 

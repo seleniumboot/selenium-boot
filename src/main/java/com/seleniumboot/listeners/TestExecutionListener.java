@@ -51,7 +51,7 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.recordStatus(testId, "PASSED");
         ExecutionMetrics.markEnd(testId);
         HookRegistry.onTestEnd(testId, "PASSED");
-        DriverManager.quitDriver();
+        if (DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         SeleniumBootContext.clearCurrentTestId();
     }
 
@@ -67,7 +67,7 @@ public final class TestExecutionListener implements ITestListener {
         HookRegistry.onTestFailure(testId, result.getThrowable());
         String screenshotPath = ScreenshotManager.capture(testName);
         ExecutionMetrics.recordScreenshot(testId, screenshotPath);
-        DriverManager.quitDriver();
+        if (DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         SeleniumBootContext.clearCurrentTestId();
     }
 
@@ -77,7 +77,7 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.recordStatus(testId, "SKIPPED");
         ExecutionMetrics.markEnd(testId);
         HookRegistry.onTestEnd(testId, "SKIPPED");
-        DriverManager.quitDriver();
+        if (DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         SeleniumBootContext.clearCurrentTestId();
     }
 
