@@ -1,127 +1,109 @@
 ---
 id: hooks
-title: Hooks
+title: Execution Hooks
 sidebar_position: 2
 ---
 
-# Hooks
+# Execution Hooks
 
-Selenium Boot exposes TestNG lifecycle hooks through `BaseTest`. Use them to run setup and teardown logic at the suite, class, or method level.
-
----
-
-## Available hooks
-
-| Method | When it runs |
-|---|---|
-| `@BeforeSuite` | Once before any test in the suite |
-| `@AfterSuite` | Once after all tests in the suite |
-| `@BeforeClass` | Once before the first test in a class |
-| `@AfterClass` | Once after the last test in a class |
-| `@BeforeMethod` | Before each test method |
-| `@AfterMethod` | After each test method (passes/fails/skips) |
+`ExecutionHook` lets you inject behaviour at key points in the test execution lifecycle — suite start/end and per-test start/end/failure. All methods are optional (default no-op).
 
 ---
 
-## Suite-level hooks
+## Create a hook
 
 ```java
-public class BaseSetup extends BaseTest {
+import com.seleniumboot.hooks.ExecutionHook;
 
-    @BeforeSuite(alwaysRun = true)
-    public void globalSetup() {
-        // runs once — connect to test database, set up test data, etc.
+public class TimingHook implements ExecutionHook {
+
+    @Override
+    public void onSuiteStart() {
+        // called once after framework bootstrap, before any test runs
     }
 
-    @AfterSuite(alwaysRun = true)
-    public void globalTeardown() {
-        // runs once — clean up test data, close connections
+    @Override
+    public void onSuiteEnd() {
+        // called once after all reports are generated
+    }
+
+    @Override
+    public void onTestStart(String testId) {
+        // testId = "com.example.LoginTest#loginTest"
+        System.out.println("Starting: " + testId);
+    }
+
+    @Override
+    public void onTestEnd(String testId, String status) {
+        // status = "PASSED" or "SKIPPED"
+        metricsClient.record(testId, status);
+    }
+
+    @Override
+    public void onTestFailure(String testId, Throwable cause) {
+        // called after screenshot is captured, before driver is quit
+        alertService.send("FAILED: " + testId + " — " + cause.getMessage());
     }
 }
 ```
 
-Have all test classes extend `BaseSetup` instead of `BaseTest` directly.
+Only override the methods you need — the others are no-ops by default.
 
 ---
 
-## Class-level hooks
+## Register via Java SPI (auto-discovery)
+
+```
+src/main/resources/META-INF/services/com.seleniumboot.hooks.ExecutionHook
+```
+
+Contents:
+
+```
+com.example.hooks.TimingHook
+```
+
+---
+
+## Register programmatically
 
 ```java
-public class LoginTest extends BaseTest {
+import com.seleniumboot.hooks.HookRegistry;
 
-    @BeforeClass
-    public void setupLoginTestData() {
-        // create test users via API before any LoginTest method runs
-    }
+HookRegistry.register(new TimingHook());
+```
 
-    @AfterClass
-    public void cleanupLoginTestData() {
-        // delete test users after all LoginTest methods complete
-    }
-}
+Call this before the suite starts (e.g. in a `@BeforeSuite` method or a `SeleniumBootPlugin.onLoad`).
+
+---
+
+## Hook event order
+
+```
+onSuiteStart()
+  onTestStart("LoginTest#login")
+  onTestEnd("LoginTest#login", "PASSED")
+
+  onTestStart("CheckoutTest#checkout")
+  onTestFailure("CheckoutTest#checkout", AssertionError)
+  // note: onTestEnd is NOT called when onTestFailure fires
+
+onSuiteEnd()
 ```
 
 ---
 
-## Method-level hooks
+## Error isolation
 
-```java
-public class CheckoutTest extends BaseTest {
-
-    @BeforeMethod
-    public void navigateToStart() {
-        open("/");   // always start from the home page
-    }
-
-    @AfterMethod
-    public void clearCart() {
-        // reset cart state via API if test left it dirty
-    }
-}
-```
+Hook failures are **isolated** — an exception in one hook is logged but does not prevent other hooks from running or affect the test results.
 
 ---
 
-## Accessing the driver in hooks
+## Hook vs Plugin
 
-`getDriver()` is available in any hook — the driver is created before `@BeforeMethod` and destroyed after `@AfterMethod` (in `per-test` lifecycle mode).
-
-```java
-@BeforeMethod
-public void setup() {
-    open("/login");
-    new LoginPage(getDriver()).login("admin", "secret");
-}
-```
-
----
-
-## `@AfterMethod` with `ITestResult`
-
-TestNG passes the test result to `@AfterMethod` if you declare it as a parameter:
-
-```java
-@AfterMethod
-public void afterEach(ITestResult result) {
-    if (!result.isSuccess()) {
-        // extra cleanup only on failure
-        getDriver().manage().deleteAllCookies();
-    }
-}
-```
-
----
-
-## Hook ordering
-
-When multiple classes define the same hook type and form an inheritance chain, TestNG calls them in the expected order:
-
-```
-@BeforeSuite  (grandparent → parent → child)
-@BeforeClass  (grandparent → parent → child)
-@BeforeMethod (grandparent → parent → child)
-  [test runs]
-@AfterMethod  (child → parent → grandparent)
-@AfterClass   (child → parent → grandparent)
-@AfterSuite   (child → parent → grandparent)
-```
+| | `ExecutionHook` | `SeleniumBootPlugin` |
+|---|---|---|
+| Per-test events | Yes | No |
+| Suite events | Yes | Yes (onLoad/onUnload) |
+| Access to config | No | Yes (via onLoad) |
+| Typical use | Per-test metrics, alerts | Initialisation, external clients |

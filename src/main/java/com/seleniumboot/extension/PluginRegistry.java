@@ -28,6 +28,7 @@ public final class PluginRegistry {
         if (!plugins.isEmpty()) return;
         ServiceLoader<SeleniumBootPlugin> loader = ServiceLoader.load(SeleniumBootPlugin.class);
         for (SeleniumBootPlugin plugin : loader) {
+            if (!checkVersion(plugin)) continue;
             plugins.add(plugin);
             plugin.onLoad(config);
             System.out.println("[Selenium Boot] Plugin loaded: " + plugin.getName());
@@ -39,6 +40,7 @@ public final class PluginRegistry {
      * Must be called before framework boot to guarantee correct ordering.
      */
     public static synchronized void register(SeleniumBootPlugin plugin, SeleniumBootConfig config) {
+        if (!checkVersion(plugin)) return;
         plugins.add(plugin);
         plugin.onLoad(config);
         System.out.println("[Selenium Boot] Plugin registered: " + plugin.getName());
@@ -61,5 +63,17 @@ public final class PluginRegistry {
     /** Returns an unmodifiable snapshot of the currently loaded plugins. */
     public static List<SeleniumBootPlugin> getPlugins() {
         return Collections.unmodifiableList(plugins);
+    }
+
+    private static boolean checkVersion(SeleniumBootPlugin plugin) {
+        String required = plugin.minFrameworkVersion();
+        if (FrameworkVersion.isOlderThan(FrameworkVersion.get(), required)) {
+            System.err.println(
+                "[Selenium Boot] Plugin skipped [" + plugin.getName() + "]: requires >= " +
+                required + ", running " + FrameworkVersion.get()
+            );
+            return false;
+        }
+        return true;
     }
 }

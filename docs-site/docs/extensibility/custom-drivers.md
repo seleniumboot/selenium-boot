@@ -1,114 +1,129 @@
 ---
 id: custom-drivers
 title: Custom Drivers
-sidebar_position: 1
+sidebar_position: 3
 ---
 
 # Custom Drivers
 
-Selenium Boot provisions browsers automatically using WebDriverManager. For advanced scenarios — remote grids, cloud providers, custom capabilities — you can take full control of driver creation.
+`NamedDriverProvider` lets you plug in any WebDriver implementation — Edge, Safari, BrowserStack, Appium — without modifying the framework. Custom providers take precedence over the built-in Chrome/Firefox providers.
 
 ---
 
-## Remote WebDriver (Selenium Grid)
-
-Point your tests at a Selenium Grid hub:
-
-```yaml title="selenium-boot.yml"
-browser:
-  type: chrome
-  remote: true
-  remoteUrl: http://selenium-hub:4444/wd/hub
-```
-
-Selenium Boot creates a `RemoteWebDriver` with the configured browser type's capabilities.
-
----
-
-## Cloud providers
-
-### BrowserStack
-
-```yaml
-browser:
-  type: chrome
-  remote: true
-  remoteUrl: https://hub-cloud.browserstack.com/wd/hub
-  capabilities:
-    bstack:options:
-      os: Windows
-      osVersion: 11
-      browserName: Chrome
-      browserVersion: latest
-      userName: ${BROWSERSTACK_USERNAME}
-      accessKey: ${BROWSERSTACK_ACCESS_KEY}
-```
-
-### Sauce Labs
-
-```yaml
-browser:
-  type: chrome
-  remote: true
-  remoteUrl: https://ondemand.saucelabs.com:443/wd/hub
-  capabilities:
-    sauce:options:
-      username: ${SAUCE_USERNAME}
-      accessKey: ${SAUCE_ACCESS_KEY}
-```
-
----
-
-## Custom Chrome options
-
-Pass arbitrary Chrome arguments and preferences:
-
-```yaml
-browser:
-  type: chrome
-  headless: true
-  arguments:
-    - --disable-extensions
-    - --no-sandbox
-    - --disable-dev-shm-usage
-    - --window-size=1920,1080
-```
-
----
-
-## Mobile emulation
-
-```yaml
-browser:
-  type: chrome
-  mobileEmulation:
-    deviceName: iPhone 12 Pro
-```
-
----
-
-## Firefox profile
-
-```yaml
-browser:
-  type: firefox
-  profilePath: /path/to/firefox-profile
-```
-
----
-
-## Using `getDriver()` directly
-
-For anything not covered by configuration, you always have full access to the underlying WebDriver:
+## Create a custom driver provider
 
 ```java
-public class MyTest extends BaseTest {
+import com.seleniumboot.driver.NamedDriverProvider;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
 
-    @Test
-    public void customCapabilityTest() {
-        WebDriver driver = getDriver();
-        // driver is fully configured — cast to ChromeDriver, RemoteWebDriver, etc.
-        ((ChromeDriver) driver).executeCdpCommand("...", Map.of());
+public class EdgeDriverProvider implements NamedDriverProvider {
+
+    @Override
+    public String browserName() {
+        return "edge";   // matched case-insensitively against browser.name in selenium-boot.yml
+    }
+
+    @Override
+    public WebDriver createDriver() {
+        EdgeOptions options = new EdgeOptions();
+        return new EdgeDriver(options);
     }
 }
 ```
+
+---
+
+## Register via Java SPI (auto-discovery)
+
+```
+src/main/resources/META-INF/services/com.seleniumboot.driver.NamedDriverProvider
+```
+
+Contents:
+
+```
+com.example.drivers.EdgeDriverProvider
+```
+
+Then set `browser.name` in your config:
+
+```yaml title="selenium-boot.yml"
+browser:
+  name: edge
+```
+
+Selenium Boot selects your provider automatically.
+
+---
+
+## Register programmatically
+
+```java
+import com.seleniumboot.driver.DriverProviderRegistry;
+
+DriverProviderRegistry.register(new EdgeDriverProvider());
+```
+
+---
+
+## BrowserStack example
+
+```java
+public class BrowserStackProvider implements NamedDriverProvider {
+
+    @Override
+    public String browserName() { return "browserstack"; }
+
+    @Override
+    public WebDriver createDriver() {
+        ChromeOptions options = new ChromeOptions();
+        HashMap<String, Object> bstackOptions = new HashMap<>();
+        bstackOptions.put("userName", System.getenv("BROWSERSTACK_USERNAME"));
+        bstackOptions.put("accessKey", System.getenv("BROWSERSTACK_ACCESS_KEY"));
+        bstackOptions.put("browserName", "Chrome");
+        bstackOptions.put("browserVersion", "latest");
+        options.setCapability("bstack:options", bstackOptions);
+
+        return new RemoteWebDriver(
+            new URL("https://hub-cloud.browserstack.com/wd/hub"), options
+        );
+    }
+}
+```
+
+```yaml title="selenium-boot.yml"
+browser:
+  name: browserstack
+```
+
+---
+
+## Appium example
+
+```java
+public class AndroidAppProvider implements NamedDriverProvider {
+
+    @Override
+    public String browserName() { return "android"; }
+
+    @Override
+    public WebDriver createDriver() {
+        UiAutomator2Options options = new UiAutomator2Options()
+            .setDeviceName("emulator-5554")
+            .setApp("/path/to/app.apk");
+
+        return new AndroidDriver(new URL("http://127.0.0.1:4723"), options);
+    }
+}
+```
+
+---
+
+## Provider selection order
+
+1. **Remote mode** (`browser.mode: remote`) → always uses `RemoteDriverProvider`
+2. **Custom provider** registered via SPI or programmatically → used if `browser.name` matches `browserName()`
+3. **Built-in Chrome** → used if `browser.name: chrome`
+4. **Built-in Firefox** → used if `browser.name: firefox`

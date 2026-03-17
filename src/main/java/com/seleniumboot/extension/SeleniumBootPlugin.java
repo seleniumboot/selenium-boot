@@ -18,6 +18,22 @@ public interface SeleniumBootPlugin {
     String getName();
 
     /**
+     * Minimum Selenium Boot version this plugin requires.
+     *
+     * <p>The framework checks this before calling {@link #onLoad}. If the running
+     * version is older, an {@link IncompatiblePluginException} is thrown and the
+     * plugin is skipped.
+     *
+     * <p>Override this to declare a minimum version:
+     * <pre>
+     * public String minFrameworkVersion() { return "0.7.0"; }
+     * </pre>
+     *
+     * @return minimum required version string, e.g. {@code "0.7.0"}
+     */
+    default String minFrameworkVersion() { return "0.0.0"; }
+
+    /**
      * Called once after the framework config is loaded and validated.
      * Use this to read config values and initialise plugin state.
      */

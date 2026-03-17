@@ -1,130 +1,132 @@
 ---
 id: plugins
-title: Plugins (TestNG Listeners)
-sidebar_position: 3
+title: Plugins
+sidebar_position: 1
 ---
 
-# Plugins (TestNG Listeners)
+# Plugins
 
-Selenium Boot's own listeners (`TestExecutionListener`, `SuiteExecutionListener`, `RetryAnnotationTransformer`) are auto-registered via Java SPI. You can register your own TestNG listeners in exactly the same way.
-
----
-
-## Register a listener via `testng.xml`
-
-The simplest approach — add your listener to the suite XML:
-
-```xml title="testng.xml"
-<suite name="MyTests">
-    <listeners>
-        <listener class-name="com.example.MyCustomListener"/>
-    </listeners>
-    <test name="All Tests">
-        <classes>
-            <class name="com.example.tests.LoginTest"/>
-        </classes>
-    </test>
-</suite>
-```
+`SeleniumBootPlugin` is the main extension point for adding behaviour that runs alongside the framework. Plugins are discovered automatically via Java SPI — no registration code needed in your tests.
 
 ---
 
-## Register a listener via Java SPI
-
-To auto-register a listener whenever your project is on the classpath (useful for shared libraries):
-
-1. Create your listener class:
+## Create a plugin
 
 ```java
-package com.example;
+import com.seleniumboot.config.SeleniumBootConfig;
+import com.seleniumboot.extension.SeleniumBootPlugin;
 
-import org.testng.ITestListener;
-import org.testng.ITestResult;
-
-public class SlackNotificationListener implements ITestListener {
+public class SlackNotificationPlugin implements SeleniumBootPlugin {
 
     @Override
-    public void onTestFailure(ITestResult result) {
-        // post a Slack message when a test fails
-        SlackClient.send("#alerts", "FAILED: " + result.getName());
+    public String getName() {
+        return "slack-notification";
+    }
+
+    @Override
+    public String minFrameworkVersion() {
+        return "0.7.0";   // framework checks this before loading
+    }
+
+    @Override
+    public void onLoad(SeleniumBootConfig config) {
+        // called once after config is loaded — read settings, open connections
+        String baseUrl = config.getBrowser().getBaseUrl();
+        System.out.println("SlackPlugin initialised for " + baseUrl);
+    }
+
+    @Override
+    public void onUnload() {
+        // called once after all reports are generated — flush, close, clean up
     }
 }
 ```
 
-2. Create the SPI registration file:
+---
+
+## Register via Java SPI (auto-discovery)
+
+Create the SPI registration file in your project:
 
 ```
-src/main/resources/META-INF/services/org.testng.ITestNGListener
+src/main/resources/META-INF/services/com.seleniumboot.extension.SeleniumBootPlugin
 ```
 
-Contents:
+Contents — one fully-qualified class name per line:
 
 ```
-com.example.SlackNotificationListener
+com.example.plugins.SlackNotificationPlugin
 ```
 
-TestNG discovers and instantiates this listener automatically at runtime.
+Selenium Boot discovers and loads this plugin automatically when your JAR is on the classpath. No listener registration, no config entries.
 
 ---
 
-## Access Selenium Boot context in a listener
+## Register programmatically
 
-Use `SeleniumBootContext` to read the current config or test ID:
+For plugins that need to be registered before framework boot:
 
 ```java
+import com.seleniumboot.extension.PluginRegistry;
 import com.seleniumboot.context.SeleniumBootContext;
 
-public class MyListener implements ITestListener {
-
-    @Override
-    public void onTestStart(ITestResult result) {
-        String testId = SeleniumBootContext.getCurrentTestId();
-        String baseUrl = SeleniumBootContext.getConfig().getBrowser().getBaseUrl();
-        System.out.println("Starting " + testId + " against " + baseUrl);
-    }
-}
+PluginRegistry.register(new SlackNotificationPlugin(), SeleniumBootContext.getConfig());
 ```
 
 ---
 
-## Access the WebDriver in a listener
+## Version compatibility
+
+Declare the minimum framework version your plugin requires:
 
 ```java
-import com.seleniumboot.driver.DriverManager;
-
-public class MyListener implements ITestListener {
-
-    @Override
-    public void onTestFailure(ITestResult result) {
-        WebDriver driver = DriverManager.getDriver();
-        if (driver != null) {
-            String pageSource = driver.getPageSource();
-            // save page source for debugging
-        }
-    }
+@Override
+public String minFrameworkVersion() {
+    return "0.7.0";
 }
+```
+
+If the running framework is older, the plugin is **skipped with a warning** — it will not fail the build. You can also assert from inside `onLoad`:
+
+```java
+import com.seleniumboot.extension.FrameworkVersion;
+
+@Override
+public void onLoad(SeleniumBootConfig config) {
+    FrameworkVersion.requireAtLeast("0.7.0");  // throws IncompatiblePluginException if too old
+}
+```
+
+Check the current version at runtime:
+
+```java
+String version = FrameworkVersion.get();  // e.g. "0.7.0"
 ```
 
 ---
 
-## ISuiteListener
+## Plugin lifecycle
 
-For suite-level events:
-
-```java
-public class SuiteTimingListener implements ISuiteListener {
-
-    private long suiteStart;
-
-    @Override
-    public void onStart(ISuite suite) {
-        suiteStart = System.currentTimeMillis();
-    }
-
-    @Override
-    public void onFinish(ISuite suite) {
-        long elapsed = System.currentTimeMillis() - suiteStart;
-        System.out.println("Suite completed in " + elapsed + "ms");
-    }
-}
 ```
+Suite starts
+  → PluginRegistry.loadAll()         // SPI discovery + onLoad() called
+  → [all tests run]
+  → Reports generated
+  → PluginRegistry.unloadAll()       // onUnload() called on every plugin
+Suite ends
+```
+
+`onLoad` failures are logged but do not abort the suite. `onUnload` failures are also isolated.
+
+---
+
+## What plugins are good for
+
+| Use case | Approach |
+|---|---|
+| Suite-level setup/teardown | `onLoad` / `onUnload` |
+| Reading framework config | `onLoad(SeleniumBootConfig config)` |
+| Initialising external clients | `onLoad` |
+| Flushing metrics / closing connections | `onUnload` |
+| Per-test events | Use [`ExecutionHook`](/docs/extensibility/hooks) instead |
+| Custom report generation | Use [`ReportAdapter`](/docs/extensibility/report-adapters) instead |

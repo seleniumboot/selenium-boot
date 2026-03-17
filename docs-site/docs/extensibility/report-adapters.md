@@ -6,21 +6,75 @@ sidebar_position: 4
 
 # Report Adapters
 
-Selenium Boot generates an HTML report and a JUnit XML file out of the box. For teams that need additional output formats (Allure, Extent, custom dashboards), you can consume the metrics JSON or hook into the reporting pipeline.
+`ReportAdapter` lets you generate any output format from the metrics JSON — Slack messages, Allure input, email summaries, custom dashboards. The built-in HTML adapter always runs; your adapters are appended after it.
 
 ---
 
-## Metrics JSON
+## Create a report adapter
 
-After every run, Selenium Boot writes a structured JSON file:
+```java
+import com.seleniumboot.reporting.ReportAdapter;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
+
+public class SlackReportAdapter implements ReportAdapter {
+
+    @Override
+    public String getName() {
+        return "slack";
+    }
+
+    @Override
+    public void generate(File metricsJson) {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(metricsJson);
+
+        int total    = root.path("total").asInt();
+        int passed   = root.path("passed").asInt();
+        int failed   = root.path("failed").asInt();
+        double rate  = root.path("passRate").asDouble();
+
+        String message = String.format(
+            "Test run complete — %d/%d passed (%.1f%%)%s",
+            passed, total, rate,
+            failed > 0 ? " :red_circle: " + failed + " failures" : " :white_check_mark:"
+        );
+
+        SlackClient.post("#test-results", message);
+    }
+}
+```
+
+---
+
+## Register via Java SPI (auto-discovery)
 
 ```
-target/selenium-boot-metrics.json
+src/main/resources/META-INF/services/com.seleniumboot.reporting.ReportAdapter
 ```
 
-This file contains all test results, durations, retry counts, step data, and aggregate metrics. It is the source of truth for both the HTML report and JUnit XML.
+Contents:
 
-### Sample structure
+```
+com.example.reporting.SlackReportAdapter
+```
+
+---
+
+## Register programmatically
+
+```java
+import com.seleniumboot.reporting.ReportAdapterRegistry;
+
+ReportAdapterRegistry.register(new SlackReportAdapter());
+```
+
+---
+
+## Metrics JSON structure
+
+The `metricsJson` file (`target/selenium-boot-metrics.json`) passed to `generate()` contains:
 
 ```json
 {
@@ -41,13 +95,10 @@ This file contains all test results, durations, retry counts, step data, and agg
       "endTime": 1710000002341,
       "totalMs": 2341,
       "retryCount": 0,
+      "errorMessage": null,
+      "stackTrace": null,
       "steps": [
-        {
-          "name": "Open login page",
-          "offsetMs": 0,
-          "status": "INFO",
-          "screenshotBase64": null
-        }
+        { "name": "Open login page", "offsetMs": 0, "status": "INFO", "screenshotBase64": null }
       ]
     }
   ]
@@ -56,27 +107,19 @@ This file contains all test results, durations, retry counts, step data, and agg
 
 ---
 
-## Building a custom report from the JSON
+## Adapter execution order
 
-Read `selenium-boot-metrics.json` in any language:
+1. Built-in `HtmlReportAdapter` (always first)
+2. SPI-discovered adapters (in discovery order)
+3. Programmatically registered adapters
 
-```python title="custom_report.py"
-import json
-
-with open('target/selenium-boot-metrics.json') as f:
-    metrics = json.load(f)
-
-print(f"Pass rate: {metrics['passRate']}%")
-for test in metrics['tests']:
-    if test['status'] == 'FAILED':
-        print(f"  FAILED: {test['testId']} — {test.get('errorMessage', 'no message')}")
-```
+Each adapter runs independently — a failure in one is logged but does not prevent others from running.
 
 ---
 
 ## Allure integration
 
-If your team uses Allure reports, add the Allure TestNG adapter alongside Selenium Boot:
+Run Allure alongside Selenium Boot by adding the Allure TestNG dependency. Both register listeners independently via SPI:
 
 ```xml title="pom.xml"
 <dependency>
@@ -86,33 +129,4 @@ If your team uses Allure reports, add the Allure TestNG adapter alongside Seleni
 </dependency>
 ```
 
-Both Selenium Boot listeners and Allure listeners register independently via SPI. They coexist without conflict — you get both report formats from a single test run.
-
----
-
-## Extent Reports integration
-
-```xml title="pom.xml"
-<dependency>
-    <groupId>com.aventstack</groupId>
-    <artifactId>extentreports</artifactId>
-    <version>5.1.1</version>
-</dependency>
-```
-
-Write a custom `ITestListener` that logs to an ExtentReports instance on `onTestSuccess`, `onTestFailure`, etc. Register it via `testng.xml` or SPI alongside Selenium Boot's built-in listeners.
-
----
-
-## Sending results to a dashboard
-
-Use a post-build step to `POST` the metrics JSON to your internal dashboard:
-
-```bash title="GitHub Actions"
-- name: Send metrics to dashboard
-  if: always()
-  run: |
-    curl -X POST https://dashboard.internal/api/runs \
-         -H 'Content-Type: application/json' \
-         -d @target/selenium-boot-metrics.json
-```
+No `ReportAdapter` needed — Allure hooks directly into TestNG. You get both the Selenium Boot HTML report and a full Allure report from a single run.
