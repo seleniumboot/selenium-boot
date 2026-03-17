@@ -67,6 +67,18 @@ public final class SeleniumBootConfig {
          * </ul>
          */
         private String lifecycle = "per-test";
+        private String downloadDir = "./target/downloads";
+        private boolean captureConsoleErrors = false;
+        private boolean failOnConsoleErrors = false;
+
+        public String getDownloadDir() { return downloadDir; }
+        public void setDownloadDir(String downloadDir) { this.downloadDir = downloadDir; }
+
+        public boolean isCaptureConsoleErrors() { return captureConsoleErrors; }
+        public void setCaptureConsoleErrors(boolean captureConsoleErrors) { this.captureConsoleErrors = captureConsoleErrors; }
+
+        public boolean isFailOnConsoleErrors() { return failOnConsoleErrors; }
+        public void setFailOnConsoleErrors(boolean failOnConsoleErrors) { this.failOnConsoleErrors = failOnConsoleErrors; }
 
         public List<String> getArguments() {
             return arguments;
