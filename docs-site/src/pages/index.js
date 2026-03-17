@@ -46,6 +46,16 @@ const features = [
     title: 'CI-Ready',
     description: 'Auto-detects GitHub Actions, Jenkins, CircleCI, and more. Forces headless, adjusts thread count, emits JUnit XML. Includes ready-to-use workflow templates.',
   },
+  {
+    icon: '📋',
+    title: 'Page Object Toolkit',
+    description: 'BasePage provides wait-backed click, type, getText, isDisplayed. SmartLocator tries multiple strategies in order. Built-in iFrame helpers and file upload support.',
+  },
+  {
+    icon: '🔐',
+    title: '@PreCondition',
+    description: 'Eliminate @BeforeMethod login boilerplate. Declare @PreCondition("loginAsAdmin") on a test — the framework runs the setup once, caches cookies + localStorage, and restores the session automatically.',
+  },
 ];
 
 function Feature({ icon, title, description }) {
