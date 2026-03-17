@@ -132,8 +132,17 @@ your-project/
 
 ---
 
+## Working example project
+
+A complete working project is available at:
+**https://github.com/seleniumboot/selenium-boot-test**
+
+Clone it, run `mvn test`, and you'll have a full working suite with page objects, step logging, and retry configured.
+
+---
+
 ## Next steps
 
-- [Configuration Reference](./configuration) — all available config options
-- [BasePage](./guides/base-page) — write clean page objects
-- [Step Logging](./guides/step-logging) — add named steps to your tests
+- [Configuration Reference](/docs/configuration) — all available config options
+- [BasePage](/docs/guides/base-page) — write clean page objects
+- [Step Logging](/docs/guides/step-logging) — add named steps to your tests
