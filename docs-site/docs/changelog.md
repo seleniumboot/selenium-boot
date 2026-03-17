@@ -10,6 +10,26 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [0.8.0] — 2026-03-17
+
+### Added
+- **`BasePage`** — page object base class with `click`, `type`, `getText`, `getAttribute`, `isDisplayed`
+- **iFrame helpers** — `withinFrame(By, Runnable)` and `withinFrameIndex(int, Runnable)` in `BasePage`
+- **File upload helper** — `upload(By, String)` in `BasePage`, resolves classpath and relative paths
+- **`SmartLocator`** — tries multiple locator strategies in order, returns first visible element
+- **`DownloadManager`** — `waitForFile`, `waitForAnyFile`, `clearDownloads` with partial-download detection
+- **`ConsoleErrorCollector`** — JS console error capture via WebDriver logs (Chrome) or injected shim (Firefox)
+- **`@PreCondition`** — session-aware pre-conditions with automatic cookie + localStorage caching
+- **`@ConditionProvider`** — marks provider methods in `BaseConditions` subclasses
+- **`BaseConditions`** — base class for condition providers, gives `getDriver()`, `open()`, `click()`, `type()`
+- **`@SeleniumBootApi`** — annotation marking stable public API with `since` version
+- **`FrameworkVersion`** — runtime version access and `requireAtLeast()` compatibility check
+- **`IncompatiblePluginException`** — thrown when plugin version requirements are not met
+- **`minFrameworkVersion()`** — new method on `SeleniumBootPlugin` for version compatibility declarations
+- **Config additions** — `browser.downloadDir`, `browser.captureConsoleErrors`, `browser.failOnConsoleErrors`
+
+---
+
 ## [0.7.0] — 2026-03-16
 
 ### Added
