@@ -4,6 +4,7 @@ import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.hooks.HookRegistry;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.metrics.ExecutionMetrics;
+import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.reporting.ScreenshotManager;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
@@ -42,6 +43,7 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.recordTestClass(testId, result.getTestClass().getRealClass().getSimpleName());
         ExecutionMetrics.recordDescription(testId, result.getMethod().getDescription());
         DriverManager.createDriver();
+        PreConditionRunner.run(result);
         HookRegistry.onTestStart(testId);
     }
 

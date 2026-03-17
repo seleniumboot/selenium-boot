@@ -8,6 +8,8 @@ import com.seleniumboot.lifecycle.FrameworkBootstrap;
 import com.seleniumboot.metrics.ExecutionMetrics;
 import com.seleniumboot.extension.PluginRegistry;
 import com.seleniumboot.hooks.HookRegistry;
+import com.seleniumboot.precondition.PreConditionRegistry;
+import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.reporting.JUnitXmlReporter;
 import com.seleniumboot.reporting.ReportAdapterRegistry;
 import org.testng.ISuite;
@@ -57,6 +59,7 @@ public final class SuiteExecutionListener implements ISuiteListener {
                 );
             }
 
+            PreConditionRegistry.loadAll();
             HookRegistry.onSuiteStart();
 
         } catch (Exception e) {
@@ -78,6 +81,7 @@ public final class SuiteExecutionListener implements ISuiteListener {
                         ? System.currentTimeMillis() : 0L);
 
         ReportAdapterRegistry.generateAll();
+        PreConditionRunner.clearAll();
         DriverManager.quitAllSuiteDrivers(); // per-suite lifecycle — quits all kept-alive drivers
         DriverManager.quitDriver();          // per-test safety net — no-op if already quit
         HookRegistry.onSuiteEnd();
