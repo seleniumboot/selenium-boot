@@ -5,6 +5,8 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.seleniumboot/selenium-boot)](https://central.sonatype.com/artifact/io.github.seleniumboot/selenium-boot)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
+**[Documentation](https://seleniumboot.github.io/selenium-boot) · [Sample Project](https://github.com/seleniumboot/selenium-boot-test) · [Changelog](#project-status)**
+
 ---
 
 ## Overview
@@ -19,12 +21,19 @@ It eliminates repetitive boilerplate by providing sensible defaults, a standardi
 
 - Automatic WebDriver lifecycle management (no setup/teardown boilerplate)
 - YAML-based configuration with environment profile switching
-- Parallel execution enabled by default
-- Smart explicit waits via `WaitEngine`
+- Parallel execution with thread-safe driver isolation
+- Smart explicit waits via `WaitEngine` — no more `Thread.sleep()`
 - Automatic retry for flaky tests via `@Retryable`
-- Screenshot capture on failure
-- HTML execution report with pass/fail/skip breakdown
-- One-command execution via Maven
+- Screenshot capture on failure, embedded in report
+- Advanced HTML report — pass rate gauge, donut chart, slowest tests, step timeline, dark mode
+- `BasePage` — wait-backed `click`, `type`, `getText`, `isDisplayed`, iFrame helpers, file upload
+- `SmartLocator` — tries multiple `By` strategies in order, returns first visible element
+- `@PreCondition` — session-aware pre-conditions with automatic cookie + localStorage caching
+- `ConsoleErrorCollector` — capture JS console errors (Chrome via logs, Firefox via shim)
+- `DownloadManager` — poll download directory, handle partial files
+- `StepLogger` — named test steps with timestamps and per-step screenshots
+- Plugin system — custom browser providers, report adapters, lifecycle hooks via Java SPI
+- CI-ready — auto-detects GitHub Actions, Jenkins, CircleCI; forces headless, emits JUnit XML
 
 ---
 
@@ -48,7 +57,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.4.0</version>
+    <version>0.8.0</version>
 </dependency>
 
 <dependency>
@@ -89,6 +98,8 @@ execution:
 browser:
   name: chrome          # chrome | firefox
   headless: false
+  lifecycle: per-test   # per-test (default) | per-suite
+  captureConsoleErrors: true
   arguments:
     - --start-maximized
     - --disable-notifications
@@ -125,8 +136,9 @@ your-project/
     └── test/
         └── java/
             └── com/yourcompany/
+                ├── conditions/
+                │   └── AppConditions.java
                 ├── pages/
-                │   ├── BasePage.java
                 │   └── LoginPage.java
                 └── tests/
                     └── LoginTest.java
@@ -134,41 +146,14 @@ your-project/
 
 ---
 
-### Step 4: Create a Base Page (Optional but Recommended)
+### Step 4: Create a Page Object
+
+Extend the framework's built-in `BasePage` — it provides wait-backed interaction helpers out of the box:
 
 ```java
 package com.yourcompany.pages;
 
-import com.seleniumboot.wait.WaitEngine;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-
-public abstract class BasePage {
-
-    protected final WebDriver driver;
-
-    public BasePage(WebDriver driver) {
-        this.driver = driver;
-    }
-
-    protected WebElement waitForVisible(By locator) {
-        return WaitEngine.waitForVisible(locator);
-    }
-
-    protected WebElement waitForClickable(By locator) {
-        return WaitEngine.waitForClickable(locator);
-    }
-}
-```
-
----
-
-### Step 5: Create a Page Object
-
-```java
-package com.yourcompany.pages;
-
+import com.seleniumboot.test.BasePage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -183,23 +168,25 @@ public class LoginPage extends BasePage {
     }
 
     public void login(String username, String password) {
-        waitForVisible(usernameField).sendKeys(username);
-        driver.findElement(passwordField).sendKeys(password);
-        waitForClickable(loginButton).click();
+        type(usernameField, username);
+        type(passwordField, password);
+        click(loginButton);
     }
 }
 ```
 
+`BasePage` provides: `click`, `type`, `getText`, `getAttribute`, `isDisplayed`, `withinFrame`, `withinFrameIndex`, `upload`. All backed by `WaitEngine` — no manual waits needed.
+
 ---
 
-### Step 6: Write Your Tests
+### Step 5: Write Your Tests
 
 Extend `BaseTest` — that's all the setup needed:
 
 ```java
 package com.yourcompany.tests;
 
-import com.seleniumboot.listeners.Retryable;
+import com.seleniumboot.steps.StepLogger;
 import com.seleniumboot.test.BaseTest;
 import com.yourcompany.pages.LoginPage;
 import org.testng.annotations.Test;
@@ -210,27 +197,12 @@ public class LoginTest extends BaseTest {
 
     @Test
     public void loginWithValidCredentials() {
-        open();                                          // navigates to baseUrl
-        LoginPage loginPage = new LoginPage(getDriver());
-        loginPage.login("admin", "password123");
-        assertTrue(getDriver().getCurrentUrl().contains("/dashboard"));
-    }
+        StepLogger.step("Open login page");
+        open();
 
-    @Test
-    public void loginToSpecificPath() {
-        open("/login");                                  // navigates to baseUrl + /login
-        LoginPage loginPage = new LoginPage(getDriver());
-        loginPage.login("admin", "password123");
-        assertTrue(getDriver().getTitle().contains("Dashboard"));
-    }
+        StepLogger.step("Enter credentials and submit", true);
+        new LoginPage(getDriver()).login("admin", "password123");
 
-    @Retryable
-    @Test
-    public void flakyLoginTest() {
-        open("/login");
-        // This test will retry up to maxAttempts times on failure
-        LoginPage loginPage = new LoginPage(getDriver());
-        loginPage.login("admin", "password123");
         assertTrue(getDriver().getCurrentUrl().contains("/dashboard"));
     }
 }
@@ -244,7 +216,7 @@ public class LoginTest extends BaseTest {
 
 ---
 
-### Step 7: Run Tests
+### Step 6: Run Tests
 
 ```bash
 mvn test
@@ -254,7 +226,7 @@ That's it. Selenium Boot handles driver creation, parallel execution, retries, s
 
 ---
 
-### Step 8: View the Report
+### Step 7: View the Report
 
 After execution, open the HTML report:
 
@@ -263,11 +235,53 @@ target/selenium-boot-report.html
 ```
 
 The report includes:
-- Suite-level summary (total / passed / failed / skipped)
-- Per-test execution time
-- Pass/fail/skip status with color coding
-- Slowest test detection
-- Failure screenshots (linked inline)
+- Pass rate gauge with colour coding
+- Donut chart — pass/fail/skip distribution
+- Per-test execution time and retry badges
+- Step timeline per test
+- Failure screenshots (base64 embedded, click to expand)
+- Dark mode toggle
+
+---
+
+## @PreCondition — Session Caching
+
+Eliminate repeated login boilerplate. Declare a condition once, cache the session, reuse it across tests:
+
+```java
+// 1. Define conditions
+public class AppConditions extends BaseConditions {
+
+    @ConditionProvider("loginAsAdmin")
+    public void loginAsAdmin() {
+        open("/");
+        new LoginPage(getDriver()).login("admin", "secret");
+    }
+}
+```
+
+```
+// 2. Register via SPI
+src/test/resources/META-INF/services/com.seleniumboot.precondition.BaseConditions
+→ com.yourcompany.conditions.AppConditions
+```
+
+```java
+// 3. Use in tests
+@Test
+@PreCondition("loginAsAdmin")
+public void viewDashboard() {
+    open("/dashboard");  // session already established — no re-login
+}
+
+@Test
+@PreCondition("loginAsAdmin")
+public void editProfile() {
+    open("/profile");    // session restored from cache
+}
+```
+
+Cache is per-thread — safe for parallel execution. On retry, cache is invalidated and the condition re-runs fresh.
 
 ---
 
@@ -279,17 +293,12 @@ The report includes:
 import com.seleniumboot.wait.WaitEngine;
 import org.openqa.selenium.By;
 
-// Wait for an element to be visible, then return it
-WebElement el = WaitEngine.waitForVisible(By.id("submit-btn"));
-
-// Wait for an element to be clickable, then return it
+WebElement el  = WaitEngine.waitForVisible(By.id("submit-btn"));
 WebElement btn = WaitEngine.waitForClickable(By.cssSelector(".next-btn"));
-
-// Wait for page title to match exactly
 WaitEngine.waitForTitle("Dashboard");
-
-// Wait for URL to contain a string
 WaitEngine.waitForUrlContains("/dashboard");
+WaitEngine.waitForText(By.id("status"), "Complete");
+WaitEngine.waitForPageLoad();
 ```
 
 ---
@@ -347,89 +356,40 @@ mvn test -Denv=staging
 
 ## Extending the Framework
 
-Selenium Boot 0.3.0 exposes four extension points. All support both **Java SPI** (automatic discovery) and **programmatic registration**.
-
----
+Selenium Boot exposes four extension points. All support both **Java SPI** (automatic discovery) and **programmatic registration**.
 
 ### Custom Driver Provider
 
-Support browsers beyond Chrome and Firefox (Edge, Safari, Opera, etc.) without forking the framework.
-
-**1. Implement `NamedDriverProvider`:**
-
 ```java
 public class EdgeDriverProvider implements NamedDriverProvider {
-
-    @Override
-    public String browserName() { return "edge"; }
-
-    @Override
-    public WebDriver createDriver() {
-        EdgeOptions options = new EdgeOptions();
-        return new EdgeDriver(options);
-    }
+    @Override public String browserName() { return "edge"; }
+    @Override public WebDriver createDriver() { return new EdgeDriver(); }
 }
 ```
 
-**2a. Register via SPI** — create `src/main/resources/META-INF/services/com.seleniumboot.driver.NamedDriverProvider` containing:
-```
-com.yourcompany.driver.EdgeDriverProvider
-```
-
-**2b. Or register programmatically** (before framework boot):
+Register via SPI (`META-INF/services/com.seleniumboot.driver.NamedDriverProvider`) or:
 ```java
 DriverProviderRegistry.register(new EdgeDriverProvider());
 ```
 
-**3. Set in config:**
-```yaml
-browser:
-  name: edge
-```
-
----
-
 ### Custom Report Adapter
-
-Deliver test results to any destination — Slack, email, Allure, etc.
 
 ```java
 public class SlackReportAdapter implements ReportAdapter {
-
-    @Override
-    public String getName() { return "slack"; }
-
-    @Override
-    public void generate(File metricsJson) {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(metricsJson);
-        int failed = root.get("failedTests").asInt();
-        if (failed > 0) slackClient.post("❌ " + failed + " test(s) failed");
-    }
+    @Override public String getName() { return "slack"; }
+    @Override public void generate(File metricsJson) { /* post to Slack */ }
 }
 ```
 
-Register via SPI (`com.seleniumboot.reporting.ReportAdapter`) or:
+Register via SPI (`META-INF/services/com.seleniumboot.reporting.ReportAdapter`) or:
 ```java
 ReportAdapterRegistry.register(new SlackReportAdapter());
 ```
 
-The built-in HTML report is always generated; custom adapters run after it.
-
----
-
 ### Lifecycle Hooks
-
-React to suite and test events without subclassing any framework class.
 
 ```java
 public class TimingHook implements ExecutionHook {
-
-    @Override
-    public void onTestEnd(String testId, String status) {
-        observability.record(testId, status);
-    }
-
     @Override
     public void onTestFailure(String testId, Throwable cause) {
         alerting.notify(testId, cause.getMessage());
@@ -437,60 +397,25 @@ public class TimingHook implements ExecutionHook {
 }
 ```
 
-Available events: `onSuiteStart`, `onSuiteEnd`, `onTestStart(testId)`, `onTestEnd(testId, status)`, `onTestFailure(testId, cause)`.
-
-Register via SPI (`com.seleniumboot.hooks.ExecutionHook`) or:
-```java
-HookRegistry.register(new TimingHook());
-```
-
----
+Available events: `onSuiteStart`, `onSuiteEnd`, `onTestStart`, `onTestEnd`, `onTestFailure`.
 
 ### Plugin System
 
-Plugins combine driver providers, report adapters, and hooks into a single deployable unit, and gain access to the full framework config at load time.
+Combine driver providers, report adapters, and hooks into a single deployable unit:
 
 ```java
 public class MyPlugin implements SeleniumBootPlugin {
-
-    @Override
-    public String getName() { return "my-plugin"; }
-
-    @Override
-    public void onLoad(SeleniumBootConfig config) {
-        // read config, register adapters/hooks/providers
+    @Override public String getName() { return "my-plugin"; }
+    @Override public void onLoad(SeleniumBootConfig config) {
         ReportAdapterRegistry.register(new SlackReportAdapter());
-        HookRegistry.register(new TimingHook());
-    }
-
-    @Override
-    public void onUnload() {
-        // flush resources, close connections
     }
 }
 ```
 
-Register via SPI (`com.seleniumboot.extension.SeleniumBootPlugin`) or:
+Declare minimum required framework version to prevent incompatibility:
 ```java
-PluginRegistry.register(new MyPlugin(), config);
+@Override public String minFrameworkVersion() { return "0.8.0"; }
 ```
-
----
-
-### Framework-safe Config Defaults
-
-Override framework defaults programmatically — ideal for shared test-base JARs that establish org-wide baselines, which individual projects override via their own `selenium-boot.yml`.
-
-```java
-// Call this before FrameworkBootstrap runs (e.g., in a static initializer)
-SeleniumBootDefaults.set("browser.name", "edge");
-SeleniumBootDefaults.set("timeouts.explicit", 15);
-SeleniumBootDefaults.set("execution.maxActiveSessions", 10);
-```
-
-YAML values always win over defaults set here.
-
-**Supported keys:** `browser.name`, `timeouts.explicit`, `timeouts.pageLoad`, `execution.maxActiveSessions`, `execution.threadCount`, `retry.maxAttempts`.
 
 ---
 
@@ -498,93 +423,106 @@ YAML values always win over defaults set here.
 
 Selenium Boot auto-detects CI environments and applies sensible defaults — no YAML changes required.
 
-### What Happens Automatically in CI
-
-When `CI`, `GITHUB_ACTIONS`, `JENKINS_URL`, or any other well-known CI env var is set:
-
-- `browser.headless` is forced to `true` (CI agents have no display)
-- `threadCount` is auto-derived from available CPU cores (when left at default `1` with parallel mode enabled)
-- Docker/container flags (`--no-sandbox`, `--disable-dev-shm-usage`) are auto-applied to Chrome when running inside a container
-
-### JUnit XML Output
-
-Every run produces `target/surefire-reports/TEST-SeleniumBoot.xml` — parsed natively by Jenkins, GitHub Actions, GitLab CI, and most CI systems without plugins.
+- `browser.headless` is forced to `true`
+- `threadCount` is auto-derived from available CPU cores
+- Docker/container flags (`--no-sandbox`, `--disable-dev-shm-usage`) are auto-applied to Chrome
+- JUnit XML written to `target/surefire-reports/TEST-SeleniumBoot.xml` on every run
 
 ### Build Quality Gates
-
-Optionally fail the build if test quality drops below a threshold. Add to `selenium-boot.yml`:
 
 ```yaml
 ci:
   failOnPassRateBelow: 80   # fail build if pass rate drops below 80%
-  maxFlakyTests: 3          # fail build if more than 3 tests were retried before passing
+  maxFlakyTests: 3          # fail build if more than 3 tests were retried
 ```
-
-Both thresholds are disabled by default (`failOnPassRateBelow: 0`, `maxFlakyTests: -1`).
-
-### CI Templates
-
-Ready-to-use templates are included:
-
-| Template | Location |
-|---|---|
-| GitHub Actions | `.github/workflows/selenium-boot.yml` |
-| Jenkins | `ci/Jenkinsfile` |
-
-Both templates handle Chrome setup, test execution, artifact upload (HTML report, JUnit XML, metrics JSON), and test result publishing automatically.
 
 ---
 
 ## Project Status
 
-**v0.4.0 – CI/CD & Enterprise Readiness**
+### v0.8.0 — 2026-03-17
 
-Seamless integration into enterprise pipelines — zero config changes needed in most CI environments:
-
-- **CI auto-detection** — `CiEnvironmentDetector` identifies GitHub Actions, Jenkins, CircleCI, GitLab CI, Travis, TeamCity, and Bitbucket Pipelines; forces headless and tunes thread count automatically
-- **Container detection** — detects Docker (via `/.dockerenv`) and Kubernetes (via `KUBERNETES_SERVICE_HOST`); auto-applies `--no-sandbox`, `--disable-dev-shm-usage` to Chrome
-- **JUnit XML report** — `JUnitXmlReporter` writes `target/surefire-reports/TEST-SeleniumBoot.xml` on every run; parsed natively by all major CI platforms
-- **Build quality gates** — `BuildThresholdEnforcer` enforces pass-rate and flaky-test thresholds; breaching a gate throws `BuildQualityGateException` which fails the Maven build
-- **CI templates** — `.github/workflows/selenium-boot.yml` (GitHub Actions) and `ci/Jenkinsfile` (Jenkins) included out of the box with report upload and test result publishing
-- **Unit tests** — all Phase 4 classes covered: `CiEnvironmentDetectorTest`, `BuildThresholdEnforcerTest`, `JUnitXmlReporterTest`
-
----
-
-**v0.3.0 – Extensibility Release**
-
-Full extensibility layer — extend any part of the framework without forking it:
-
-- **Plugin system** — `SeleniumBootPlugin` + `PluginRegistry`; plugins discovered via Java SPI, activated at framework boot, unloaded after suite finish
-- **Custom driver providers** — `NamedDriverProvider` + `DriverProviderRegistry`; register Edge, Safari, or any browser provider via SPI or programmatically; takes precedence over built-in Chrome/Firefox providers
-- **Custom report adapters** — `ReportAdapter` + `ReportAdapterRegistry`; deliver results to Slack, email, Allure, or any destination; built-in HTML adapter always runs first
-- **Lifecycle hooks** — `ExecutionHook` + `HookRegistry`; react to `onSuiteStart`, `onSuiteEnd`, `onTestStart`, `onTestEnd`, `onTestFailure` without subclassing anything
-- **Framework-safe defaults** — `SeleniumBootDefaults`; programmatically set config defaults before YAML is applied; ideal for shared test-base JARs
-- **SPI descriptors** — four `META-INF/services/` files ready to populate for zero-config extension discovery
-- **Unit tests** — all five extension points covered: `PluginRegistryTest`, `HookRegistryTest`, `ReportAdapterRegistryTest`, `DriverProviderRegistryTest`, `SeleniumBootDefaultsTest`
+- **`BasePage`** — page object base class: `click`, `type`, `getText`, `isDisplayed`, `withinFrame`, `withinFrameIndex`, `upload`
+- **`SmartLocator`** — tries multiple `By` strategies in order, returns first visible element
+- **`DownloadManager`** — `waitForFile`, `waitForAnyFile`, `clearDownloads` with partial-download detection
+- **`ConsoleErrorCollector`** — JS console error capture (Chrome via WebDriver logs, Firefox via injected shim)
+- **`@PreCondition`** — session-aware pre-conditions with cookie + localStorage caching per thread
+- **`@ConditionProvider`** + `BaseConditions` — define named condition providers, registered via SPI
+- **`@SeleniumBootApi`** — annotation marking stable public API with `since` version
+- **`FrameworkVersion`** + `minFrameworkVersion()` — runtime version checks, plugin compatibility enforcement
+- **Config additions** — `browser.downloadDir`, `browser.captureConsoleErrors`, `browser.failOnConsoleErrors`
 
 ---
 
-**v0.2.0 – Enhancements Release**
+### v0.7.0 — 2026-03-16
 
-Stability and usability improvements across the core framework:
-
-- **Thread-safety** — `SeleniumBootContext` now uses `AtomicReference` for lock-free, race-free config publishing
-- **Session management** — `DriverManager` session limit uses a fair `Semaphore` (30s timeout) instead of fail-fast; parallel tests wait for a slot rather than erroring
-- **Global retry** — `retry.enabled=true` in YAML now retries all tests without requiring `@Retryable` per method
-- **WaitEngine** — expanded with `waitForInvisible`, `waitForStaleness`, `waitForText`, `waitForAttributeContains`, `waitForPageLoad`, and a custom `wait(ExpectedCondition)` escape hatch
-- **BasePage** — pre-built interaction helpers (`click`, `type`, `getText`, `getAttribute`, `isDisplayed`) eliminate boilerplate in page objects
-- **Screenshots embedded** — failure screenshots are now base64-encoded into the HTML report (click to expand); no broken links when sharing reports
-- **Metrics history** — timestamped JSON copies written to `target/metrics-history/` for CI archiving; primary `selenium-boot-metrics.json` unchanged
-- **Config fallback** — `ConfigurationLoader` supports `-Dselenium.boot.config=`, working-directory file, then classpath (priority order)
-- **JUnit 5 support** — `SeleniumBootExtension`, `@EnableSeleniumBoot`, and `BaseJUnit5Test` allow JUnit 5 projects to use the framework alongside TestNG users
-- **HTML report template** — extracted to `src/main/resources/report-template.html`; editable without recompiling
-- **Unit tests** — framework internals covered by `ExecutionMetricsTest`, `SeleniumBootContextTest`, `ConfigurationLoaderTest`, `RetryListenerTest`
+- **`StepLogger`** — named test steps with timestamps and optional per-step screenshots
+- **Step timeline** — step-by-step execution timeline in the HTML report Failures tab
+- **Tabbed HTML report** — Dashboard, Test Cases, and Failures tabs with collapsible rows
+- **Browser lifecycle** — `browser.lifecycle: per-test | per-suite` configuration
 
 ---
 
-**v0.1.0 – Initial Release**
+### v0.6.0 — 2025-12-01
 
-Core framework is implemented and functional. Includes WebDriver lifecycle management, YAML-based configuration, parallel execution, automatic retry via `@Retryable`, explicit waits, screenshot capture on failure, and HTML execution reports with pass/fail/skip tracking.
+- **Advanced HTML report** — pass rate gauge, donut chart, slowest tests card, retry badges
+- **Self-contained report** — screenshots base64-encoded, single file, no external dependencies
+
+---
+
+### v0.5.0 — 2025-10-15
+
+- **Retry support** — `retry.enabled` + `retry.maxAttempts` in `selenium-boot.yml`
+- **`@Retryable`** — per-method retry override
+- **Retry metrics** — retry counts tracked in `ExecutionMetrics` and exported to JSON
+
+---
+
+### v0.4.0 — 2025-08-20
+
+- **CI auto-detection** — GitHub Actions, Jenkins, CircleCI, GitLab CI; forces headless, tunes thread count
+- **Container detection** — Docker and Kubernetes; auto-applies Chrome container flags
+- **JUnit XML reporter** — `target/surefire-reports/TEST-SeleniumBoot.xml`
+- **Build quality gates** — `BuildThresholdEnforcer` enforces pass-rate and flaky-test thresholds
+- **CI templates** — GitHub Actions workflow and Jenkinsfile included
+
+---
+
+### v0.3.0 — 2025-06-10
+
+- **Plugin system** — `SeleniumBootPlugin` + `PluginRegistry` with SPI discovery
+- **Custom driver providers** — `NamedDriverProvider` + `DriverProviderRegistry`
+- **Custom report adapters** — `ReportAdapter` + `ReportAdapterRegistry`
+- **Lifecycle hooks** — `ExecutionHook` + `HookRegistry`
+- **`SeleniumBootDefaults`** — programmatic config defaults for shared test-base JARs
+
+---
+
+### v0.2.0 — 2025-04-05
+
+- **`WaitEngine`** — fluent explicit wait API
+- **Thread-safe config** — `SeleniumBootContext` with `AtomicReference`
+- **Session semaphore** — `maxActiveSessions` cap with fair wait
+- **Global retry** — `retry.enabled: true` retries all tests without `@Retryable`
+
+---
+
+### v0.1.0 — 2025-02-01
+
+- Initial release — Chrome/Firefox, TestNG integration, `selenium-boot.yml`, basic HTML report, screenshot on failure
+
+---
+
+## Sample Project
+
+A working demo project covering all framework features is available at:
+**[github.com/seleniumboot/selenium-boot-test](https://github.com/seleniumboot/selenium-boot-test)**
+
+---
+
+## Documentation
+
+Full documentation at **[seleniumboot.github.io/selenium-boot](https://seleniumboot.github.io/selenium-boot)**
 
 ---
 
@@ -596,7 +534,7 @@ Licensed under the [Apache License, Version 2.0](LICENSE).
 
 ## Contributing
 
-See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
