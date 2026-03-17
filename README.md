@@ -59,12 +59,6 @@ Add to your `pom.xml`:
     <artifactId>selenium-boot</artifactId>
     <version>0.8.0</version>
 </dependency>
-
-<dependency>
-    <groupId>org.testng</groupId>
-    <artifactId>testng</artifactId>
-    <version>7.9.0</version>
-</dependency>
 ```
 
 Also add the Surefire plugin so `mvn test` discovers TestNG tests:
