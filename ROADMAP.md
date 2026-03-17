@@ -106,7 +106,7 @@ The roadmap is intentionally opinionated and incremental. Each phase focuses on 
 - ✅ Official documentation website — live at https://seleniumboot.github.io/selenium-boot/
 - ~~Sample reference projects~~ — replaced by the consumer test project at https://github.com/seleniumboot/selenium-boot-test
 - ✅ Community contribution guidelines — see CONTRIBUTING.md
-- Versioned plugin ecosystem
+- ✅ Versioned plugin ecosystem — `FrameworkVersion`, `minFrameworkVersion()`, `IncompatiblePluginException`
 - Backward compatibility guarantees
 
 ---
