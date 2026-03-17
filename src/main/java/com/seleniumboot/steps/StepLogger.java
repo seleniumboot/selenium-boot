@@ -1,5 +1,6 @@
 package com.seleniumboot.steps;
 
+import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.metrics.ExecutionMetrics;
 import com.seleniumboot.reporting.ScreenshotManager;
@@ -19,6 +20,7 @@ import com.seleniumboot.reporting.ScreenshotManager;
  *
  * <p>Thread-safe — safe to use in parallel test execution.
  */
+@SeleniumBootApi(since = "0.7.0")
 public final class StepLogger {
 
     private StepLogger() {}

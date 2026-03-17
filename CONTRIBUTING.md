@@ -119,6 +119,45 @@ Describe:
 
 ---
 
+## Backward compatibility policy
+
+Selenium Boot follows these rules to protect users from unexpected breakage:
+
+### Stable API (`@SeleniumBootApi`)
+Classes and interfaces annotated with `@SeleniumBootApi` are the public contract:
+
+| Rule | Detail |
+|---|---|
+| No renaming | `open()` stays `open()`, `getDriver()` stays `getDriver()` |
+| No removal | Stable methods are never deleted within a major version |
+| No signature changes | Parameter types and return types are frozen |
+| New interface methods must be `default` | So existing implementations continue to compile |
+| Config keys are frozen | `browser.name`, `retry.maxAttempts` etc. never change |
+| Breaking changes — major versions only | `0.x → 1.0` or `1.x → 2.0` may break; minor/patch never do |
+
+### Internal classes (no `@SeleniumBootApi`)
+Classes without `@SeleniumBootApi` are implementation details and may change at any time. Do not depend on them in external code.
+
+### Deprecation process
+Before removing a stable API:
+1. Annotate with `@Deprecated` for at least one minor version
+2. Add a Javadoc note pointing to the replacement
+3. Remove only in the next major version
+
+### Adding new methods to stable interfaces
+Always provide a `default` implementation:
+
+```java
+// ✅ safe — existing implementations are unaffected
+@SeleniumBootApi(since = "0.8.0")
+default void onTestRetry(String testId, int attempt) {}
+
+// ❌ breaking — forces all implementations to add the method
+void onTestRetry(String testId, int attempt);
+```
+
+---
+
 ## Code style
 
 - Follow existing code style — no formatter config is enforced, just be consistent

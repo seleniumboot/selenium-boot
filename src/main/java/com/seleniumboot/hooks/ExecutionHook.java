@@ -1,5 +1,7 @@
 package com.seleniumboot.hooks;
 
+import com.seleniumboot.api.SeleniumBootApi;
+
 /**
  * Lifecycle hook for Selenium Boot execution events.
  *
@@ -20,6 +22,7 @@ package com.seleniumboot.hooks;
  * }
  * </pre>
  */
+@SeleniumBootApi(since = "0.3.0")
 public interface ExecutionHook {
 
     /** Called once when the TestNG suite starts, after framework bootstrap. */

@@ -1,5 +1,6 @@
 package com.seleniumboot.extension;
 
+import com.seleniumboot.api.SeleniumBootApi;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -13,6 +14,7 @@ import java.util.Properties;
  * }
  * </pre>
  */
+@SeleniumBootApi(since = "0.7.0")
 public final class FrameworkVersion {
 
     private static final String VERSION = loadVersion();

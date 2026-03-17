@@ -1,5 +1,6 @@
 package com.seleniumboot.test;
 
+import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.listeners.SuiteExecutionListener;
@@ -17,6 +18,7 @@ import org.testng.annotations.Listeners;
  * - Tests must NOT create or quit WebDriver
  * - Tests must NOT manage waits or retries
  */
+@SeleniumBootApi(since = "0.1.0")
 @Listeners({
         SuiteExecutionListener.class,
         TestExecutionListener.class

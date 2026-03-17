@@ -1,5 +1,6 @@
 package com.seleniumboot.reporting;
 
+import com.seleniumboot.api.SeleniumBootApi;
 import java.io.File;
 
 /**
@@ -23,6 +24,7 @@ import java.io.File;
  * }
  * </pre>
  */
+@SeleniumBootApi(since = "0.3.0")
 public interface ReportAdapter {
 
     /** Unique human-readable name used in log messages. */

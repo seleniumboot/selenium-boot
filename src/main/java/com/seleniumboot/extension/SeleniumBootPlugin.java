@@ -1,5 +1,6 @@
 package com.seleniumboot.extension;
 
+import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.config.SeleniumBootConfig;
 
 /**
@@ -12,6 +13,7 @@ import com.seleniumboot.config.SeleniumBootConfig;
  * <p>Plugins can also be registered programmatically before framework boot:
  * <pre>PluginRegistry.register(new MyPlugin(), config);</pre>
  */
+@SeleniumBootApi(since = "0.3.0")
 public interface SeleniumBootPlugin {
 
     /** Unique human-readable name used in log messages. */

@@ -1,5 +1,7 @@
 package com.seleniumboot.driver;
 
+import com.seleniumboot.api.SeleniumBootApi;
+
 /**
  * Extension of {@link DriverProvider} for use with Java SPI.
  *
@@ -17,6 +19,7 @@ package com.seleniumboot.driver;
  * }
  * </pre>
  */
+@SeleniumBootApi(since = "0.3.0")
 public interface NamedDriverProvider extends DriverProvider {
 
     /**

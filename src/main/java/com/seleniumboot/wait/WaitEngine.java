@@ -1,5 +1,6 @@
 package com.seleniumboot.wait;
 
+import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import org.openqa.selenium.By;
@@ -19,6 +20,7 @@ import java.time.Duration;
  * <li>Timeout always comes from configuration (selenium-boot.yml)</li>
  * <li>Use {@link #wait(ExpectedCondition)} for conditions not covered here</li>
  */
+@SeleniumBootApi(since = "0.4.0")
 public final class WaitEngine {
 
     private WaitEngine() {
