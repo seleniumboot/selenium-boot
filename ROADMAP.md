@@ -99,12 +99,12 @@ The roadmap is intentionally opinionated and incremental. Each phase focuses on 
 
 ## Phase 5 – Ecosystem & Community (v1.0)
 
-**Status:** Next
+**Status:** In Progress
 **Goal:** Establish Selenium Boot as a stable ecosystem
 
 ### Features
-- Official documentation website
-- Sample reference projects
+- ✅ Official documentation website — live at https://seleniumboot.github.io/selenium-boot/
+- ~~Sample reference projects~~ — replaced by the existing consumer test project
 - Community contribution guidelines
 - Versioned plugin ecosystem
 - Backward compatibility guarantees
