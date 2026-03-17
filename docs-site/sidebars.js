@@ -17,6 +17,10 @@ const sidebars = {
         'guides/step-logging',
         'guides/browser-lifecycle',
         'guides/parallel',
+        'guides/smart-locator',
+        'guides/download-manager',
+        'guides/console-errors',
+        'guides/precondition',
       ],
     },
     {
