@@ -10,6 +10,13 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [0.9.0] — 2026-03-18
+
+### Added
+- **`BasePage` expanded** — dropdowns (`selectByText`, `selectByValue`, `selectByIndex`, `getSelectedOption`), alerts (`acceptAlert`, `dismissAlert`, `getAlertText`, `typeInAlert`), mouse actions (`hover`, `doubleClick`, `rightClick`), scroll (`scrollTo`, `scrollToTop`, `scrollToBottom`), JS fallbacks (`jsClick`, `jsType`)
+
+---
+
 ## [0.8.0] — 2026-03-17
 
 ### Added
