@@ -3,8 +3,11 @@ package com.seleniumboot.test;
 import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.wait.WaitEngine;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.Select;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -85,6 +88,162 @@ public abstract class BasePage {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    // ----------------------------------------------------------
+    // Dropdown helpers (HTML <select>)
+    // ----------------------------------------------------------
+
+    /**
+     * Selects an option from a {@code <select>} element by its visible text.
+     *
+     * <pre>selectByText(By.id("country"), "United Kingdom");</pre>
+     */
+    protected void selectByText(By locator, String text) {
+        new Select(WaitEngine.waitForVisible(locator)).selectByVisibleText(text);
+    }
+
+    /**
+     * Selects an option from a {@code <select>} element by its {@code value} attribute.
+     *
+     * <pre>selectByValue(By.id("status"), "active");</pre>
+     */
+    protected void selectByValue(By locator, String value) {
+        new Select(WaitEngine.waitForVisible(locator)).selectByValue(value);
+    }
+
+    /**
+     * Selects an option from a {@code <select>} element by its zero-based index.
+     *
+     * <pre>selectByIndex(By.id("month"), 2);</pre>
+     */
+    protected void selectByIndex(By locator, int index) {
+        new Select(WaitEngine.waitForVisible(locator)).selectByIndex(index);
+    }
+
+    /**
+     * Returns the visible text of the currently selected option in a {@code <select>} element.
+     */
+    protected String getSelectedOption(By locator) {
+        return new Select(WaitEngine.waitForVisible(locator)).getFirstSelectedOption().getText();
+    }
+
+    // ----------------------------------------------------------
+    // Alert helpers
+    // ----------------------------------------------------------
+
+    /**
+     * Accepts (clicks OK on) the currently open browser alert.
+     */
+    protected void acceptAlert() {
+        driver.switchTo().alert().accept();
+    }
+
+    /**
+     * Dismisses (clicks Cancel on) the currently open browser alert.
+     */
+    protected void dismissAlert() {
+        driver.switchTo().alert().dismiss();
+    }
+
+    /**
+     * Returns the text of the currently open browser alert.
+     */
+    protected String getAlertText() {
+        return driver.switchTo().alert().getText();
+    }
+
+    /**
+     * Types text into a prompt alert, then accepts it.
+     *
+     * <pre>typeInAlert("my input");</pre>
+     */
+    protected void typeInAlert(String text) {
+        driver.switchTo().alert().sendKeys(text);
+        driver.switchTo().alert().accept();
+    }
+
+    // ----------------------------------------------------------
+    // Mouse action helpers
+    // ----------------------------------------------------------
+
+    /**
+     * Moves the mouse over the element (hover / mouse-over).
+     *
+     * <pre>hover(By.id("menu-item"));</pre>
+     */
+    protected void hover(By locator) {
+        WebElement el = WaitEngine.waitForVisible(locator);
+        new Actions(driver).moveToElement(el).perform();
+    }
+
+    /**
+     * Double-clicks the element.
+     */
+    protected void doubleClick(By locator) {
+        WebElement el = WaitEngine.waitForClickable(locator);
+        new Actions(driver).doubleClick(el).perform();
+    }
+
+    /**
+     * Right-clicks (context menu) the element.
+     */
+    protected void rightClick(By locator) {
+        WebElement el = WaitEngine.waitForVisible(locator);
+        new Actions(driver).contextClick(el).perform();
+    }
+
+    // ----------------------------------------------------------
+    // Scroll helpers
+    // ----------------------------------------------------------
+
+    /**
+     * Scrolls the element into the visible viewport.
+     *
+     * <pre>scrollTo(By.id("footer"));</pre>
+     */
+    protected void scrollTo(By locator) {
+        WebElement el = driver.findElement(locator);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", el);
+    }
+
+    /**
+     * Scrolls the page to the very top.
+     */
+    protected void scrollToTop() {
+        ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, 0);");
+    }
+
+    /**
+     * Scrolls the page to the very bottom.
+     */
+    protected void scrollToBottom() {
+        ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight);");
+    }
+
+    // ----------------------------------------------------------
+    // JavaScript fallback helpers
+    // ----------------------------------------------------------
+
+    /**
+     * Clicks the element via JavaScript — useful when a native click is blocked by an overlay.
+     *
+     * <pre>jsClick(By.id("hidden-trigger"));</pre>
+     */
+    protected void jsClick(By locator) {
+        WebElement el = driver.findElement(locator);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", el);
+    }
+
+    /**
+     * Sets the element's {@code value} property via JavaScript — useful for read-only inputs
+     * or custom components that block native {@code sendKeys}.
+     *
+     * <pre>jsType(By.id("date-picker"), "2025-01-01");</pre>
+     */
+    protected void jsType(By locator, String text) {
+        WebElement el = driver.findElement(locator);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].value = arguments[1];", el, text);
     }
 
     // ----------------------------------------------------------
