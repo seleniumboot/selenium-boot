@@ -108,7 +108,7 @@ public final class SeleniumBootDefaults {
         SeleniumBootConfig.Retry retry = config.getRetry();
         if (retry == null) return;
 
-        if (retry.getMaxAttempts() == 0) {
+        if (retry.getRawMaxAttempts() == null) {
             Integer val = (Integer) overrides.get("retry.maxAttempts");
             if (val != null) retry.setMaxAttempts(val);
         }

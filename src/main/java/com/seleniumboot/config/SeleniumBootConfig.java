@@ -177,7 +177,7 @@ public final class SeleniumBootConfig {
 
     public static final class Retry {
         private boolean enabled = true;
-        private int maxAttempts = 1;
+        private Integer maxAttempts = null;  // null = not set by YAML; defaults applied later
 
         public boolean isEnabled() {
             return enabled;
@@ -188,9 +188,14 @@ public final class SeleniumBootConfig {
         }
 
         public int getMaxAttempts() {
+            return maxAttempts != null ? maxAttempts : 1;
+        }
+
+        public Integer getRawMaxAttempts() {
             return maxAttempts;
         }
-        public void setMaxAttempts(int maxAttempts) {
+
+        public void setMaxAttempts(Integer maxAttempts) {
             this.maxAttempts = maxAttempts;
         }
     }

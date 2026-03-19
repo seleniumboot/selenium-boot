@@ -9,6 +9,7 @@ import com.seleniumboot.reporting.ScreenshotManager;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
+import org.testng.SkipException;
 
 /**
  * TestExecutionListener manages the per-test method lifecycle within Selenium Boot.
@@ -43,7 +44,13 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.recordTestClass(testId, result.getTestClass().getRealClass().getSimpleName());
         ExecutionMetrics.recordDescription(testId, result.getMethod().getDescription());
         DriverManager.createDriver();
-        PreConditionRunner.run(result);
+        try {
+            PreConditionRunner.run(result);
+        } catch (Exception e) {
+            // Precondition setup failed — mark as skipped so retry does not fire
+            // and no second browser is opened. onTestSkipped will quit the driver.
+            throw new SkipException("[PreCondition] Setup failed: " + e.getMessage());
+        }
         HookRegistry.onTestStart(testId);
     }
 

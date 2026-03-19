@@ -10,6 +10,14 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [0.9.2] — 2026-03-20
+
+### Fixed
+- **`@PreCondition` failure no longer triggers retry** — `TestExecutionListener` now catches precondition exceptions and re-throws as `SkipException`; the test is marked SKIPPED (not FAILED), the retry analyzer is not called, and no second browser is opened
+- **`maxAttempts: 0` now respected in YAML** — `SeleniumBootConfig.Retry.maxAttempts` changed from `int` (default `1`) to nullable `Integer`; the defaults loader now only applies a programmatic override when the value was not set at all (was `null`), not when explicitly set to `0`
+
+---
+
 ## [0.9.1] — 2026-03-19
 
 ### Fixed

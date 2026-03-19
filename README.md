@@ -57,7 +57,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.9.1</version>
+    <version>0.9.2</version>
 </dependency>
 ```
 
@@ -433,6 +433,13 @@ ci:
 ---
 
 ## Project Status
+
+### v0.9.2 — 2026-03-20
+
+- **Bug fix** — precondition failure now throws `SkipException` (not `RuntimeException`); prevents retry from firing and a second browser from opening on `@PreCondition` setup failures
+- **Bug fix** — `maxAttempts: 0` in YAML now respected; changed `int` field default to nullable `Integer` so intentional `0` is never silently overridden by programmatic defaults
+
+---
 
 ### v0.9.1 — 2026-03-19
 
