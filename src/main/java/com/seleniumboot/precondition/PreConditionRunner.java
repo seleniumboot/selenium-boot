@@ -77,8 +77,10 @@ public final class PreConditionRunner {
             SessionCache.store(conditionName, driver);
             System.out.println("[PreCondition] Session cached for: " + conditionName);
         } catch (Exception e) {
+            // InvocationTargetException wraps the real cause — unwrap it for a useful message
+            Throwable cause = (e.getCause() != null) ? e.getCause() : e;
             throw new RuntimeException(
-                "[PreCondition] Provider failed for condition '" + conditionName + "': " + e.getMessage(), e
+                "[PreCondition] Provider failed for condition '" + conditionName + "': " + cause.getMessage(), cause
             );
         }
     }

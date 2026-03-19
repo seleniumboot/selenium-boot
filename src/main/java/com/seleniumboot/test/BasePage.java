@@ -1,6 +1,7 @@
 package com.seleniumboot.test;
 
 import com.seleniumboot.api.SeleniumBootApi;
+import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.wait.WaitEngine;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
@@ -8,10 +9,13 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.time.Duration;
 
 /**
  * Base class for all page objects.
@@ -137,21 +141,21 @@ public abstract class BasePage {
      * Waits for a browser alert to be present, then accepts it (clicks OK).
      */
     protected void acceptAlert() {
-        WaitEngine.waitForAlert().accept();
+        waitForAlert().accept();
     }
 
     /**
      * Waits for a browser alert to be present, then dismisses it (clicks Cancel).
      */
     protected void dismissAlert() {
-        WaitEngine.waitForAlert().dismiss();
+        waitForAlert().dismiss();
     }
 
     /**
      * Waits for a browser alert to be present and returns its text.
      */
     protected String getAlertText() {
-        return WaitEngine.waitForAlert().getText();
+        return waitForAlert().getText();
     }
 
     /**
@@ -160,9 +164,15 @@ public abstract class BasePage {
      * <pre>typeInAlert("my input");</pre>
      */
     protected void typeInAlert(String text) {
-        Alert alert = WaitEngine.waitForAlert();
+        Alert alert = waitForAlert();
         alert.sendKeys(text);
         alert.accept();
+    }
+
+    private Alert waitForAlert() {
+        int timeout = SeleniumBootContext.getConfig().getTimeouts().getExplicit();
+        return new WebDriverWait(driver, Duration.ofSeconds(timeout))
+                .until(ExpectedConditions.alertIsPresent());
     }
 
     // ----------------------------------------------------------

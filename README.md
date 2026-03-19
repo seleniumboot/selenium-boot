@@ -57,7 +57,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.9.2</version>
+    <version>0.9.3</version>
 </dependency>
 ```
 
@@ -433,6 +433,13 @@ ci:
 ---
 
 ## Project Status
+
+### v0.9.3 — 2026-03-20
+
+- **Bug fix** — alert methods (`acceptAlert`, `dismissAlert`, `getAlertText`, `typeInAlert`) in `BasePage` now use `this.driver` directly instead of `WaitEngine`/`DriverManager`, matching the driver reference used by the page object
+- **Bug fix** — `@PreCondition` failure error message now shows the real exception instead of "null" (unwraps `InvocationTargetException`)
+
+---
 
 ### v0.9.2 — 2026-03-20
 

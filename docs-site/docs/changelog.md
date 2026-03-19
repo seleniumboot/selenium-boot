@@ -10,6 +10,14 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [0.9.3] — 2026-03-20
+
+### Fixed
+- **Alert methods use `this.driver`** — `acceptAlert`, `dismissAlert`, `getAlertText`, `typeInAlert` in `BasePage` now build their `WebDriverWait` from `this.driver` (the driver passed into the page object constructor) instead of `WaitEngine` / `DriverManager.getDriver()`, eliminating the driver-mismatch that caused `NoAlertPresentException` in precondition context
+- **`@PreCondition` error message** — `PreConditionRunner` now unwraps `InvocationTargetException` to expose the real cause, so the failure message is meaningful instead of showing "null"
+
+---
+
 ## [0.9.2] — 2026-03-20
 
 ### Fixed
