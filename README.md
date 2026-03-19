@@ -57,7 +57,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.1</version>
 </dependency>
 ```
 
@@ -433,6 +433,14 @@ ci:
 ---
 
 ## Project Status
+
+### v0.9.1 — 2026-03-19
+
+- **Alert wait fix** — `acceptAlert`, `dismissAlert`, `getAlertText`, `typeInAlert` now use `WaitEngine.waitForAlert()` — no more `NoAlertPresentException` on slow pages
+- **`WaitEngine.waitForAlert()`** — new explicit wait for browser alert presence
+- **`BasePage.smartFind()`** — convenience wrapper; use inside page objects without passing the driver
+
+---
 
 ### v0.9.0 — 2026-03-18
 

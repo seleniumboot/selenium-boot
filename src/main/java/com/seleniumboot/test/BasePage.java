@@ -2,6 +2,7 @@ package com.seleniumboot.test;
 
 import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.wait.WaitEngine;
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -133,34 +134,35 @@ public abstract class BasePage {
     // ----------------------------------------------------------
 
     /**
-     * Accepts (clicks OK on) the currently open browser alert.
+     * Waits for a browser alert to be present, then accepts it (clicks OK).
      */
     protected void acceptAlert() {
-        driver.switchTo().alert().accept();
+        WaitEngine.waitForAlert().accept();
     }
 
     /**
-     * Dismisses (clicks Cancel on) the currently open browser alert.
+     * Waits for a browser alert to be present, then dismisses it (clicks Cancel).
      */
     protected void dismissAlert() {
-        driver.switchTo().alert().dismiss();
+        WaitEngine.waitForAlert().dismiss();
     }
 
     /**
-     * Returns the text of the currently open browser alert.
+     * Waits for a browser alert to be present and returns its text.
      */
     protected String getAlertText() {
-        return driver.switchTo().alert().getText();
+        return WaitEngine.waitForAlert().getText();
     }
 
     /**
-     * Types text into a prompt alert, then accepts it.
+     * Waits for a prompt alert, types the given text into it, then accepts it.
      *
      * <pre>typeInAlert("my input");</pre>
      */
     protected void typeInAlert(String text) {
-        driver.switchTo().alert().sendKeys(text);
-        driver.switchTo().alert().accept();
+        Alert alert = WaitEngine.waitForAlert();
+        alert.sendKeys(text);
+        alert.accept();
     }
 
     // ----------------------------------------------------------
@@ -244,6 +246,33 @@ public abstract class BasePage {
     protected void jsType(By locator, String text) {
         WebElement el = driver.findElement(locator);
         ((JavascriptExecutor) driver).executeScript("arguments[0].value = arguments[1];", el, text);
+    }
+
+    // ----------------------------------------------------------
+    // SmartLocator helper
+    // ----------------------------------------------------------
+
+    /**
+     * Tries each locator in order and returns the first element that is found and displayed.
+     *
+     * <p>Delegates to {@link SmartLocator#find(WebDriver, By...)} — no need to pass the driver manually.
+     *
+     * <pre>
+     * WebElement btn = smartFind(
+     *     By.cssSelector(".submit-btn"),
+     *     By.xpath("//button[@type='submit']")
+     * );
+     * </pre>
+     *
+     * @param primary   the preferred locator strategy
+     * @param fallbacks additional strategies tried in order if the primary fails
+     * @return the first matching visible element
+     */
+    protected WebElement smartFind(By primary, By... fallbacks) {
+        By[] all = new By[1 + fallbacks.length];
+        all[0] = primary;
+        System.arraycopy(fallbacks, 0, all, 1, fallbacks.length);
+        return SmartLocator.find(driver, all);
     }
 
     // ----------------------------------------------------------

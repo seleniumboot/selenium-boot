@@ -3,6 +3,7 @@ package com.seleniumboot.wait;
 import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -92,6 +93,15 @@ public final class WaitEngine {
         createWait().until(driver ->
                 "complete".equals(((org.openqa.selenium.JavascriptExecutor) driver)
                         .executeScript("return document.readyState")));
+    }
+
+    // ----------------------------------------------------------
+    // Alert
+    // ----------------------------------------------------------
+
+    public static Alert waitForAlert() {
+        return createWait()
+                .until(ExpectedConditions.alertIsPresent());
     }
 
     // ----------------------------------------------------------

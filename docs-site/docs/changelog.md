@@ -10,6 +10,17 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [0.9.1] — 2026-03-19
+
+### Fixed
+- **Alert helpers now wait** — `acceptAlert`, `dismissAlert`, `getAlertText`, `typeInAlert` in `BasePage` use `WaitEngine.waitForAlert()` instead of raw `driver.switchTo().alert()`, preventing `NoAlertPresentException` on slow pages
+
+### Added
+- **`WaitEngine.waitForAlert()`** — explicit wait for browser alert presence
+- **`BasePage.smartFind(By primary, By... fallbacks)`** — convenience wrapper around `SmartLocator.find()` for use inside page objects without passing the driver manually
+
+---
+
 ## [0.9.0] — 2026-03-18
 
 ### Added
