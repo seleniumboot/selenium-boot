@@ -10,6 +10,14 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [0.9.4] — 2026-03-20
+
+### Added
+- **iFrame helpers expanded** — `withinFrameName(String nameOrId, Runnable action)` added to `BasePage`
+- **Nested frame support** — `withinFrame`, `withinFrameIndex`, `withinFrameName` now use a thread-local depth counter; inner calls restore to `parentFrame()`, the outermost call restores to `defaultContent()`
+
+---
+
 ## [0.9.3] — 2026-03-20
 
 ### Fixed

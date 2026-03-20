@@ -57,7 +57,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.9.3</version>
+    <version>0.9.4</version>
 </dependency>
 ```
 
@@ -433,6 +433,12 @@ ci:
 ---
 
 ## Project Status
+
+### v0.9.4 — 2026-03-20
+
+- **iFrame helpers expanded** — `withinFrameName(String, Runnable)` added; `withinFrame`, `withinFrameIndex`, `withinFrameName` now support nested frames (inner calls restore to `parentFrame()`, outermost restores to `defaultContent()`)
+
+---
 
 ### v0.9.3 — 2026-03-20
 

@@ -45,6 +45,9 @@ public abstract class BasePage {
 
     protected final WebDriver driver;
 
+    /** Tracks how many frames deep we are on this thread — used to decide parentFrame vs defaultContent. */
+    private static final ThreadLocal<Integer> FRAME_DEPTH = ThreadLocal.withInitial(() -> 0);
+
     protected BasePage(WebDriver driver) {
         this.driver = driver;
     }
@@ -290,37 +293,64 @@ public abstract class BasePage {
     // ----------------------------------------------------------
 
     /**
-     * Switches into the given frame, runs the action, then switches back to default content.
-     * Restores default content even if the action throws.
+     * Switches into the given frame, runs the action, then restores the previous context.
+     * Safe to nest — inner frames restore to their parent frame, not default content.
      *
      * <pre>
-     * withinFrame(By.id("payment-iframe"), () -> {
-     *     type(By.id("card-number"), "4111111111111111");
-     *     click(By.id("pay"));
+     * withinFrame(By.id("outer-iframe"), () -> {
+     *     withinFrame(By.id("inner-iframe"), () -> {
+     *         type(By.id("card-number"), "4111111111111111");
+     *     });
+     *     click(By.id("pay")); // still inside outer-iframe
      * });
      * </pre>
      */
     protected void withinFrame(By frameLocator, Runnable action) {
         WebElement frame = WaitEngine.waitForVisible(frameLocator);
         driver.switchTo().frame(frame);
+        FRAME_DEPTH.set(FRAME_DEPTH.get() + 1);
         try {
             action.run();
         } finally {
-            driver.switchTo().defaultContent();
+            exitFrame();
         }
     }
 
     /**
      * Switches into the frame at the given zero-based index, runs the action,
-     * then switches back to default content.
-     * Restores default content even if the action throws.
+     * then restores the previous context. Safe to nest.
      */
     protected void withinFrameIndex(int index, Runnable action) {
         driver.switchTo().frame(index);
+        FRAME_DEPTH.set(FRAME_DEPTH.get() + 1);
         try {
             action.run();
         } finally {
+            exitFrame();
+        }
+    }
+
+    /**
+     * Switches into the frame identified by name or id attribute, runs the action,
+     * then restores the previous context. Safe to nest.
+     */
+    protected void withinFrameName(String nameOrId, Runnable action) {
+        driver.switchTo().frame(nameOrId);
+        FRAME_DEPTH.set(FRAME_DEPTH.get() + 1);
+        try {
+            action.run();
+        } finally {
+            exitFrame();
+        }
+    }
+
+    private void exitFrame() {
+        int depth = FRAME_DEPTH.get() - 1;
+        FRAME_DEPTH.set(depth);
+        if (depth == 0) {
             driver.switchTo().defaultContent();
+        } else {
+            driver.switchTo().parentFrame();
         }
     }
 

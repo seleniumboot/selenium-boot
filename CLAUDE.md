@@ -127,6 +127,7 @@ When upgrading the project version, **always update all places the version is re
 | `docs-site/docs/getting-started.md` | Maven dependency snippet |
 | `docs-site/docs/junit5.md` | Maven dependency snippet |
 | `docs-site/docs/changelog.md` | New release entry at top |
+| `docs-site/src/pages/index.js` | Maven dependency snippet in hero section |
 | `PLAN.md` | Released versions table |
 
 Also add a new changelog entry in `README.md` and `docs-site/docs/changelog.md` describing what changed.
