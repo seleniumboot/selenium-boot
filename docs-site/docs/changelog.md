@@ -10,6 +10,15 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [0.9.5] — 2026-03-21
+
+### Added
+- **ConsoleErrorCollector auto-integration** — JS shim auto-injected on every `open()` call when `browser.captureConsoleErrors: true`; errors auto-collected at test end as `WARN` step entries in the HTML report
+- **`failOnConsoleErrors` enforcement** — passing test with JS errors is marked FAILED when `browser.failOnConsoleErrors: true`
+- **`StepStatus.WARN`** — new step status for JS error entries
+
+---
+
 ## [0.9.4] — 2026-03-20
 
 ### Added

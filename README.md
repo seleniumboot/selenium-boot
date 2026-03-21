@@ -57,7 +57,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.9.4</version>
+    <version>0.9.5</version>
 </dependency>
 ```
 
@@ -433,6 +433,14 @@ ci:
 ---
 
 ## Project Status
+
+### v0.9.5 — 2026-03-21
+
+- **ConsoleErrorCollector auto-integration** — when `browser.captureConsoleErrors: true`, the JS shim is auto-injected on every `open()` call and errors are auto-collected at test end as `WARN` step entries in the report
+- **`failOnConsoleErrors` enforcement** — when `browser.failOnConsoleErrors: true`, a passing test with JS errors is marked FAILED with a clear error listing the detected errors
+- **`StepStatus.WARN`** — new step status for JS error entries (does not affect test outcome)
+
+---
 
 ### v0.9.4 — 2026-03-20
 
