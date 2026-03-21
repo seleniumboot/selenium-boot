@@ -1,6 +1,7 @@
 package com.seleniumboot.test;
 
 import com.seleniumboot.api.SeleniumBootApi;
+import com.seleniumboot.browser.ConsoleErrorCollector;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.listeners.SuiteExecutionListener;
@@ -37,6 +38,7 @@ public abstract class BaseTest {
             throw new IllegalStateException("baseURL is null or empty");
         }
         getDriver().get(baseURL);
+        if (ConsoleErrorCollector.isEnabled()) ConsoleErrorCollector.injectShim();
     }
 
     protected void open(String path) {
@@ -50,5 +52,6 @@ public abstract class BaseTest {
 
         String fullUrl = normalized + path;
         getDriver().get(fullUrl);
+        if (ConsoleErrorCollector.isEnabled()) ConsoleErrorCollector.injectShim();
     }
 }

@@ -1,14 +1,19 @@
 package com.seleniumboot.listeners;
 
+import com.seleniumboot.browser.ConsoleErrorCollector;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.hooks.HookRegistry;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.metrics.ExecutionMetrics;
 import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.reporting.ScreenshotManager;
+import com.seleniumboot.steps.StepLogger;
+import com.seleniumboot.steps.StepStatus;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
+
+import java.util.List;
 
 /**
  * TestExecutionListener manages the per-test method lifecycle within Selenium Boot.
@@ -34,6 +39,9 @@ import org.testng.ITestResult;
 
 public final class TestExecutionListener implements ITestListener {
 
+    /** Tracks whether JS errors have already been logged for this test (prevents double-logging on failure redirect). */
+    private static final ThreadLocal<Boolean> jsErrorsLogged = ThreadLocal.withInitial(() -> false);
+
     @Override
     public void onTestStart(ITestResult result) {
         String testId = result.getMethod().getQualifiedName();
@@ -50,17 +58,41 @@ public final class TestExecutionListener implements ITestListener {
     @Override
     public void onTestSuccess(ITestResult result) {
         String testId = result.getMethod().getQualifiedName();
+
+        if (ConsoleErrorCollector.isEnabled()) {
+            List<String> errors = ConsoleErrorCollector.collect();
+            errors.forEach(e -> StepLogger.step("[JS Error] " + e, StepStatus.WARN));
+            jsErrorsLogged.set(true);
+
+            boolean failOnErrors = false;
+            try { failOnErrors = SeleniumBootContext.getConfig().getBrowser().isFailOnConsoleErrors(); } catch (Exception ignored) {}
+
+            if (failOnErrors && !errors.isEmpty()) {
+                result.setStatus(ITestResult.FAILURE);
+                result.setThrowable(new AssertionError("JS console errors detected (" + errors.size() + "): " + errors));
+                onTestFailure(result);
+                return;
+            }
+        }
+
         ExecutionMetrics.recordStatus(testId, "PASSED");
         ExecutionMetrics.markEnd(testId);
         HookRegistry.onTestEnd(testId, "PASSED");
         if (DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         SeleniumBootContext.clearCurrentTestId();
+        jsErrorsLogged.set(false);
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
         String testName = result.getMethod().getMethodName();
         String testId = result.getMethod().getQualifiedName();
+
+        if (ConsoleErrorCollector.isEnabled() && !jsErrorsLogged.get()) {
+            ConsoleErrorCollector.collect().forEach(e -> StepLogger.step("[JS Error] " + e, StepStatus.WARN));
+        }
+        jsErrorsLogged.set(false);
+
         ExecutionMetrics.recordStatus(testId, "FAILED");
         ExecutionMetrics.markEnd(testId);
         if (result.getThrowable() != null) {
