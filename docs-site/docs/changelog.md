@@ -10,6 +10,14 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [0.9.6] — 2026-03-21
+
+### Added
+- **DownloadManager browser auto-configuration** — Chrome sets `download.default_directory` via experimental prefs; Firefox sets `FirefoxProfile` download preferences; both skipped when `execution.mode: remote`
+- **File upload helper** — `BasePage.upload(By, String)` resolves absolute → classpath → project-root; CI-safe absolute path sent to Selenium
+
+---
+
 ## [0.9.5] — 2026-03-21
 
 ### Added

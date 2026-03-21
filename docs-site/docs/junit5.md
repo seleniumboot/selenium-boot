@@ -82,7 +82,7 @@ Until JUnit 5 support ships, use TestNG. It provides everything JUnit 5 does for
 <dependency>
     <groupId>io.github.selenium-boot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.9.5</version>
+    <version>0.9.6</version>
 </dependency>
 ```
 

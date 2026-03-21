@@ -1,5 +1,6 @@
 package com.seleniumboot.driver;
 
+import com.seleniumboot.browser.DownloadManager;
 import com.seleniumboot.ci.CiEnvironmentDetector;
 import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.internal.SeleniumBootContext;
@@ -8,6 +9,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +48,18 @@ public class LocalChromeDriverProvider implements DriverProvider {
 
         if (arguments != null) {
             options.addArguments(arguments);
+        }
+
+        // Auto-configure download directory — local mode only.
+        // Remote/Grid sessions download to the node's filesystem; DownloadManager
+        // polls the local filesystem, so prefs would be ineffective in remote mode.
+        if (!"remote".equalsIgnoreCase(config.getExecution().getMode())) {
+            String downloadDir = DownloadManager.resolveDownloadDir().getAbsolutePath();
+            Map<String, Object> prefs = new HashMap<>();
+            prefs.put("download.default_directory", downloadDir);
+            prefs.put("download.prompt_for_download", false);
+            prefs.put("download.directory_upgrade", true);
+            options.setExperimentalOption("prefs", prefs);
         }
 
         WebDriver driver = new ChromeDriver(options);

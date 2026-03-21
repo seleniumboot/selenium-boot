@@ -57,7 +57,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.9.5</version>
+    <version>0.9.6</version>
 </dependency>
 ```
 
@@ -433,6 +433,14 @@ ci:
 ---
 
 ## Project Status
+
+### v0.9.6 — 2026-03-21
+
+- **DownloadManager browser auto-configuration** — Chrome and Firefox automatically configure download directory from `browser.downloadDir` config; no save dialog shown; partial downloads (.crdownload, .part) filtered out
+- **Remote mode guard** — download prefs skipped when `execution.mode: remote` (Grid sessions download to node filesystem, not local)
+- **File upload helper** — `BasePage.upload(By, String)` resolves paths via absolute → classpath → project-root; CI-safe
+
+---
 
 ### v0.9.5 — 2026-03-21
 
