@@ -1,6 +1,8 @@
 package com.seleniumboot.test;
 
 import com.seleniumboot.api.SeleniumBootApi;
+import com.seleniumboot.assertion.SoftAssertionCollector;
+import com.seleniumboot.assertion.SoftAssertions;
 import com.seleniumboot.browser.ConsoleErrorCollector;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
@@ -69,5 +71,19 @@ public abstract class BaseTest {
      */
     protected Map<String, Object> getTestData() {
         return TestDataStore.get();
+    }
+
+    /**
+     * Returns the soft assertion collector for this test.
+     * Failures collected here are reported all-at-once at test end
+     * without interrupting test execution.
+     *
+     * <pre>
+     * softAssert().that(pageTitle.equals("Home"), "Expected title 'Home', was: " + pageTitle);
+     * softAssert().that(isLoggedIn, "User should be logged in after login flow");
+     * </pre>
+     */
+    protected SoftAssertionCollector softAssert() {
+        return SoftAssertions.get();
     }
 }

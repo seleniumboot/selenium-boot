@@ -1,5 +1,7 @@
 package com.seleniumboot.listeners;
 
+import com.seleniumboot.assertion.SoftAssertionCollector;
+import com.seleniumboot.assertion.SoftAssertions;
 import com.seleniumboot.browser.BrowserContext;
 import com.seleniumboot.browser.ConsoleErrorCollector;
 import com.seleniumboot.driver.DriverManager;
@@ -84,6 +86,27 @@ public final class TestExecutionListener implements ITestListener {
             }
         }
 
+        // Flush soft assertions — if any failed, redirect to failure path
+        SoftAssertionCollector collector = SoftAssertions.get();
+        if (collector.hasFailed()) {
+            List<String> softFailures = collector.getFailures();
+            // Log each failure as a step entry
+            softFailures.forEach(msg ->
+                StepLogger.step("[Soft Assertion Failed] " + msg, StepStatus.FAIL));
+            // Single screenshot at flush time
+            String screenshotPath = ScreenshotManager.capture(result.getMethod().getMethodName());
+            ExecutionMetrics.recordScreenshot(result.getMethod().getQualifiedName(), screenshotPath);
+            // Build combined error message
+            String combined = softFailures.size() + " soft assertion(s) failed:\n" +
+                String.join("\n", softFailures);
+            result.setStatus(ITestResult.FAILURE);
+            result.setThrowable(new AssertionError(combined));
+            SoftAssertions.clear();
+            onTestFailure(result);
+            return;
+        }
+        SoftAssertions.clear();
+
         ExecutionMetrics.recordStatus(testId, "PASSED");
         ExecutionMetrics.markEnd(testId);
         HookRegistry.onTestEnd(testId, "PASSED");
@@ -115,6 +138,7 @@ public final class TestExecutionListener implements ITestListener {
         if (DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         com.seleniumboot.testdata.TestDataStore.clear();
         BrowserContext.clear();
+        SoftAssertions.clear();
         SeleniumBootContext.clearCurrentTestId();
     }
 
@@ -127,6 +151,7 @@ public final class TestExecutionListener implements ITestListener {
         if (DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         com.seleniumboot.testdata.TestDataStore.clear();
         BrowserContext.clear();
+        SoftAssertions.clear();
         SeleniumBootContext.clearCurrentTestId();
     }
 

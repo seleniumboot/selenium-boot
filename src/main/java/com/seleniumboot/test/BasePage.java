@@ -1,6 +1,8 @@
 package com.seleniumboot.test;
 
 import com.seleniumboot.api.SeleniumBootApi;
+import com.seleniumboot.assertion.SoftAssertionCollector;
+import com.seleniumboot.assertion.SoftAssertions;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.wait.WaitEngine;
 import org.openqa.selenium.Alert;
@@ -259,6 +261,24 @@ public abstract class BasePage {
     protected void jsType(By locator, String text) {
         WebElement el = driver.findElement(locator);
         ((JavascriptExecutor) driver).executeScript("arguments[0].value = arguments[1];", el, text);
+    }
+
+    // ----------------------------------------------------------
+    // Soft assertions
+    // ----------------------------------------------------------
+
+    /**
+     * Returns the soft assertion collector for this test.
+     * Failures collected here are reported all-at-once at test end
+     * without interrupting test execution.
+     *
+     * <pre>
+     * softAssert().that(getText(TITLE).equals("Dashboard"), "Title mismatch");
+     * softAssert().that(isDisplayed(MENU), "Menu should be visible");
+     * </pre>
+     */
+    protected SoftAssertionCollector softAssert() {
+        return SoftAssertions.get();
     }
 
     // ----------------------------------------------------------
