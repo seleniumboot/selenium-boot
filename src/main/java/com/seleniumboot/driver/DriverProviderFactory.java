@@ -1,5 +1,6 @@
 package com.seleniumboot.driver;
 
+import com.seleniumboot.browser.BrowserContext;
 import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.internal.SeleniumBootContext;
 
@@ -8,7 +9,11 @@ public final class DriverProviderFactory {
 
     public static DriverProvider getProvider() {
         SeleniumBootConfig config = SeleniumBootContext.getConfig();
-        String browser = config.getBrowser().getName();
+        // BrowserContext override (set by BrowserMatrixListener) takes precedence over YAML browser.name
+        String contextBrowser = BrowserContext.get();
+        String browser = (contextBrowser != null && !contextBrowser.isEmpty())
+                ? contextBrowser
+                : config.getBrowser().getName();
         String executionMode = config.getExecution().getMode();
 
         if ("remote".equalsIgnoreCase(executionMode)) {

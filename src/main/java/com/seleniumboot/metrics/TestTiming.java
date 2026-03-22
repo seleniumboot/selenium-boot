@@ -88,6 +88,10 @@ public class TestTiming {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
+    private String browser;
+    public String getBrowser() { return browser; }
+    public void setBrowser(String browser) { this.browser = browser; }
+
     private final java.util.List<com.seleniumboot.steps.StepRecord> steps =
             new java.util.concurrent.CopyOnWriteArrayList<>();
 

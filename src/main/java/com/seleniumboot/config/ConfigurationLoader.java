@@ -85,8 +85,15 @@ public final class ConfigurationLoader {
     private static void validate(SeleniumBootConfig config) {
         Objects.requireNonNull(config, "Configuration must not be null");
 
-        if (config.getBrowser() == null || config.getBrowser().getName() == null) {
-            throw new IllegalStateException("Browser name must be specified");
+        if (config.getBrowser() == null) {
+            throw new IllegalStateException("Browser configuration must be specified");
+        }
+        // browser.name is required unless browser.matrix provides the list of browsers to run
+        boolean matrixConfigured = config.getBrowser().getMatrix() != null
+                && !config.getBrowser().getMatrix().isEmpty();
+        if (!matrixConfigured && config.getBrowser().getName() == null) {
+            throw new IllegalStateException(
+                    "browser.name must be specified (or use browser.matrix for multi-browser runs)");
         }
 
         if (config.getExecution() == null || config.getExecution().getMode() == null) {

@@ -165,32 +165,46 @@ public final class HtmlReportGenerator {
 
         JsonNode tests = root.has("tests") ? root.get("tests") : null;
 
+        // Detect matrix run: any test entry with a non-null "browser" field
+        boolean isMatrixRun = false;
+        if (tests != null) {
+            for (JsonNode test : tests) {
+                if (test.has("browser") && !test.get("browser").asText("").isEmpty()) {
+                    isMatrixRun = true;
+                    break;
+                }
+            }
+        }
+
         StringBuilder rows = new StringBuilder();
         if (tests != null) {
-            // Group tests by class name preserving insertion order
-            java.util.Map<String, java.util.List<JsonNode>> byClass = new java.util.LinkedHashMap<>();
+            // Group tests by class name (+ browser when matrix) preserving insertion order
+            java.util.Map<String, java.util.List<JsonNode>> byGroup = new java.util.LinkedHashMap<>();
             for (JsonNode test : tests) {
                 String cls = test.has("testClassName") ? test.get("testClassName").asText() : "";
                 if (cls.isEmpty()) cls = "Unknown";
-                byClass.computeIfAbsent(cls, k -> new java.util.ArrayList<>()).add(test);
+                String groupKey = isMatrixRun
+                        ? cls + " [" + capitalize(test.has("browser") ? test.get("browser").asText("") : "") + "]"
+                        : cls;
+                byGroup.computeIfAbsent(groupKey, k -> new java.util.ArrayList<>()).add(test);
             }
             int rowIndex = 0;
-            for (java.util.Map.Entry<String, java.util.List<JsonNode>> entry : byClass.entrySet()) {
+            for (java.util.Map.Entry<String, java.util.List<JsonNode>> entry : byGroup.entrySet()) {
                 String groupId  = entry.getKey();
                 java.util.List<JsonNode> members = entry.getValue();
                 long groupPassed  = members.stream().filter(t -> "PASSED".equals(t.has("status") ? t.get("status").asText() : "")).count();
                 long groupFailed  = members.stream().filter(t -> "FAILED".equals(t.has("status") ? t.get("status").asText() : "")).count();
                 long groupSkipped = members.stream().filter(t -> "SKIPPED".equals(t.has("status") ? t.get("status").asText() : "")).count();
-                rows.append(buildGroupHeader(groupId, members.size(), groupPassed, groupFailed, groupSkipped, true));
+                rows.append(buildGroupHeader(groupId, members.size(), groupPassed, groupFailed, groupSkipped, true, isMatrixRun));
                 for (JsonNode test : members) {
-                    rows.append(buildRow(test, rowIndex++, groupId, true));
+                    rows.append(buildRow(test, rowIndex++, groupId, true, isMatrixRun));
                 }
             }
         }
 
         String retrySection   = buildRetrySection(flakyTests, recoveredTests);
         String slowestSection = tests != null ? buildSlowestTests(tests) : "";
-        String failureRows    = buildFailureRows(tests);
+        String failureRows    = buildFailureRows(tests, isMatrixRun);
         String failureBadge   = failedTests > 0
                 ? "<span class=\"nav-count nav-count-fail\">" + failedTests + "</span>"
                 : "";
@@ -218,15 +232,25 @@ public final class HtmlReportGenerator {
                 .replace("{{EXECUTION_PERCENTILES}}", executionPercentiles.replace("'", "\\'"));
     }
 
+    private static String capitalize(String s) {
+        if (s == null || s.isEmpty()) return s;
+        return Character.toUpperCase(s.charAt(0)) + s.substring(1).toLowerCase();
+    }
+
     private static String buildGroupHeader(String groupId, int total, long passed, long failed, long skipped, boolean collapsed) {
+        return buildGroupHeader(groupId, total, passed, failed, skipped, collapsed, false);
+    }
+
+    private static String buildGroupHeader(String groupId, int total, long passed, long failed, long skipped, boolean collapsed, boolean showBrowser) {
         String groupKey = escapeHtml(groupId);
         String badges = "";
         if (passed  > 0) badges += "<span class=\"status-badge status-passed\">"  + passed  + " passed</span> ";
         if (failed  > 0) badges += "<span class=\"status-badge status-failed\">"  + failed  + " failed</span> ";
         if (skipped > 0) badges += "<span class=\"status-badge status-skipped\">" + skipped + " skipped</span>";
         String iconClass = collapsed ? "group-icon closed" : "group-icon";
+        int colspan = showBrowser ? 8 : 7;
         return "<tr class=\"group-header\" data-group=\"" + groupKey + "\" onclick=\"toggleGroup('" + groupKey + "')\">"
-                + "<td colspan=\"7\">"
+                + "<td colspan=\"" + colspan + "\">"
                 + "<span class=\"" + iconClass + "\" id=\"gicon-" + groupKey + "\">&#x25BC;</span> "
                 + "<strong>" + groupKey + "</strong>"
                 + "<span class=\"group-count\"> &mdash; " + total + " test" + (total != 1 ? "s" : "") + "</span>"
@@ -236,6 +260,10 @@ public final class HtmlReportGenerator {
     }
 
     private static String buildRow(JsonNode test, int rowIndex, String groupId, boolean collapsed) {
+        return buildRow(test, rowIndex, groupId, collapsed, false);
+    }
+
+    private static String buildRow(JsonNode test, int rowIndex, String groupId, boolean collapsed, boolean showBrowser) {
         String status      = test.has("status")      ? test.get("status").asText()      : "UNKNOWN";
         String statusClass = "status-" + status.toLowerCase();
         String rawTestId   = test.has("testId")      ? test.get("testId").asText()      : "";
@@ -247,8 +275,10 @@ public final class HtmlReportGenerator {
         int    retryCount  = test.has("retryCount")  ? test.get("retryCount").asInt()   : 0;
         String errorMsg    = test.has("errorMessage") ? test.get("errorMessage").asText() : null;
         String stackTrace  = test.has("stackTrace")   ? test.get("stackTrace").asText()  : null;
+        String browser     = test.has("browser")      ? capitalize(test.get("browser").asText()) : "";
         String screenshotCell = buildScreenshotCell(test);
         String groupKey    = escapeHtml(groupId);
+        int colspan        = showBrowser ? 8 : 7;
 
         String retryBadge = retryCount > 0
                 ? "<span class=\"retry-badge\">&#x21bb; " + retryCount + "x</span> "
@@ -265,9 +295,8 @@ public final class HtmlReportGenerator {
                       + "<div class=\"step-timeline\">" + stepsHtml + "</div></div>"
                     : "";
             String detailDisplay = collapsed ? " style=\"display:none\"" : "";
-            String iconOpen      = collapsed ? "" : " open";
             detailRow = "<tr class=\"detail-row group-member\" data-group=\"" + groupKey + "\" id=\"detail-" + rowIndex + "\"" + detailDisplay + ">"
-                    + "<td colspan=\"7\"><div class=\"detail-panel\">" + stepsSection + errorHtml + traceHtml + "</div></td>"
+                    + "<td colspan=\"" + colspan + "\"><div class=\"detail-panel\">" + stepsSection + errorHtml + traceHtml + "</div></td>"
                     + "</tr>";
         }
 
@@ -275,6 +304,8 @@ public final class HtmlReportGenerator {
         String clickAttr   = hasDetail ? " onclick=\"toggleDetail(" + rowIndex + ")\"" : "";
         String memberStyle = collapsed ? " style=\"display:none\"" : "";
         String iconOpen    = (!collapsed && hasDetail) ? " open" : "";
+
+        String browserCell = showBrowser ? "<td class=\"browser-cell\">" + escapeHtml(browser) + "</td>" : "";
 
         return "<tr class=\"" + rowClass + "\""
                 + clickAttr
@@ -284,6 +315,7 @@ public final class HtmlReportGenerator {
                 + " data-test=\"" + methodName.toLowerCase() + "\">"
                 + "<td class=\"test-id\">" + retryBadge + methodName + "</td>"
                 + "<td class=\"desc-cell\">" + description + "</td>"
+                + browserCell
                 + "<td><span class=\"status-badge " + statusClass + "\">" + status + "</span></td>"
                 + "<td class=\"numeric\">" + logicMs + "</td>"
                 + "<td class=\"numeric\">" + totalMs + "</td>"
@@ -294,16 +326,24 @@ public final class HtmlReportGenerator {
     }
 
     private static String buildFailureRows(JsonNode tests) {
+        return buildFailureRows(tests, false);
+    }
+
+    private static String buildFailureRows(JsonNode tests, boolean showBrowser) {
         if (tests == null) return noFailuresRow();
         java.util.Map<String, java.util.List<JsonNode>> byClass = new java.util.LinkedHashMap<>();
         for (JsonNode test : tests) {
             if (!"FAILED".equals(test.has("status") ? test.get("status").asText() : "")) continue;
             String cls = test.has("testClassName") ? test.get("testClassName").asText() : "";
             if (cls.isEmpty()) cls = "Unknown";
-            byClass.computeIfAbsent(cls, k -> new java.util.ArrayList<>()).add(test);
+            String groupKey = showBrowser
+                    ? cls + " [" + capitalize(test.has("browser") ? test.get("browser").asText("") : "") + "]"
+                    : cls;
+            byClass.computeIfAbsent(groupKey, k -> new java.util.ArrayList<>()).add(test);
         }
         if (byClass.isEmpty()) return noFailuresRow();
 
+        int colspan = showBrowser ? 8 : 7;
         StringBuilder rows = new StringBuilder();
         int rowIndex = 50000; // offset avoids ID conflicts with the test-cases table
         for (java.util.Map.Entry<String, java.util.List<JsonNode>> entry : byClass.entrySet()) {
@@ -311,13 +351,13 @@ public final class HtmlReportGenerator {
             int total = entry.getValue().size();
             // Non-collapsible group header for failures (always expanded)
             rows.append("<tr class=\"group-header\">"
-                    + "<td colspan=\"7\">"
+                    + "<td colspan=\"" + colspan + "\">"
                     + "<span class=\"group-icon\">&#x25BC;</span> "
                     + "<strong>" + groupKey + "</strong>"
                     + "<span class=\"group-count\"> &mdash; " + total + " failure" + (total != 1 ? "s" : "") + "</span>"
                     + "</td></tr>");
             for (JsonNode test : entry.getValue()) {
-                rows.append(buildRow(test, rowIndex++, entry.getKey(), false));
+                rows.append(buildRow(test, rowIndex++, entry.getKey(), false, showBrowser));
             }
         }
         return rows.toString();

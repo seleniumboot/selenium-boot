@@ -1,5 +1,6 @@
 package com.seleniumboot.config;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -70,6 +71,7 @@ public final class SeleniumBootConfig {
         private String downloadDir = "./target/downloads";
         private boolean captureConsoleErrors = false;
         private boolean failOnConsoleErrors = false;
+        private List<String> matrix = Collections.emptyList();
 
         public String getDownloadDir() { return downloadDir; }
         public void setDownloadDir(String downloadDir) { this.downloadDir = downloadDir; }
@@ -79,6 +81,9 @@ public final class SeleniumBootConfig {
 
         public boolean isFailOnConsoleErrors() { return failOnConsoleErrors; }
         public void setFailOnConsoleErrors(boolean failOnConsoleErrors) { this.failOnConsoleErrors = failOnConsoleErrors; }
+
+        public List<String> getMatrix() { return matrix; }
+        public void setMatrix(List<String> matrix) { this.matrix = matrix != null ? matrix : Collections.emptyList(); }
 
         public List<String> getArguments() {
             return arguments;

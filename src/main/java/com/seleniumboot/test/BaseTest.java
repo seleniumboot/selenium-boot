@@ -6,8 +6,11 @@ import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.listeners.SuiteExecutionListener;
 import com.seleniumboot.listeners.TestExecutionListener;
+import com.seleniumboot.testdata.TestDataStore;
 import org.openqa.selenium.WebDriver;
 import org.testng.annotations.Listeners;
+
+import java.util.Map;
 
 /**
  * BaseTest is the mandatory superclass for all Selenium Boot tests.
@@ -53,5 +56,18 @@ public abstract class BaseTest {
         String fullUrl = normalized + path;
         getDriver().get(fullUrl);
         if (ConsoleErrorCollector.isEnabled()) ConsoleErrorCollector.injectShim();
+    }
+
+    /**
+     * Returns the test data loaded by {@code @TestData} for the current test.
+     * Returns an empty map if no {@code @TestData} annotation was declared.
+     *
+     * <pre>
+     * Map&lt;String, Object&gt; data = getTestData();
+     * String username = (String) data.get("username");
+     * </pre>
+     */
+    protected Map<String, Object> getTestData() {
+        return TestDataStore.get();
     }
 }

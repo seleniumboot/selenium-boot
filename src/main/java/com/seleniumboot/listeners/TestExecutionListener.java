@@ -1,5 +1,6 @@
 package com.seleniumboot.listeners;
 
+import com.seleniumboot.browser.BrowserContext;
 import com.seleniumboot.browser.ConsoleErrorCollector;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.hooks.HookRegistry;
@@ -50,8 +51,16 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.markStart(testId);
         ExecutionMetrics.recordTestClass(testId, result.getTestClass().getRealClass().getSimpleName());
         ExecutionMetrics.recordDescription(testId, result.getMethod().getDescription());
+        // Set browser override BEFORE creating driver so DriverProviderFactory can read it
+        String browserOverride = result.getTestContext().getCurrentXmlTest()
+                .getParameter("selenium.boot.browser");
+        if (browserOverride != null && !browserOverride.isEmpty()) {
+            BrowserContext.set(browserOverride);
+            ExecutionMetrics.recordBrowser(testId, browserOverride);
+        }
         DriverManager.createDriver();
         PreConditionRunner.run(result);
+        loadTestData(result);
         HookRegistry.onTestStart(testId);
     }
 
@@ -79,6 +88,8 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.markEnd(testId);
         HookRegistry.onTestEnd(testId, "PASSED");
         if (DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
+        com.seleniumboot.testdata.TestDataStore.clear();
+        BrowserContext.clear();
         SeleniumBootContext.clearCurrentTestId();
         jsErrorsLogged.set(false);
     }
@@ -102,6 +113,8 @@ public final class TestExecutionListener implements ITestListener {
         String screenshotPath = ScreenshotManager.capture(testName);
         ExecutionMetrics.recordScreenshot(testId, screenshotPath);
         if (DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
+        com.seleniumboot.testdata.TestDataStore.clear();
+        BrowserContext.clear();
         SeleniumBootContext.clearCurrentTestId();
     }
 
@@ -112,7 +125,24 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.markEnd(testId);
         HookRegistry.onTestEnd(testId, "SKIPPED");
         if (DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
+        com.seleniumboot.testdata.TestDataStore.clear();
+        BrowserContext.clear();
         SeleniumBootContext.clearCurrentTestId();
+    }
+
+    private void loadTestData(ITestResult result) {
+        com.seleniumboot.testdata.TestData annotation =
+                result.getMethod().getConstructorOrMethod().getMethod()
+                      .getAnnotation(com.seleniumboot.testdata.TestData.class);
+        if (annotation == null) {
+            annotation = result.getTestClass().getRealClass()
+                               .getAnnotation(com.seleniumboot.testdata.TestData.class);
+        }
+        if (annotation != null) {
+            com.seleniumboot.testdata.TestDataStore.set(
+                com.seleniumboot.testdata.TestDataLoader.load(annotation.value())
+            );
+        }
     }
 
     @Override

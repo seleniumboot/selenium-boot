@@ -120,6 +120,21 @@ public final class ExecutionMetrics {
     }
 
     // ==========================================================
+    // Browser Tracking (matrix runs)
+    // ==========================================================
+
+    public static void recordBrowser(String testId, String browser) {
+        TIMINGS.computeIfAbsent(testId,
+                id -> new TestTiming(id, Thread.currentThread().getName()))
+               .setBrowser(browser);
+    }
+
+    public static String getBrowser(String testId) {
+        TestTiming t = TIMINGS.get(testId);
+        return t != null ? t.getBrowser() : null;
+    }
+
+    // ==========================================================
     // Timings Snapshot (for reporters)
     // ==========================================================
 
@@ -289,6 +304,9 @@ public final class ExecutionMetrics {
             }
             if (timing.getStackTrace() != null) {
                 testEntry.put("stackTrace", timing.getStackTrace());
+            }
+            if (timing.getBrowser() != null) {
+                testEntry.put("browser", timing.getBrowser());
             }
             if (!timing.getSteps().isEmpty()) {
                 List<Map<String, Object>> stepList = new ArrayList<>();
