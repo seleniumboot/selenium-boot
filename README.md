@@ -57,7 +57,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.9.6</version>
+    <version>0.10.0</version>
 </dependency>
 ```
 
@@ -433,6 +433,15 @@ ci:
 ---
 
 ## Project Status
+
+### v0.10.0 — 2026-03-22
+
+- **`@TestData`** — annotation-driven test data injection; loads JSON/YAML from `src/test/resources/testdata/`; env-specific override (`admin.staging.json` overrides `admin.json` when `-Denv=staging`); `getTestData()` in `BaseTest`
+- **Browser matrix** — `browser.matrix: [chrome, firefox]` in YAML runs every test on every browser in one `mvn test`; `Browser` column in HTML report; per-browser JUnit XML for Jenkins matrix view
+- **`SessionCache`** — `SessionCache.store("name")` / `SessionCache.restore("name")`; global cross-thread session reuse; reduces repeated login overhead in large parallel suites
+- **SoftAssert** — `softAssert().that(condition, "message")` collects failures without throwing; framework flushes at test end; single screenshot captured; all failures appear as individual step entries in the report
+
+---
 
 ### v0.9.6 — 2026-03-21
 

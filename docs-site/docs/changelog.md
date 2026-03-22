@@ -10,6 +10,16 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [0.10.0] — 2026-03-22
+
+### Added
+- **`@TestData`** — declarative test data injection via annotation; loads `.json`, `.yml`, `.yaml` from `src/test/resources/testdata/`; env-specific override when `-Denv=<profile>` is set; `getTestData()` returns `Map<String, Object>` in `BaseTest`
+- **Browser matrix** — `browser.matrix: [chrome, firefox, edge]` in YAML runs all tests on all browsers in one invocation; `Browser` column added to HTML report; per-browser `TEST-selenium-boot-<browser>.xml` for Jenkins matrix view
+- **`SessionCache`** — global (cross-thread) authenticated session store; `store("name")` captures cookies + localStorage; `restore("name")` applies them into the current driver and refreshes; `invalidate()` / `clear()` for teardown
+- **SoftAssert** — `softAssert().that(condition, "message")` collects assertion failures without throwing; framework flushes at `onTestSuccess`; each failure logged as `FAIL` step entry; single screenshot at flush time; test marked `FAILED` with combined message
+
+---
+
 ## [0.9.6] — 2026-03-21
 
 ### Added
