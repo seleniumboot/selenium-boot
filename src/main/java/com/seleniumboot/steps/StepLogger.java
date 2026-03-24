@@ -45,7 +45,24 @@ public final class StepLogger {
         log(name, status, screenshot);
     }
 
+    /** Log a step with an explicit status and a pre-captured base64 screenshot (e.g. diff image). */
+    public static void stepWithScreenshot(String name, StepStatus status, String base64Screenshot) {
+        logWithBase64(name, status, base64Screenshot);
+    }
+
     // ------------------------------------------------------------------
+
+    private static void logWithBase64(String name, StepStatus status, String base64) {
+        String testId = SeleniumBootContext.getCurrentTestId();
+        if (testId == null) {
+            System.err.println("[StepLogger] No active test context — step ignored: " + name);
+            return;
+        }
+        long startTime = ExecutionMetrics.getTestStartTime(testId);
+        long offsetMs  = startTime > 0 ? System.currentTimeMillis() - startTime : 0L;
+        ExecutionMetrics.recordStep(testId, new StepRecord(name, offsetMs, status.name(), base64));
+        System.out.printf("[StepLogger] [%-4s] +%dms  %s%n", status.name(), offsetMs, name);
+    }
 
     private static void log(String name, StepStatus status, boolean screenshot) {
         String testId = SeleniumBootContext.getCurrentTestId();
