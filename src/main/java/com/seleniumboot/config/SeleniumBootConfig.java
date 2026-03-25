@@ -11,7 +11,6 @@ public final class SeleniumBootConfig {
     private Retry retry;
     private Timeouts timeouts;
     private Ci ci;
-    private Visual visual;
 
     // --- getters ---
     public Browser getBrowser() {
@@ -52,12 +51,6 @@ public final class SeleniumBootConfig {
         this.ci = ci;
     }
 
-    public Visual getVisual() {
-        return visual;
-    }
-    public void setVisual(Visual visual) {
-        this.visual = visual;
-    }
     // =========================
 
     public static final class Browser {
@@ -237,17 +230,6 @@ public final class SeleniumBootConfig {
         }
     }
 
-    public static final class Visual {
-        private boolean enabled = true;
-        private double diffThreshold = 0.02;
-
-        public boolean isEnabled() { return enabled; }
-        public void setEnabled(boolean enabled) { this.enabled = enabled; }
-
-        public double getDiffThreshold() { return diffThreshold; }
-        public void setDiffThreshold(double diffThreshold) { this.diffThreshold = diffThreshold; }
-    }
-
     /**
      * CI/CD build quality gates.
      * All thresholds are disabled by default (0 / -1).
@@ -279,4 +261,5 @@ public final class SeleniumBootConfig {
             this.maxFlakyTests = maxFlakyTests;
         }
     }
+
 }
