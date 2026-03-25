@@ -11,6 +11,7 @@ public final class SeleniumBootConfig {
     private Retry retry;
     private Timeouts timeouts;
     private Ci ci;
+    private Api api;
 
     // --- getters ---
     public Browser getBrowser() {
@@ -260,6 +261,28 @@ public final class SeleniumBootConfig {
         public void setMaxFlakyTests(int maxFlakyTests) {
             this.maxFlakyTests = maxFlakyTests;
         }
+    }
+
+    public Api getApi() { return api; }
+    public void setApi(Api api) { this.api = api; }
+
+    public static final class Api {
+        private String  baseUrl;
+        private int     timeoutSeconds = 30;
+        private boolean logBody        = false;
+        private boolean logContext     = true;
+
+        public String  getBaseUrl()        { return baseUrl; }
+        public void    setBaseUrl(String v) { this.baseUrl = v; }
+
+        public int     getTimeoutSeconds()    { return timeoutSeconds; }
+        public void    setTimeoutSeconds(int v) { this.timeoutSeconds = v; }
+
+        public boolean isLogBody()          { return logBody; }
+        public void    setLogBody(boolean v) { this.logBody = v; }
+
+        public boolean isLogContext()          { return logContext; }
+        public void    setLogContext(boolean v) { this.logContext = v; }
     }
 
 }

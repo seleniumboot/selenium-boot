@@ -57,7 +57,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>0.10.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -433,6 +433,18 @@ ci:
 ---
 
 ## Project Status
+
+### v1.1.0 — 2026-03-25
+
+- **`BaseApiTest`** — pure API test base class; no browser started; full framework lifecycle (reporting, `@TestData`, retry, CI gates)
+- **`ApiClient`** — fluent HTTP client backed by Java's built-in `HttpClient`; `GET`, `POST`, `PUT`, `PATCH`, `DELETE`; auto step-logging
+- **`ApiResponse`** — rich response wrapper; JSONPath extraction (`$.user.id`), `asObject(Class)`, fluent assertions (`assertStatus`, `assertJson`, `assertBodyContains`)
+- **`ApiAuth`** — `bearerToken(token)`, `basicAuth(user, pass)` auth strategies
+- **`ScenarioContext`** — thread-local in-test store; `ctx().set/get`; auto-cleared after each test
+- **`SuiteContext`** — global thread-safe store for cross-test state; `suiteCtx().set/get`
+- **`apiClient()`, `ctx()`, `suiteCtx()`** added to `BaseTest` for hybrid UI+API tests
+
+---
 
 ### v0.10.0 — 2026-03-22
 

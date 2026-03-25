@@ -4,6 +4,9 @@ import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
 import com.seleniumboot.browser.ConsoleErrorCollector;
+import com.seleniumboot.client.ApiClient;
+import com.seleniumboot.context.ScenarioContext;
+import com.seleniumboot.context.SuiteContext;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.listeners.SuiteExecutionListener;
@@ -85,5 +88,27 @@ public abstract class BaseTest {
      */
     protected SoftAssertionCollector softAssert() {
         return SoftAssertions.get();
+    }
+
+    /** API client for hybrid UI+API tests. */
+    protected ApiClient apiClient() {
+        return ApiClient.create();
+    }
+
+    /** In-test thread-local context store. Cleared after each test. */
+    protected ScenarioContext ctx() {
+        return ScenarioContextHolder.INSTANCE;
+    }
+
+    /** Suite-scoped global context store. Survives between tests. */
+    protected SuiteContext suiteCtx() {
+        return SuiteContextHolder.INSTANCE;
+    }
+
+    private static final class ScenarioContextHolder {
+        static final ScenarioContext INSTANCE = new ScenarioContext();
+    }
+    private static final class SuiteContextHolder {
+        static final SuiteContext INSTANCE = new SuiteContext();
     }
 }

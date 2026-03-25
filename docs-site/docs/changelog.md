@@ -10,6 +10,19 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [1.1.0] — 2026-03-25
+
+### Added
+- **`BaseApiTest`** — pure API test base class; no browser started; full framework lifecycle (reporting, `@TestData`, retry, CI gates)
+- **`ApiClient`** — fluent HTTP client backed by Java's built-in `HttpClient`; `GET`, `POST`, `PUT`, `PATCH`, `DELETE`; per-request auth; auto step-logging
+- **`ApiResponse`** — JSONPath extraction (`$.user.id`), `asObject(Class)`, fluent assertions (`assertStatus`, `assertJson`, `assertBodyContains`)
+- **`ApiAuth`** — `bearerToken(token)`, `basicAuth(user, pass)`
+- **`ScenarioContext`** — thread-local in-test store; `ctx().set/get`; auto-cleared after each test
+- **`SuiteContext`** — global thread-safe store for cross-test state sharing; `suiteCtx().set/get`
+- **`apiClient()`, `ctx()`, `suiteCtx()`** added to `BaseTest` for hybrid UI+API tests
+
+---
+
 ## [0.10.0] — 2026-03-22
 
 ### Added

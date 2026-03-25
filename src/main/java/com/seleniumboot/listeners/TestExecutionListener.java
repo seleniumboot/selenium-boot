@@ -2,9 +2,11 @@ package com.seleniumboot.listeners;
 
 import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
+import com.seleniumboot.context.ScenarioContext;
 import com.seleniumboot.browser.BrowserContext;
 import com.seleniumboot.browser.ConsoleErrorCollector;
 import com.seleniumboot.driver.DriverManager;
+import com.seleniumboot.test.BaseApiTest;
 import com.seleniumboot.hooks.HookRegistry;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.metrics.ExecutionMetrics;
@@ -60,7 +62,7 @@ public final class TestExecutionListener implements ITestListener {
             BrowserContext.set(browserOverride);
             ExecutionMetrics.recordBrowser(testId, browserOverride);
         }
-        DriverManager.createDriver();
+        if (!isApiTest(result)) DriverManager.createDriver();
         PreConditionRunner.run(result);
         loadTestData(result);
         HookRegistry.onTestStart(testId);
@@ -70,7 +72,7 @@ public final class TestExecutionListener implements ITestListener {
     public void onTestSuccess(ITestResult result) {
         String testId = result.getMethod().getQualifiedName();
 
-        if (ConsoleErrorCollector.isEnabled()) {
+        if (!isApiTest(result) && ConsoleErrorCollector.isEnabled()) {
             List<String> errors = ConsoleErrorCollector.collect();
             errors.forEach(e -> StepLogger.step("[JS Error] " + e, StepStatus.WARN));
             jsErrorsLogged.set(true);
@@ -110,8 +112,9 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.recordStatus(testId, "PASSED");
         ExecutionMetrics.markEnd(testId);
         HookRegistry.onTestEnd(testId, "PASSED");
-        if (DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
+        if (!isApiTest(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         com.seleniumboot.testdata.TestDataStore.clear();
+        ScenarioContext.clear();
         BrowserContext.clear();
         SeleniumBootContext.clearCurrentTestId();
         jsErrorsLogged.set(false);
@@ -122,7 +125,7 @@ public final class TestExecutionListener implements ITestListener {
         String testName = result.getMethod().getMethodName();
         String testId = result.getMethod().getQualifiedName();
 
-        if (ConsoleErrorCollector.isEnabled() && !jsErrorsLogged.get()) {
+        if (!isApiTest(result) && ConsoleErrorCollector.isEnabled() && !jsErrorsLogged.get()) {
             ConsoleErrorCollector.collect().forEach(e -> StepLogger.step("[JS Error] " + e, StepStatus.WARN));
         }
         jsErrorsLogged.set(false);
@@ -133,10 +136,11 @@ public final class TestExecutionListener implements ITestListener {
             ExecutionMetrics.recordError(testId, result.getThrowable());
         }
         HookRegistry.onTestFailure(testId, result.getThrowable());
-        String screenshotPath = ScreenshotManager.capture(testName);
+        String screenshotPath = isApiTest(result) ? null : ScreenshotManager.capture(testName);
         ExecutionMetrics.recordScreenshot(testId, screenshotPath);
-        if (DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
+        if (!isApiTest(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         com.seleniumboot.testdata.TestDataStore.clear();
+        ScenarioContext.clear();
         BrowserContext.clear();
         SoftAssertions.clear();
         SeleniumBootContext.clearCurrentTestId();
@@ -148,11 +152,16 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.recordStatus(testId, "SKIPPED");
         ExecutionMetrics.markEnd(testId);
         HookRegistry.onTestEnd(testId, "SKIPPED");
-        if (DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
+        if (!isApiTest(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         com.seleniumboot.testdata.TestDataStore.clear();
+        ScenarioContext.clear();
         BrowserContext.clear();
         SoftAssertions.clear();
         SeleniumBootContext.clearCurrentTestId();
+    }
+
+    private boolean isApiTest(ITestResult result) {
+        return BaseApiTest.class.isAssignableFrom(result.getTestClass().getRealClass());
     }
 
     private void loadTestData(ITestResult result) {
