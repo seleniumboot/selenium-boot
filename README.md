@@ -57,7 +57,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 </dependency>
 ```
 
@@ -433,6 +433,15 @@ ci:
 ---
 
 ## Project Status
+
+### v1.1.1 — 2026-03-28
+
+- **Schema validation** — `ApiResponse.assertSchema("schemas/user.json")` validates response body against a JSON Schema file; requires `com.networknt:json-schema-validator:1.4.3` on classpath
+- **`@UseAuth` annotation** — apply named auth strategy from config to any test method or class
+- **`ApiAuth.oauth2()`** — OAuth2 client credentials flow with automatic token caching and expiry refresh
+- **`ApiClient.setGlobalAuth()` / `clearGlobalAuth()`** — set auth once per suite, applied automatically to all requests
+
+---
 
 ### v1.1.0 — 2026-03-25
 

@@ -39,6 +39,15 @@ public class ApiClient {
             .followRedirects(HttpClient.Redirect.NORMAL)
             .build();
 
+    /** Thread-local global auth — applied to every request on this thread unless overridden. */
+    private static final ThreadLocal<ApiAuth> GLOBAL_AUTH = new ThreadLocal<>();
+
+    /** Set once (e.g. in {@code @BeforeSuite}) — all requests on this thread use it automatically. */
+    public static void setGlobalAuth(ApiAuth auth)  { GLOBAL_AUTH.set(auth); }
+
+    /** Remove global auth for this thread. Called automatically by the framework after each test. */
+    public static void clearGlobalAuth()            { GLOBAL_AUTH.remove(); }
+
     private String              baseUrl;
     private String              method;
     private String              path;
@@ -113,7 +122,8 @@ public class ApiClient {
                 builder.header("Content-Type", "application/json");
             }
             headers.forEach(builder::header);
-            if (auth != null) auth.apply(builder);
+            ApiAuth effectiveAuth = this.auth != null ? this.auth : GLOBAL_AUTH.get();
+            if (effectiveAuth != null) effectiveAuth.apply(builder);
 
             HttpRequest.BodyPublisher publisher = bodyStr != null
                     ? HttpRequest.BodyPublishers.ofString(bodyStr)

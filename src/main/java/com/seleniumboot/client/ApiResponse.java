@@ -113,6 +113,21 @@ public class ApiResponse {
         return this;
     }
 
+    /**
+     * Validates the response body against a JSON Schema file on the classpath.
+     * Schema files should be placed under {@code src/test/resources/schemas/}.
+     *
+     * <pre>
+     * res.assertStatus(200).assertSchema("schemas/user.json");
+     * </pre>
+     *
+     * @param schemaPath classpath-relative path, e.g. {@code "schemas/user.json"}
+     */
+    public ApiResponse assertSchema(String schemaPath) {
+        SchemaValidator.validate(response.body(), schemaPath);
+        return this;
+    }
+
     // ── Internal ─────────────────────────────────────────────────────────────
 
     private JsonNode jsonNode(String path) {

@@ -2,6 +2,10 @@ package com.seleniumboot.listeners;
 
 import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
+import com.seleniumboot.client.ApiAuth;
+import com.seleniumboot.client.ApiClient;
+import com.seleniumboot.client.UseAuth;
+import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.context.ScenarioContext;
 import com.seleniumboot.browser.BrowserContext;
 import com.seleniumboot.browser.ConsoleErrorCollector;
@@ -63,6 +67,7 @@ public final class TestExecutionListener implements ITestListener {
             ExecutionMetrics.recordBrowser(testId, browserOverride);
         }
         if (!isApiTest(result)) DriverManager.createDriver();
+        applyUseAuth(result);
         PreConditionRunner.run(result);
         loadTestData(result);
         HookRegistry.onTestStart(testId);
@@ -115,6 +120,7 @@ public final class TestExecutionListener implements ITestListener {
         if (!isApiTest(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         com.seleniumboot.testdata.TestDataStore.clear();
         ScenarioContext.clear();
+        com.seleniumboot.client.ApiClient.clearGlobalAuth();
         BrowserContext.clear();
         SeleniumBootContext.clearCurrentTestId();
         jsErrorsLogged.set(false);
@@ -141,6 +147,7 @@ public final class TestExecutionListener implements ITestListener {
         if (!isApiTest(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         com.seleniumboot.testdata.TestDataStore.clear();
         ScenarioContext.clear();
+        com.seleniumboot.client.ApiClient.clearGlobalAuth();
         BrowserContext.clear();
         SoftAssertions.clear();
         SeleniumBootContext.clearCurrentTestId();
@@ -155,6 +162,7 @@ public final class TestExecutionListener implements ITestListener {
         if (!isApiTest(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         com.seleniumboot.testdata.TestDataStore.clear();
         ScenarioContext.clear();
+        com.seleniumboot.client.ApiClient.clearGlobalAuth();
         BrowserContext.clear();
         SoftAssertions.clear();
         SeleniumBootContext.clearCurrentTestId();
@@ -162,6 +170,55 @@ public final class TestExecutionListener implements ITestListener {
 
     private boolean isApiTest(ITestResult result) {
         return BaseApiTest.class.isAssignableFrom(result.getTestClass().getRealClass());
+    }
+
+    private void applyUseAuth(ITestResult result) {
+        UseAuth annotation = result.getMethod().getConstructorOrMethod().getMethod()
+                .getAnnotation(UseAuth.class);
+        if (annotation == null) {
+            annotation = result.getTestClass().getRealClass().getAnnotation(UseAuth.class);
+        }
+        if (annotation == null) return;
+
+        String strategyName = annotation.value();
+        try {
+            SeleniumBootConfig.Api api = SeleniumBootContext.getConfig().getApi();
+            if (api == null || api.getAuth() == null) return;
+            SeleniumBootConfig.Api.AuthStrategy strategy = api.getAuth().get(strategyName);
+            if (strategy == null) {
+                throw new IllegalStateException("[UseAuth] No auth strategy named '" + strategyName + "' found in api.auth config");
+            }
+            ApiAuth auth = resolveAuthStrategy(strategy);
+            if (auth != null) ApiClient.setGlobalAuth(auth);
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("[UseAuth] Failed to apply auth strategy '" + strategyName + "'", e);
+        }
+    }
+
+    private ApiAuth resolveAuthStrategy(SeleniumBootConfig.Api.AuthStrategy s) {
+        String type = s.getType();
+        if (type == null) return null;
+        switch (type.toLowerCase()) {
+            case "bearer": return ApiAuth.bearerToken(resolveEnvVar(s.getToken()));
+            case "basic":  return ApiAuth.basicAuth(resolveEnvVar(s.getUsername()), resolveEnvVar(s.getPassword()));
+            case "oauth2": return ApiAuth.oauth2(resolveEnvVar(s.getTokenUrl()),
+                                                 resolveEnvVar(s.getClientId()),
+                                                 resolveEnvVar(s.getClientSecret()));
+            default: throw new IllegalArgumentException("[UseAuth] Unknown auth type: '" + type + "'. Use bearer, basic, or oauth2");
+        }
+    }
+
+    private String resolveEnvVar(String value) {
+        if (value == null) return null;
+        if (value.startsWith("${") && value.endsWith("}")) {
+            String varName = value.substring(2, value.length() - 1);
+            String resolved = System.getenv(varName);
+            if (resolved == null) resolved = System.getProperty(varName);
+            return resolved != null ? resolved : value;
+        }
+        return value;
     }
 
     private void loadTestData(ITestResult result) {

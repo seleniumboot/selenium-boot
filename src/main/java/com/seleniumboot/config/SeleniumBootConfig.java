@@ -271,18 +271,53 @@ public final class SeleniumBootConfig {
         private int     timeoutSeconds = 30;
         private boolean logBody        = false;
         private boolean logContext     = true;
+        private java.util.Map<String, AuthStrategy> auth = new java.util.LinkedHashMap<>();
 
-        public String  getBaseUrl()        { return baseUrl; }
-        public void    setBaseUrl(String v) { this.baseUrl = v; }
+        public String  getBaseUrl()          { return baseUrl; }
+        public void    setBaseUrl(String v)  { this.baseUrl = v; }
 
-        public int     getTimeoutSeconds()    { return timeoutSeconds; }
-        public void    setTimeoutSeconds(int v) { this.timeoutSeconds = v; }
+        public int     getTimeoutSeconds()         { return timeoutSeconds; }
+        public void    setTimeoutSeconds(int v)    { this.timeoutSeconds = v; }
 
-        public boolean isLogBody()          { return logBody; }
-        public void    setLogBody(boolean v) { this.logBody = v; }
+        public boolean isLogBody()                 { return logBody; }
+        public void    setLogBody(boolean v)       { this.logBody = v; }
 
-        public boolean isLogContext()          { return logContext; }
-        public void    setLogContext(boolean v) { this.logContext = v; }
+        public boolean isLogContext()              { return logContext; }
+        public void    setLogContext(boolean v)    { this.logContext = v; }
+
+        public java.util.Map<String, AuthStrategy> getAuth() { return auth; }
+        public void setAuth(java.util.Map<String, AuthStrategy> auth) { this.auth = auth; }
+
+        public static final class AuthStrategy {
+            private String type;          // bearer | basic | oauth2
+            private String token;         // bearer
+            private String username;      // basic
+            private String password;      // basic
+            private String tokenUrl;      // oauth2
+            private String clientId;      // oauth2
+            private String clientSecret;  // oauth2
+
+            public String getType()            { return type; }
+            public void   setType(String v)    { this.type = v; }
+
+            public String getToken()           { return token; }
+            public void   setToken(String v)   { this.token = v; }
+
+            public String getUsername()        { return username; }
+            public void   setUsername(String v){ this.username = v; }
+
+            public String getPassword()        { return password; }
+            public void   setPassword(String v){ this.password = v; }
+
+            public String getTokenUrl()        { return tokenUrl; }
+            public void   setTokenUrl(String v){ this.tokenUrl = v; }
+
+            public String getClientId()        { return clientId; }
+            public void   setClientId(String v){ this.clientId = v; }
+
+            public String getClientSecret()        { return clientSecret; }
+            public void   setClientSecret(String v){ this.clientSecret = v; }
+        }
     }
 
 }

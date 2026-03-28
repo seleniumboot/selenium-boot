@@ -10,6 +10,16 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [1.1.1] — 2026-03-28
+
+### Added
+- **Schema validation** — `ApiResponse.assertSchema("schemas/user.json")` validates response body against a JSON Schema (Draft-07); requires `com.networknt:json-schema-validator:1.4.3` as consumer dependency
+- **`@UseAuth` annotation** — apply a named auth strategy from `api.auth` config block to any test method/class
+- **`ApiAuth.oauth2()`** — OAuth2 client credentials flow; token fetched on first use and cached until expiry
+- **`ApiClient.setGlobalAuth()` / `clearGlobalAuth()`** — suite-level auth set once, applied to every request automatically; cleared by framework after each test
+
+---
+
 ## [1.1.0] — 2026-03-25
 
 ### Added
