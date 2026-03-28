@@ -25,6 +25,16 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'API Testing',
+      collapsed: false,
+      items: [
+        'guides/api-testing',
+        'guides/api-auth',
+        'guides/scenario-context',
+      ],
+    },
+    {
+      type: 'category',
       label: 'CI / CD',
       items: [
         'ci/github-actions',
