@@ -4,6 +4,7 @@ import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
 import com.seleniumboot.internal.SeleniumBootContext;
+import com.seleniumboot.shadow.ShadowDom;
 import com.seleniumboot.wait.WaitEngine;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
@@ -372,6 +373,81 @@ public abstract class BasePage {
         } else {
             driver.switchTo().parentFrame();
         }
+    }
+
+    // ----------------------------------------------------------
+    // Shadow DOM helpers
+    // ----------------------------------------------------------
+
+    /**
+     * Finds a single element inside the shadow root of the element at {@code hostLocator}.
+     *
+     * <pre>
+     * WebElement input = shadowFind(By.cssSelector("my-form"), "#email");
+     * </pre>
+     *
+     * @param hostLocator locator for the shadow host element
+     * @param innerCss    CSS selector scoped to the shadow root (XPath not supported)
+     */
+    protected WebElement shadowFind(By hostLocator, String innerCss) {
+        return ShadowDom.find(hostLocator, innerCss);
+    }
+
+    /**
+     * Finds all elements matching {@code innerCss} inside the shadow root of {@code hostLocator}.
+     *
+     * @return unmodifiable list; empty if nothing matches
+     */
+    protected java.util.List<WebElement> shadowFindAll(By hostLocator, String innerCss) {
+        return ShadowDom.findAll(hostLocator, innerCss);
+    }
+
+    /**
+     * Clicks an element inside a shadow root.
+     *
+     * <pre>shadowClick(By.cssSelector("my-form"), "#submit-btn");</pre>
+     */
+    protected void shadowClick(By hostLocator, String innerCss) {
+        ShadowDom.find(hostLocator, innerCss).click();
+    }
+
+    /**
+     * Clears and types text into an input inside a shadow root.
+     *
+     * <pre>shadowType(By.cssSelector("my-form"), "#email", "user@example.com");</pre>
+     */
+    protected void shadowType(By hostLocator, String innerCss, String text) {
+        WebElement el = ShadowDom.find(hostLocator, innerCss);
+        el.clear();
+        el.sendKeys(text);
+    }
+
+    /**
+     * Returns the visible text of an element inside a shadow root.
+     */
+    protected String shadowGetText(By hostLocator, String innerCss) {
+        return ShadowDom.find(hostLocator, innerCss).getText();
+    }
+
+    /**
+     * Traverses nested shadow roots and returns the target element.
+     * Pass CSS selectors from outermost host down to the target element.
+     *
+     * <pre>
+     * // &lt;checkout-flow&gt; → shadow → &lt;payment-widget&gt; → shadow → #pay-btn
+     * WebElement btn = shadowPierce("checkout-flow", "payment-widget", "#pay-btn");
+     * </pre>
+     */
+    protected WebElement shadowPierce(String... cssSelectors) {
+        return ShadowDom.pierce(cssSelectors);
+    }
+
+    /**
+     * Returns {@code true} if at least one element matching {@code innerCss}
+     * exists inside the host's shadow root. Never throws.
+     */
+    protected boolean shadowExists(By hostLocator, String innerCss) {
+        return ShadowDom.exists(hostLocator, innerCss);
     }
 
     // ----------------------------------------------------------
