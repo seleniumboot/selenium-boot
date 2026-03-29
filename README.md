@@ -32,6 +32,7 @@ It eliminates repetitive boilerplate by providing sensible defaults, a standardi
 - `ConsoleErrorCollector` — capture JS console errors (Chrome via logs, Firefox via shim)
 - `DownloadManager` — poll download directory, handle partial files
 - `StepLogger` — named test steps with timestamps and per-step screenshots
+- **API testing** — `BaseApiTest` for pure API tests; fluent `ApiClient` with auth, schema validation, JSONPath; hybrid UI + API tests in the same suite
 - Plugin system — custom browser providers, report adapters, lifecycle hooks via Java SPI
 - CI-ready — auto-detects GitHub Actions, Jenkins, CircleCI; forces headless, emits JUnit XML
 
@@ -276,6 +277,195 @@ public void editProfile() {
 ```
 
 Cache is per-thread — safe for parallel execution. On retry, cache is invalidated and the condition re-runs fresh.
+
+---
+
+## API Testing
+
+Selenium Boot supports **pure API tests** and **hybrid UI + API tests** — same framework, same config, same HTML report.
+
+### Pure API Tests
+
+Extend `BaseApiTest` instead of `BaseTest`. No browser is launched.
+
+```java
+public class UserApiTest extends BaseApiTest {
+
+    @Test
+    public void getUserById() {
+        ApiClient.get("https://api.example.com/users/1")
+                .send()
+                .assertStatus(200)
+                .assertJson("$.name", "John Doe");
+    }
+}
+```
+
+### `ApiClient` — Fluent HTTP Client
+
+```java
+// GET
+ApiClient.get("/api/users").send();
+
+// POST with body
+ApiClient.post("/api/users")
+        .body(Map.of("name", "Alice", "email", "alice@example.com"))
+        .send()
+        .assertStatus(201);
+
+// Custom header
+ApiClient.get("/api/orders")
+        .header("X-Request-ID", "abc123")
+        .send();
+
+// Different base URL for one request
+ApiClient.to("https://other-service.com").get("/health").send();
+```
+
+Configure the default base URL in `selenium-boot.yml`:
+
+```yaml
+api:
+  baseUrl: https://api.example.com
+  timeoutSeconds: 30
+  logBody: false   # set true to include body in step timeline
+```
+
+### `ApiResponse` — Assertions and Extraction
+
+```java
+ApiResponse res = ApiClient.get("/api/users/1").send();
+
+res.assertStatus(200);
+res.assertBodyContains("Alice");
+res.assertJson("$.name", "Alice");
+
+// Extract values
+String name  = res.json("$.name");
+int    id    = res.json("$.id", Integer.class);
+User   user  = res.asObject(User.class);
+
+// Fluent chaining
+res.assertStatus(200)
+   .assertJson("$.name", "Alice")
+   .assertSchema("schemas/user.json");
+```
+
+### Authentication
+
+**Bearer token:**
+```java
+ApiClient.get("/api/me")
+        .auth(ApiAuth.bearerToken("my-token"))
+        .send();
+```
+
+**Basic auth:**
+```java
+ApiClient.get("/api/admin")
+        .auth(ApiAuth.basicAuth("user", "pass"))
+        .send();
+```
+
+**Set auth once for the entire suite** — all requests use it automatically:
+```java
+@BeforeSuite
+public void authenticate() {
+    ApiResponse login = ApiClient.post("/api/auth/login")
+            .body(Map.of("username", "admin", "password", "pass"))
+            .send();
+    ApiClient.setGlobalAuth(ApiAuth.bearerToken(login.json("$.token")));
+}
+```
+
+**OAuth2 client credentials** — token fetched and cached automatically:
+```java
+ApiClient.setGlobalAuth(ApiAuth.oauth2(
+    "https://auth.example.com/token",
+    System.getenv("CLIENT_ID"),
+    System.getenv("CLIENT_SECRET")
+));
+```
+
+**Config-based auth with `@UseAuth`** — define strategies in YAML, apply per test:
+```yaml
+api:
+  auth:
+    adminToken:
+      type: bearer
+      token: ${ADMIN_TOKEN}       # resolved from env var
+    serviceAccount:
+      type: oauth2
+      tokenUrl: https://auth.example.com/token
+      clientId: ${CLIENT_ID}
+      clientSecret: ${CLIENT_SECRET}
+```
+
+```java
+@Test
+@UseAuth("adminToken")
+public void createUser() {
+    ApiClient.post("/api/users").body(...).send().assertStatus(201);
+}
+```
+
+### Schema Validation
+
+Validate response structure against a JSON Schema file:
+
+```java
+ApiClient.get("/api/users/1")
+        .send()
+        .assertStatus(200)
+        .assertSchema("schemas/user.json");
+```
+
+Place schema files under `src/test/resources/schemas/`. Requires one additional dependency:
+
+```xml
+<dependency>
+    <groupId>com.networknt</groupId>
+    <artifactId>json-schema-validator</artifactId>
+    <version>1.4.3</version>
+</dependency>
+```
+
+### Hybrid UI + API Tests
+
+Mix API calls and browser interactions in the same test via `apiClient()` in `BaseTest`:
+
+```java
+public class CheckoutTest extends BaseTest {
+
+    @Test
+    public void placeOrder() {
+        // Set up via API (fast, no UI navigation)
+        String orderId = apiClient().post("/api/orders")
+                .body(Map.of("productId", 42, "qty", 1))
+                .send()
+                .assertStatus(201)
+                .json("$.orderId");
+
+        // Verify in the UI
+        open("/orders/" + orderId);
+        Assert.assertEquals(getText(By.id("status")), "Pending");
+    }
+}
+```
+
+### Scenario & Suite Context
+
+Share state within a test or across tests without static fields:
+
+```java
+// ScenarioContext — lives for one test, auto-cleared after
+ctx().set("token", loginRes.json("$.token"));
+String token = ctx().get("token");
+
+// SuiteContext — survives between tests, thread-safe
+suiteCtx().set("createdUserId", res.json("$.id"));   // in test 1
+String userId = suiteCtx().get("createdUserId");      // in test 2
+```
 
 ---
 
