@@ -165,6 +165,19 @@ public abstract class BasePage {
     }
 
     /**
+     * Waits for a browser alert to be present, captures its text, accepts it,
+     * and returns the text in one step.
+     *
+     * <pre>String msg = getAndAcceptAlert();</pre>
+     */
+    protected String getAndAcceptAlert() {
+        Alert alert = waitForAlert();
+        String text = alert.getText();
+        alert.accept();
+        return text;
+    }
+
+    /**
      * Waits for a prompt alert, types the given text into it, then accepts it.
      *
      * <pre>typeInAlert("my input");</pre>

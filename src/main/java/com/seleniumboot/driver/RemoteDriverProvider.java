@@ -32,6 +32,7 @@ public class RemoteDriverProvider implements DriverProvider{
 
             if ("chrome".equalsIgnoreCase(browser)) {
                 ChromeOptions options = new ChromeOptions();
+                options.setCapability("unhandledPromptBehavior", "ignore");
 
                 if (config.getBrowser().isHeadless()) {
                     options.addArguments("--headless=new");
@@ -55,6 +56,7 @@ public class RemoteDriverProvider implements DriverProvider{
             if ("firefox".equalsIgnoreCase(browser)) {
 
                 FirefoxOptions options = new FirefoxOptions();
+                options.setCapability("unhandledPromptBehavior", "ignore");
 
                 if (config.getBrowser().isHeadless()) {
                     options.addArguments("-headless");

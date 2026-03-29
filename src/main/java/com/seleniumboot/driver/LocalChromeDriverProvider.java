@@ -62,6 +62,11 @@ public class LocalChromeDriverProvider implements DriverProvider {
             options.setExperimentalOption("prefs", prefs);
         }
 
+        // Keep alerts open until the test explicitly handles them.
+        // W3C default is "dismiss and notify" which auto-dismisses alerts before
+        // the next WebDriver command executes, making driver.switchTo().alert() fail.
+        options.setCapability("unhandledPromptBehavior", "ignore");
+
         WebDriver driver = new ChromeDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ZERO);
 
