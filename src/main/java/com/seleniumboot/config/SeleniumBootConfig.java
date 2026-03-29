@@ -263,6 +263,25 @@ public final class SeleniumBootConfig {
         }
     }
 
+    private Recording recording;
+    public Recording getRecording() { return recording; }
+    public void setRecording(Recording recording) { this.recording = recording; }
+
+    public static final class Recording {
+        private boolean enabled            = false;
+        private int     fps                = 2;
+        private int     maxDurationSeconds = 60;
+
+        public boolean isEnabled()                    { return enabled; }
+        public void    setEnabled(boolean enabled)    { this.enabled = enabled; }
+
+        public int  getFps()                          { return fps; }
+        public void setFps(int fps)                   { this.fps = fps; }
+
+        public int  getMaxDurationSeconds()                          { return maxDurationSeconds; }
+        public void setMaxDurationSeconds(int maxDurationSeconds)    { this.maxDurationSeconds = maxDurationSeconds; }
+    }
+
     public Api getApi() { return api; }
     public void setApi(Api api) { this.api = api; }
 

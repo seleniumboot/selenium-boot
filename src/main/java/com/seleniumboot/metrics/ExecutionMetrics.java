@@ -79,6 +79,15 @@ public final class ExecutionMetrics {
     }
 
     // ==========================================================
+    // Recording
+    // ==========================================================
+
+    public static void recordRecording(String testId, String path) {
+        if (path == null) return;
+        TIMINGS.computeIfPresent(testId, (k, v) -> { v.setRecordingPath(path); return v; });
+    }
+
+    // ==========================================================
     // Error Recording
     // ==========================================================
 
@@ -307,6 +316,9 @@ public final class ExecutionMetrics {
             }
             if (timing.getBrowser() != null) {
                 testEntry.put("browser", timing.getBrowser());
+            }
+            if (timing.getRecordingPath() != null) {
+                testEntry.put("recordingPath", timing.getRecordingPath());
             }
             if (!timing.getSteps().isEmpty()) {
                 List<Map<String, Object>> stepList = new ArrayList<>();

@@ -15,6 +15,7 @@ import com.seleniumboot.hooks.HookRegistry;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.metrics.ExecutionMetrics;
 import com.seleniumboot.precondition.PreConditionRunner;
+import com.seleniumboot.recording.RecordingManager;
 import com.seleniumboot.reporting.ScreenshotManager;
 import com.seleniumboot.steps.StepLogger;
 import com.seleniumboot.steps.StepStatus;
@@ -66,7 +67,10 @@ public final class TestExecutionListener implements ITestListener {
             BrowserContext.set(browserOverride);
             ExecutionMetrics.recordBrowser(testId, browserOverride);
         }
-        if (!isApiTest(result)) DriverManager.createDriver();
+        if (!isApiTest(result)) {
+            DriverManager.createDriver();
+            startRecordingIfEnabled();
+        }
         applyUseAuth(result);
         PreConditionRunner.run(result);
         loadTestData(result);
@@ -114,6 +118,7 @@ public final class TestExecutionListener implements ITestListener {
         }
         SoftAssertions.clear();
 
+        RecordingManager.stop(); // discard frames — test passed
         ExecutionMetrics.recordStatus(testId, "PASSED");
         ExecutionMetrics.markEnd(testId);
         HookRegistry.onTestEnd(testId, "PASSED");
@@ -136,6 +141,8 @@ public final class TestExecutionListener implements ITestListener {
         }
         jsErrorsLogged.set(false);
 
+        String recordingPath = isApiTest(result) ? null : RecordingManager.saveOnFailure(testId);
+        ExecutionMetrics.recordRecording(testId, recordingPath);
         ExecutionMetrics.recordStatus(testId, "FAILED");
         ExecutionMetrics.markEnd(testId);
         if (result.getThrowable() != null) {
@@ -166,6 +173,17 @@ public final class TestExecutionListener implements ITestListener {
         BrowserContext.clear();
         SoftAssertions.clear();
         SeleniumBootContext.clearCurrentTestId();
+    }
+
+    private void startRecordingIfEnabled() {
+        try {
+            com.seleniumboot.config.SeleniumBootConfig.Recording rec =
+                    SeleniumBootContext.getConfig().getRecording();
+            if (rec == null || !rec.isEnabled()) return;
+            org.openqa.selenium.WebDriver driver = DriverManager.getDriver();
+            if (driver == null) return;
+            RecordingManager.start(driver, rec.getFps(), rec.getMaxDurationSeconds());
+        } catch (Exception ignored) {}
     }
 
     private boolean isApiTest(ITestResult result) {

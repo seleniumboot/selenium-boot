@@ -92,6 +92,10 @@ public class TestTiming {
     public String getBrowser() { return browser; }
     public void setBrowser(String browser) { this.browser = browser; }
 
+    private String recordingPath;
+    public String getRecordingPath() { return recordingPath; }
+    public void setRecordingPath(String recordingPath) { this.recordingPath = recordingPath; }
+
     private final java.util.List<com.seleniumboot.steps.StepRecord> steps =
             new java.util.concurrent.CopyOnWriteArrayList<>();
 

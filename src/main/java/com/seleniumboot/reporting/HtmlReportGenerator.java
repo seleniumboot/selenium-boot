@@ -273,8 +273,9 @@ public final class HtmlReportGenerator {
         long   logicMs     = test.has("testLogicMs") ? test.get("testLogicMs").asLong() : 0L;
         long   totalMs     = test.has("totalMs")     ? test.get("totalMs").asLong()     : 0L;
         int    retryCount  = test.has("retryCount")  ? test.get("retryCount").asInt()   : 0;
-        String errorMsg    = test.has("errorMessage") ? test.get("errorMessage").asText() : null;
-        String stackTrace  = test.has("stackTrace")   ? test.get("stackTrace").asText()  : null;
+        String errorMsg      = test.has("errorMessage")  ? test.get("errorMessage").asText()  : null;
+        String stackTrace    = test.has("stackTrace")    ? test.get("stackTrace").asText()    : null;
+        String recordingPath = test.has("recordingPath") ? test.get("recordingPath").asText() : null;
         String browser     = test.has("browser")      ? capitalize(test.get("browser").asText()) : "";
         String screenshotCell = buildScreenshotCell(test);
         String groupKey    = escapeHtml(groupId);
@@ -285,18 +286,19 @@ public final class HtmlReportGenerator {
                 : "";
 
         String stepsHtml   = buildStepTimeline(test);
-        boolean hasDetail  = errorMsg != null || stackTrace != null || !stepsHtml.isEmpty();
+        boolean hasDetail  = errorMsg != null || stackTrace != null || !stepsHtml.isEmpty() || recordingPath != null;
         String detailRow   = "";
         if (hasDetail) {
-            String errorHtml = errorMsg   != null ? "<div class=\"error-msg\">"   + escapeHtml(errorMsg)   + "</div>" : "";
-            String traceHtml = stackTrace != null ? "<pre class=\"stack-trace\">" + escapeHtml(stackTrace) + "</pre>" : "";
+            String errorHtml     = errorMsg      != null ? "<div class=\"error-msg\">"      + escapeHtml(errorMsg)   + "</div>" : "";
+            String traceHtml     = stackTrace    != null ? "<pre class=\"stack-trace\">"    + escapeHtml(stackTrace) + "</pre>" : "";
+            String recordingHtml = recordingPath != null ? buildRecordingCell(recordingPath) : "";
             String stepsSection = !stepsHtml.isEmpty()
                     ? "<div class=\"step-timeline-section\"><div class=\"step-timeline-header\">Steps (" + test.get("steps").size() + ")</div>"
                       + "<div class=\"step-timeline\">" + stepsHtml + "</div></div>"
                     : "";
             String detailDisplay = collapsed ? " style=\"display:none\"" : "";
             detailRow = "<tr class=\"detail-row group-member\" data-group=\"" + groupKey + "\" id=\"detail-" + rowIndex + "\"" + detailDisplay + ">"
-                    + "<td colspan=\"" + colspan + "\"><div class=\"detail-panel\">" + stepsSection + errorHtml + traceHtml + "</div></td>"
+                    + "<td colspan=\"" + colspan + "\"><div class=\"detail-panel\">" + stepsSection + recordingHtml + errorHtml + traceHtml + "</div></td>"
                     + "</tr>";
         }
 
@@ -405,6 +407,29 @@ public final class HtmlReportGenerator {
               .append("</div>");
         }
         return sb.toString();
+    }
+
+    private static String buildRecordingCell(String recordingPath) {
+        File gif = new File(recordingPath);
+        String label = gif.getName();
+        if (!gif.exists()) {
+            return "<div class=\"recording-section\"><span class=\"recording-label\">&#x1F3A5; Recording:</span> "
+                    + "<span class=\"recording-missing\">" + escapeHtml(label) + " (file not found)</span></div>";
+        }
+        try {
+            byte[] bytes = java.nio.file.Files.readAllBytes(gif.toPath());
+            String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
+            // Only embed if under 3 MB; otherwise show a path hint
+            if (bytes.length < 3 * 1024 * 1024) {
+                return "<div class=\"recording-section\">"
+                        + "<div class=\"recording-label\">&#x1F3A5; Recording</div>"
+                        + "<img src=\"data:image/gif;base64," + base64 + "\" class=\"recording-gif\" />"
+                        + "</div>";
+            }
+        } catch (java.io.IOException ignored) {}
+        // Fallback: show path
+        return "<div class=\"recording-section\"><span class=\"recording-label\">&#x1F3A5; Recording:</span> "
+                + "<span class=\"recording-path\">" + escapeHtml(recordingPath) + "</span></div>";
     }
 
     private static String buildStepTimeline(JsonNode test) {
