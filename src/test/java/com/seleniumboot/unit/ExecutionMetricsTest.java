@@ -1,10 +1,14 @@
 package com.seleniumboot.unit;
 
 import com.seleniumboot.metrics.ExecutionMetrics;
+import com.seleniumboot.metrics.TestTiming;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 
@@ -121,6 +125,88 @@ public class ExecutionMetricsTest {
         // index = ceil(0/100 * 3) = 0, clamped to 0 → first element after sort
         long result = ExecutionMetrics.percentile(values, 0);
         assertTrue(result >= 0);
+    }
+
+    // ----------------------------------------------------------
+    // recordError
+    // ----------------------------------------------------------
+
+    @Test
+    public void recordError_setsMessageAndStackTrace() {
+        ExecutionMetrics.markStart("err-test");
+        ExecutionMetrics.markEnd("err-test");
+
+        ExecutionMetrics.recordError("err-test", new RuntimeException("something went wrong"));
+
+        TestTiming t = ExecutionMetrics.getTimings().iterator().next();
+        assertEquals(t.getErrorMessage(), "something went wrong");
+        assertNotNull(t.getStackTrace());
+        assertTrue(t.getStackTrace().contains("RuntimeException"));
+    }
+
+    @Test
+    public void recordError_nullMessage_usesClassName() {
+        ExecutionMetrics.markStart("err-test-2");
+        ExecutionMetrics.markEnd("err-test-2");
+
+        ExecutionMetrics.recordError("err-test-2", new NullPointerException());
+
+        TestTiming t = ExecutionMetrics.getTimings().iterator().next();
+        assertEquals(t.getErrorMessage(), "NullPointerException");
+    }
+
+    // ----------------------------------------------------------
+    // recordTestClass
+    // ----------------------------------------------------------
+
+    @Test
+    public void recordTestClass_setsClassName() {
+        ExecutionMetrics.markStart("cls-test");
+        ExecutionMetrics.markEnd("cls-test");
+        ExecutionMetrics.recordTestClass("cls-test", "MyPageTest");
+
+        TestTiming t = ExecutionMetrics.getTimings().iterator().next();
+        assertEquals(t.getTestClassName(), "MyPageTest");
+    }
+
+    // ----------------------------------------------------------
+    // exportToJson — field presence
+    // ----------------------------------------------------------
+
+    @Test
+    public void exportToJson_includesRetryCount() throws IOException {
+        ExecutionMetrics.markStart("retry-test");
+        ExecutionMetrics.markEnd("retry-test");
+        ExecutionMetrics.recordStatus("retry-test", "PASSED");
+        ExecutionMetrics.recordRetry("retry-test");
+        ExecutionMetrics.exportToJson();
+
+        String json = Files.readString(new File("target/selenium-boot-metrics.json").toPath());
+        assertTrue(json.contains("\"retryCount\""), "JSON must include retryCount per test");
+    }
+
+    @Test
+    public void exportToJson_includesPassRate() throws IOException {
+        ExecutionMetrics.markStart("pass-test");
+        ExecutionMetrics.markEnd("pass-test");
+        ExecutionMetrics.recordStatus("pass-test", "PASSED");
+        ExecutionMetrics.exportToJson();
+
+        String json = Files.readString(new File("target/selenium-boot-metrics.json").toPath());
+        assertTrue(json.contains("\"passRate\""), "JSON must include top-level passRate");
+    }
+
+    @Test
+    public void exportToJson_includesFlakyCount() throws IOException {
+        ExecutionMetrics.markStart("flaky-test");
+        ExecutionMetrics.markEnd("flaky-test");
+        ExecutionMetrics.recordStatus("flaky-test", "PASSED");
+        ExecutionMetrics.recordRetry("flaky-test");
+        ExecutionMetrics.exportToJson();
+
+        String json = Files.readString(new File("target/selenium-boot-metrics.json").toPath());
+        assertTrue(json.contains("\"flakyTests\""),     "JSON must include top-level flakyTests");
+        assertTrue(json.contains("\"recoveredTests\""), "JSON must include top-level recoveredTests");
     }
 
     // ----------------------------------------------------------

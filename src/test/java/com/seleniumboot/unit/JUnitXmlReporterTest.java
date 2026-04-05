@@ -129,6 +129,33 @@ public class JUnitXmlReporterTest {
     }
 
     // ----------------------------------------------------------
+    // Failure message and stack trace content
+    // ----------------------------------------------------------
+
+    @Test
+    public void failureElement_containsActualErrorMessage() throws IOException {
+        TestTiming t = timing("failTest", "FAILED");
+        t.setErrorMessage("Expected [Login] but found [Error 404]");
+        JUnitXmlReporter.export(List.of(t), 100L);
+
+        String xml = readXml();
+        assertTrue(xml.contains("Expected [Login] but found [Error 404]"),
+                "failure message attribute must contain actual error text");
+    }
+
+    @Test
+    public void failureElement_containsStackTrace() throws IOException {
+        TestTiming t = timing("failTest2", "FAILED");
+        t.setErrorMessage("assertion failed");
+        t.setStackTrace("java.lang.AssertionError: assertion failed\n\tat com.example.MyTest.myTest(MyTest.java:42)");
+        JUnitXmlReporter.export(List.of(t), 100L);
+
+        String xml = readXml();
+        assertTrue(xml.contains("MyTest.java:42"),
+                "failure element body must contain the stack trace");
+    }
+
+    // ----------------------------------------------------------
     // Idempotency — second call overwrites first
     // ----------------------------------------------------------
 
