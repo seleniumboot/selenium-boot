@@ -58,7 +58,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.1.1</version>
+    <version>1.3.0</version>
 </dependency>
 ```
 
@@ -623,6 +623,19 @@ ci:
 ---
 
 ## Project Status
+
+### v1.3.0 — 2026-04-07
+
+- **Shadow DOM helpers** — `ShadowDom` utility + 7 `BasePage` methods (`shadowFind`, `shadowFindAll`, `shadowClick`, `shadowType`, `shadowGetText`, `shadowPierce`, `shadowExists`)
+- **Alert handling fix** — `unhandledPromptBehavior: ignore` on all driver providers; `BasePage.getAndAcceptAlert()` convenience method
+- **Component-aware waits** — `WaitEngine.waitForAngular()` (Angular 2+/AngularJS 1.x) and `WaitEngine.waitForReactHydration()` (React 18/17/16, Next.js)
+- **Enhanced HTML report** — pass rate gauge, donut chart, retry badges, expandable error/stack trace rows, filter bar, search, dark mode, slowest-5 section
+- **JUnit XML error details** — `<failure message>` now contains the actual assertion message and full stack trace
+- **Allure adapter** — opt-in Allure 2 JSON result files in `target/allure-results/` (`reporting.allureEnabled: true`)
+- **Slack / Teams notifications** — webhook-based post-suite summary with pass/fail counts and failed test list
+- **`@DependsOnApi`** — skip test immediately (before browser open) if a dependent HTTP endpoint is unreachable; repeatable; cached per suite
+
+---
 
 ### v1.1.1 — 2026-03-28
 

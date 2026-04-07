@@ -10,6 +10,20 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [1.3.0] — 2026-04-07
+
+### Added
+- **Shadow DOM helpers** — `ShadowDom` utility + 7 `BasePage` protected methods (`shadowFind`, `shadowFindAll`, `shadowClick`, `shadowType`, `shadowGetText`, `shadowPierce`, `shadowExists`)
+- **Alert handling fix** — set `unhandledPromptBehavior: ignore` on all driver providers so native alerts stay open; `BasePage.getAndAcceptAlert()` convenience method
+- **Component-aware waits** — `WaitEngine.waitForAngular()` (Angular 2+ testability API + AngularJS 1.x fallback) and `WaitEngine.waitForReactHydration()` (React 18/17/16 fiber detection, Next.js aware)
+- **Enhanced HTML report** — pass rate gauge card, donut chart (Chart.js), retry badges, expandable inline error message + stack trace per failed row, filter buttons (`All / Passed / Failed / Skipped / Flaky`), text search, dark mode toggle, slowest-5 tests section
+- **JUnit XML error details** — `<failure message>` and element text now contain the actual assertion message and full stack trace instead of a generic placeholder
+- **Allure adapter** — opt-in Allure 2 result file generation; set `reporting.allureEnabled: true` in `selenium-boot.yml`; produces `target/allure-results/{uuid}-result.json` per test
+- **Slack / Teams notifications** — configure `notifications.slack.webhookUrl` and/or `notifications.teams.webhookUrl`; post-suite summary sent automatically; `notifyOnFailureOnly` option
+- **`@DependsOnApi`** — method- or class-level annotation; skips test before browser opens if the specified HTTP endpoint is unreachable; repeatable (multiple URLs, all must be up); result cached per suite to avoid redundant probes
+
+---
+
 ## [1.1.1] — 2026-03-28
 
 ### Added
