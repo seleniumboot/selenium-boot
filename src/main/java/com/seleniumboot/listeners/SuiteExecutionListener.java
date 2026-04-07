@@ -8,6 +8,7 @@ import com.seleniumboot.lifecycle.FrameworkBootstrap;
 import com.seleniumboot.metrics.ExecutionMetrics;
 import com.seleniumboot.extension.PluginRegistry;
 import com.seleniumboot.hooks.HookRegistry;
+import com.seleniumboot.precondition.ApiHealthChecker;
 import com.seleniumboot.precondition.PreConditionRegistry;
 import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.reporting.JUnitXmlReporter;
@@ -59,6 +60,7 @@ public final class SuiteExecutionListener implements ISuiteListener {
                 );
             }
 
+            ApiHealthChecker.clearCache(); // reset per-suite health check cache
             PreConditionRegistry.loadAll();
             HookRegistry.onSuiteStart();
 

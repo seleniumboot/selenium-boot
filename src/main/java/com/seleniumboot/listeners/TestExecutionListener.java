@@ -14,6 +14,8 @@ import com.seleniumboot.test.BaseApiTest;
 import com.seleniumboot.hooks.HookRegistry;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.metrics.ExecutionMetrics;
+import com.seleniumboot.precondition.ApiHealthChecker;
+import com.seleniumboot.precondition.DependsOnApi;
 import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.recording.RecordingManager;
 import com.seleniumboot.reporting.ScreenshotManager;
@@ -67,6 +69,10 @@ public final class TestExecutionListener implements ITestListener {
             BrowserContext.set(browserOverride);
             ExecutionMetrics.recordBrowser(testId, browserOverride);
         }
+        // API health checks — skip immediately if a dependency is down,
+        // before creating a browser session so no resources are wasted.
+        checkApiDependencies(result);
+
         if (!isApiTest(result)) {
             DriverManager.createDriver();
             startRecordingIfEnabled();
@@ -173,6 +179,18 @@ public final class TestExecutionListener implements ITestListener {
         BrowserContext.clear();
         SoftAssertions.clear();
         SeleniumBootContext.clearCurrentTestId();
+    }
+
+    private void checkApiDependencies(ITestResult result) {
+        java.lang.reflect.Method method = result.getMethod().getConstructorOrMethod().getMethod();
+        DependsOnApi[] methodLevel = method.getAnnotationsByType(DependsOnApi.class);
+        DependsOnApi[] classLevel  = result.getTestClass().getRealClass().getAnnotationsByType(DependsOnApi.class);
+
+        // Method-level takes precedence; fall back to class-level
+        DependsOnApi[] deps = methodLevel.length > 0 ? methodLevel : classLevel;
+        for (DependsOnApi dep : deps) {
+            ApiHealthChecker.checkOrSkip(dep.value(), dep.timeoutSeconds());
+        }
     }
 
     private void startRecordingIfEnabled() {
