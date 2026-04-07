@@ -9,6 +9,7 @@ import com.seleniumboot.execution.ExecutionValidator;
 import com.seleniumboot.extension.PluginRegistry;
 import com.seleniumboot.hooks.HookRegistry;
 import com.seleniumboot.internal.SeleniumBootContext;
+import com.seleniumboot.reporting.AllureReportAdapter;
 import com.seleniumboot.reporting.ReportAdapterRegistry;
 
 /**
@@ -39,6 +40,13 @@ public final class FrameworkBootstrap {
         HookRegistry.loadAll();
         ReportAdapterRegistry.loadAll();
         PluginRegistry.loadAll(config);
+
+        // Opt-in built-in adapters
+        SeleniumBootConfig.Reporting reporting = config.getReporting();
+        if (reporting != null && reporting.isAllureEnabled()) {
+            ReportAdapterRegistry.register(new AllureReportAdapter());
+            System.out.println("[Selenium Boot] Allure adapter enabled → target/allure-results/");
+        }
     }
 
     /**

@@ -267,6 +267,17 @@ public final class SeleniumBootConfig {
     public Recording getRecording() { return recording; }
     public void setRecording(Recording recording) { this.recording = recording; }
 
+    private Reporting reporting;
+    public Reporting getReporting() { return reporting; }
+    public void setReporting(Reporting reporting) { this.reporting = reporting; }
+
+    public static final class Reporting {
+        private boolean allureEnabled = false;
+
+        public boolean isAllureEnabled()                      { return allureEnabled; }
+        public void    setAllureEnabled(boolean allureEnabled) { this.allureEnabled = allureEnabled; }
+    }
+
     public static final class Recording {
         private boolean enabled            = false;
         private int     fps                = 2;
