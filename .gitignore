@@ -41,6 +41,7 @@ build/
 
 .claude/*
 PLAN.md
+YOUTUBE_PLAN.md
 
 ### Docusaurus ###
 docs-site/node_modules/
