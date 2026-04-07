@@ -9,7 +9,9 @@ import com.seleniumboot.execution.ExecutionValidator;
 import com.seleniumboot.extension.PluginRegistry;
 import com.seleniumboot.hooks.HookRegistry;
 import com.seleniumboot.internal.SeleniumBootContext;
+import com.seleniumboot.config.SeleniumBootConfig.Notifications;
 import com.seleniumboot.reporting.AllureReportAdapter;
+import com.seleniumboot.reporting.NotificationAdapter;
 import com.seleniumboot.reporting.ReportAdapterRegistry;
 
 /**
@@ -46,6 +48,21 @@ public final class FrameworkBootstrap {
         if (reporting != null && reporting.isAllureEnabled()) {
             ReportAdapterRegistry.register(new AllureReportAdapter());
             System.out.println("[Selenium Boot] Allure adapter enabled → target/allure-results/");
+        }
+
+        Notifications notifs = config.getNotifications();
+        if (notifs != null) {
+            boolean hasSlack = notifs.getSlack() != null
+                    && notifs.getSlack().getWebhookUrl() != null
+                    && !notifs.getSlack().getWebhookUrl().isBlank();
+            boolean hasTeams = notifs.getTeams() != null
+                    && notifs.getTeams().getWebhookUrl() != null
+                    && !notifs.getTeams().getWebhookUrl().isBlank();
+            if (hasSlack || hasTeams) {
+                ReportAdapterRegistry.register(new NotificationAdapter(notifs));
+                System.out.println("[Selenium Boot] Notification adapter enabled"
+                        + (hasSlack ? " [Slack]" : "") + (hasTeams ? " [Teams]" : ""));
+            }
         }
     }
 

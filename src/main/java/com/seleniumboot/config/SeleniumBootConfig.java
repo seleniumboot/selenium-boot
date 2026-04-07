@@ -271,6 +271,40 @@ public final class SeleniumBootConfig {
     public Reporting getReporting() { return reporting; }
     public void setReporting(Reporting reporting) { this.reporting = reporting; }
 
+    private Notifications notifications;
+    public Notifications getNotifications() { return notifications; }
+    public void setNotifications(Notifications notifications) { this.notifications = notifications; }
+
+    public static final class Notifications {
+        private Slack slack;
+        private Teams teams;
+
+        public Slack getSlack() { return slack; }
+        public void  setSlack(Slack slack) { this.slack = slack; }
+        public Teams getTeams() { return teams; }
+        public void  setTeams(Teams teams) { this.teams = teams; }
+
+        public static final class Slack {
+            private String  webhookUrl;
+            private boolean notifyOnFailureOnly = false;
+
+            public String  getWebhookUrl()                      { return webhookUrl; }
+            public void    setWebhookUrl(String webhookUrl)     { this.webhookUrl = webhookUrl; }
+            public boolean isNotifyOnFailureOnly()              { return notifyOnFailureOnly; }
+            public void    setNotifyOnFailureOnly(boolean v)    { this.notifyOnFailureOnly = v; }
+        }
+
+        public static final class Teams {
+            private String  webhookUrl;
+            private boolean notifyOnFailureOnly = false;
+
+            public String  getWebhookUrl()                      { return webhookUrl; }
+            public void    setWebhookUrl(String webhookUrl)     { this.webhookUrl = webhookUrl; }
+            public boolean isNotifyOnFailureOnly()              { return notifyOnFailureOnly; }
+            public void    setNotifyOnFailureOnly(boolean v)    { this.notifyOnFailureOnly = v; }
+        }
+    }
+
     public static final class Reporting {
         private boolean allureEnabled = false;
 
