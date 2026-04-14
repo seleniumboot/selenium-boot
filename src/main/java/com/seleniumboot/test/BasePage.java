@@ -1,9 +1,12 @@
 package com.seleniumboot.test;
 
 import com.seleniumboot.api.SeleniumBootApi;
+import com.seleniumboot.assertion.LocatorAssert;
+import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
 import com.seleniumboot.internal.SeleniumBootContext;
+import com.seleniumboot.locator.Locator;
 import com.seleniumboot.shadow.ShadowDom;
 import com.seleniumboot.wait.WaitEngine;
 import org.openqa.selenium.Alert;
@@ -486,6 +489,62 @@ public abstract class BasePage {
         String absolutePath = resolveFilePath(filePath);
         WebElement input = WaitEngine.waitForVisible(inputLocator);
         input.sendKeys(absolutePath);
+    }
+
+    // ----------------------------------------------------------
+    // Fluent Locator API  ($)
+    // ----------------------------------------------------------
+
+    /**
+     * Creates a chainable {@link Locator} from a CSS selector.
+     *
+     * <pre>
+     * $(".row").filter(".active").nth(0).click();
+     * $("button").withText("Save").click();
+     * </pre>
+     */
+    protected Locator $(String css) {
+        return Locator.ofCss(css);
+    }
+
+    /**
+     * Creates a chainable {@link Locator} from a Selenium {@link By} locator.
+     *
+     * <pre>
+     * $(By.id("submit")).click();
+     * $(By.name("email")).type("user@example.com");
+     * </pre>
+     */
+    protected Locator $(By by) {
+        return Locator.of(by);
+    }
+
+    // ----------------------------------------------------------
+    // Web-First Assertions  (assertThat)
+    // ----------------------------------------------------------
+
+    /**
+     * Begins a fluent, auto-retrying assertion on the given locator.
+     *
+     * <pre>
+     * assertThat(By.id("banner")).isVisible();
+     * assertThat(By.id("title")).hasText("Welcome");
+     * assertThat(By.cssSelector(".error")).isHidden();
+     * </pre>
+     */
+    protected LocatorAssert assertThat(By locator) {
+        return SeleniumAssert.assertThat(locator);
+    }
+
+    /**
+     * Begins a fluent, auto-retrying assertion on the given {@link Locator} chain.
+     *
+     * <pre>
+     * assertThat($(".items").nth(0)).hasText("First item");
+     * </pre>
+     */
+    protected LocatorAssert assertThat(Locator locator) {
+        return SeleniumAssert.assertThat(locator);
     }
 
     private String resolveFilePath(String filePath) {

@@ -1,6 +1,8 @@
 package com.seleniumboot.test;
 
 import com.seleniumboot.api.SeleniumBootApi;
+import com.seleniumboot.assertion.LocatorAssert;
+import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
 import com.seleniumboot.browser.ConsoleErrorCollector;
@@ -11,7 +13,9 @@ import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.listeners.SuiteExecutionListener;
 import com.seleniumboot.listeners.TestExecutionListener;
+import com.seleniumboot.locator.Locator;
 import com.seleniumboot.testdata.TestDataStore;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.testng.annotations.Listeners;
 
@@ -103,6 +107,34 @@ public abstract class BaseTest {
     /** Suite-scoped global context store. Survives between tests. */
     protected SuiteContext suiteCtx() {
         return SuiteContextHolder.INSTANCE;
+    }
+
+    // ----------------------------------------------------------
+    // Fluent Locator API  ($)
+    // ----------------------------------------------------------
+
+    /** Creates a chainable {@link Locator} from a CSS selector. */
+    protected Locator $(String css) {
+        return Locator.ofCss(css);
+    }
+
+    /** Creates a chainable {@link Locator} from a Selenium {@link By} locator. */
+    protected Locator $(By by) {
+        return Locator.of(by);
+    }
+
+    // ----------------------------------------------------------
+    // Web-First Assertions  (assertThat)
+    // ----------------------------------------------------------
+
+    /** Begins a fluent, auto-retrying assertion on the given locator. */
+    protected LocatorAssert assertThat(By locator) {
+        return SeleniumAssert.assertThat(locator);
+    }
+
+    /** Begins a fluent, auto-retrying assertion on the given {@link Locator} chain. */
+    protected LocatorAssert assertThat(Locator locator) {
+        return SeleniumAssert.assertThat(locator);
     }
 
     private static final class ScenarioContextHolder {
