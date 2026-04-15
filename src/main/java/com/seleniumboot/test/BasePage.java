@@ -5,8 +5,12 @@ import com.seleniumboot.assertion.LocatorAssert;
 import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
+import com.seleniumboot.browser.ClipboardHelper;
+import com.seleniumboot.browser.GeoLocation;
+import com.seleniumboot.browser.StorageHelper;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.locator.Locator;
+import com.seleniumboot.network.NetworkMock;
 import com.seleniumboot.shadow.ShadowDom;
 import com.seleniumboot.wait.WaitEngine;
 import org.openqa.selenium.Alert;
@@ -489,6 +493,40 @@ public abstract class BasePage {
         String absolutePath = resolveFilePath(filePath);
         WebElement input = WaitEngine.waitForVisible(inputLocator);
         input.sendKeys(absolutePath);
+    }
+
+    // ----------------------------------------------------------
+    // Phase 14 — Network, Storage, GeoLocation, Clipboard
+    // ----------------------------------------------------------
+
+    /** Network interception — stub API responses via CDP. */
+    protected NetworkMock networkMock() {
+        return NetworkMock.get();
+    }
+
+    /** localStorage read/write helpers. */
+    protected StorageHelper.LocalStorage localStorage() {
+        return StorageHelper.localStorage();
+    }
+
+    /** sessionStorage read/write helpers. */
+    protected StorageHelper.SessionStorage sessionStorage() {
+        return StorageHelper.sessionStorage();
+    }
+
+    /** Cookie read/write helpers. */
+    protected StorageHelper.Cookies cookies() {
+        return StorageHelper.cookies();
+    }
+
+    /** Geolocation mock — override browser location via CDP or JS. */
+    protected GeoLocation mockLocation() {
+        return GeoLocation.instance();
+    }
+
+    /** Clipboard read/write helpers. */
+    protected ClipboardHelper clipboard() {
+        return ClipboardHelper.instance();
     }
 
     // ----------------------------------------------------------

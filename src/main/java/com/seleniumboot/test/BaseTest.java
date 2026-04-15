@@ -5,7 +5,10 @@ import com.seleniumboot.assertion.LocatorAssert;
 import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
+import com.seleniumboot.browser.ClipboardHelper;
 import com.seleniumboot.browser.ConsoleErrorCollector;
+import com.seleniumboot.browser.GeoLocation;
+import com.seleniumboot.browser.StorageHelper;
 import com.seleniumboot.client.ApiClient;
 import com.seleniumboot.context.ScenarioContext;
 import com.seleniumboot.context.SuiteContext;
@@ -14,6 +17,7 @@ import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.listeners.SuiteExecutionListener;
 import com.seleniumboot.listeners.TestExecutionListener;
 import com.seleniumboot.locator.Locator;
+import com.seleniumboot.network.NetworkMock;
 import com.seleniumboot.testdata.TestDataStore;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -107,6 +111,40 @@ public abstract class BaseTest {
     /** Suite-scoped global context store. Survives between tests. */
     protected SuiteContext suiteCtx() {
         return SuiteContextHolder.INSTANCE;
+    }
+
+    // ----------------------------------------------------------
+    // Phase 14 — Network, Storage, GeoLocation, Clipboard
+    // ----------------------------------------------------------
+
+    /** Network interception — stub API responses via CDP. */
+    protected NetworkMock networkMock() {
+        return NetworkMock.get();
+    }
+
+    /** localStorage read/write helpers. */
+    protected StorageHelper.LocalStorage localStorage() {
+        return StorageHelper.localStorage();
+    }
+
+    /** sessionStorage read/write helpers. */
+    protected StorageHelper.SessionStorage sessionStorage() {
+        return StorageHelper.sessionStorage();
+    }
+
+    /** Cookie read/write helpers. */
+    protected StorageHelper.Cookies cookies() {
+        return StorageHelper.cookies();
+    }
+
+    /** Geolocation mock — override browser location via CDP or JS. */
+    protected GeoLocation mockLocation() {
+        return GeoLocation.instance();
+    }
+
+    /** Clipboard read/write helpers. */
+    protected ClipboardHelper clipboard() {
+        return ClipboardHelper.instance();
     }
 
     // ----------------------------------------------------------

@@ -2,18 +2,18 @@ package com.seleniumboot.listeners;
 
 import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
+import com.seleniumboot.browser.BrowserContext;
+import com.seleniumboot.browser.ConsoleErrorCollector;
 import com.seleniumboot.client.ApiAuth;
 import com.seleniumboot.client.ApiClient;
 import com.seleniumboot.client.UseAuth;
 import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.context.ScenarioContext;
-import com.seleniumboot.browser.BrowserContext;
-import com.seleniumboot.browser.ConsoleErrorCollector;
 import com.seleniumboot.driver.DriverManager;
-import com.seleniumboot.test.BaseApiTest;
 import com.seleniumboot.hooks.HookRegistry;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.metrics.ExecutionMetrics;
+import com.seleniumboot.network.NetworkMock;
 import com.seleniumboot.precondition.ApiHealthChecker;
 import com.seleniumboot.precondition.DependsOnApi;
 import com.seleniumboot.precondition.PreConditionRunner;
@@ -21,6 +21,7 @@ import com.seleniumboot.recording.RecordingManager;
 import com.seleniumboot.reporting.ScreenshotManager;
 import com.seleniumboot.steps.StepLogger;
 import com.seleniumboot.steps.StepStatus;
+import com.seleniumboot.test.BaseApiTest;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
@@ -133,6 +134,7 @@ public final class TestExecutionListener implements ITestListener {
         ScenarioContext.clear();
         com.seleniumboot.client.ApiClient.clearGlobalAuth();
         BrowserContext.clear();
+        NetworkMock.cleanup();
         SeleniumBootContext.clearCurrentTestId();
         jsErrorsLogged.set(false);
     }
@@ -163,6 +165,7 @@ public final class TestExecutionListener implements ITestListener {
         com.seleniumboot.client.ApiClient.clearGlobalAuth();
         BrowserContext.clear();
         SoftAssertions.clear();
+        NetworkMock.cleanup();
         SeleniumBootContext.clearCurrentTestId();
     }
 

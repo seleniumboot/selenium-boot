@@ -52,6 +52,16 @@ public final class SeleniumBootConfig {
         this.ci = ci;
     }
 
+    private Network network;
+    public Network getNetwork() { return network; }
+    public void setNetwork(Network network) { this.network = network; }
+
+    public static final class Network {
+        private boolean interceptEnabled = false;
+        public boolean isInterceptEnabled() { return interceptEnabled; }
+        public void setInterceptEnabled(boolean interceptEnabled) { this.interceptEnabled = interceptEnabled; }
+    }
+
     // =========================
 
     public static final class Browser {
