@@ -6,8 +6,11 @@ import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
 import com.seleniumboot.browser.ClipboardHelper;
+import com.seleniumboot.browser.DeviceEmulator;
 import com.seleniumboot.browser.GeoLocation;
 import com.seleniumboot.browser.StorageHelper;
+import com.seleniumboot.visual.VisualAssert;
+import com.seleniumboot.visual.VisualTolerance;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.locator.Locator;
 import com.seleniumboot.network.NetworkMock;
@@ -583,6 +586,63 @@ public abstract class BasePage {
      */
     protected LocatorAssert assertThat(Locator locator) {
         return SeleniumAssert.assertThat(locator);
+    }
+
+    // ----------------------------------------------------------
+    // Phase 15 — Visual Regression + Device Emulation
+    // ----------------------------------------------------------
+
+    /**
+     * Takes a full-page screenshot and compares it against the stored baseline.
+     * On first run the screenshot is saved as the baseline.
+     *
+     * <pre>assertScreenshot("homepage");</pre>
+     */
+    protected void assertScreenshot(String name) {
+        VisualAssert.assertScreenshot(name);
+    }
+
+    /**
+     * Full-page screenshot comparison with a custom pixel-difference tolerance.
+     *
+     * <pre>assertScreenshot("homepage", VisualTolerance.of(2));</pre>
+     */
+    protected void assertScreenshot(String name, VisualTolerance tolerance) {
+        VisualAssert.assertScreenshot(name, tolerance);
+    }
+
+    /**
+     * Screenshot comparison scoped to a specific element.
+     *
+     * <pre>assertScreenshot("login-form", By.id("login-form"));</pre>
+     */
+    protected void assertScreenshot(String name, By region) {
+        VisualAssert.assertScreenshot(name, region);
+    }
+
+    /**
+     * Element-scoped screenshot comparison with a custom tolerance.
+     *
+     * <pre>assertScreenshot("login-form", By.id("login-form"), VisualTolerance.of(1));</pre>
+     */
+    protected void assertScreenshot(String name, By region, VisualTolerance tolerance) {
+        VisualAssert.assertScreenshot(name, region, tolerance);
+    }
+
+    /**
+     * Applies a named device profile (e.g. {@code "iPhone 14"}) to the current browser session.
+     *
+     * <pre>emulateDevice("Pixel 7");</pre>
+     */
+    protected void emulateDevice(String deviceName) {
+        DeviceEmulator.emulate(deviceName);
+    }
+
+    /**
+     * Resets device emulation (restores desktop viewport and default user-agent).
+     */
+    protected void resetDevice() {
+        DeviceEmulator.reset();
     }
 
     private String resolveFilePath(String filePath) {

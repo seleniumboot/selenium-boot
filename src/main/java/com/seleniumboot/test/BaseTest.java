@@ -7,8 +7,11 @@ import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
 import com.seleniumboot.browser.ClipboardHelper;
 import com.seleniumboot.browser.ConsoleErrorCollector;
+import com.seleniumboot.browser.DeviceEmulator;
 import com.seleniumboot.browser.GeoLocation;
 import com.seleniumboot.browser.StorageHelper;
+import com.seleniumboot.visual.VisualAssert;
+import com.seleniumboot.visual.VisualTolerance;
 import com.seleniumboot.client.ApiClient;
 import com.seleniumboot.context.ScenarioContext;
 import com.seleniumboot.context.SuiteContext;
@@ -173,6 +176,40 @@ public abstract class BaseTest {
     /** Begins a fluent, auto-retrying assertion on the given {@link Locator} chain. */
     protected LocatorAssert assertThat(Locator locator) {
         return SeleniumAssert.assertThat(locator);
+    }
+
+    // ----------------------------------------------------------
+    // Phase 15 — Visual Regression + Device Emulation
+    // ----------------------------------------------------------
+
+    /** Full-page screenshot comparison against the stored baseline. */
+    protected void assertScreenshot(String name) {
+        VisualAssert.assertScreenshot(name);
+    }
+
+    /** Full-page screenshot comparison with a custom pixel-difference tolerance. */
+    protected void assertScreenshot(String name, VisualTolerance tolerance) {
+        VisualAssert.assertScreenshot(name, tolerance);
+    }
+
+    /** Element-scoped screenshot comparison against the stored baseline. */
+    protected void assertScreenshot(String name, By region) {
+        VisualAssert.assertScreenshot(name, region);
+    }
+
+    /** Element-scoped screenshot comparison with a custom tolerance. */
+    protected void assertScreenshot(String name, By region, VisualTolerance tolerance) {
+        VisualAssert.assertScreenshot(name, region, tolerance);
+    }
+
+    /** Applies a named device profile (e.g. {@code "iPhone 14"}) to the current browser session. */
+    protected void emulateDevice(String deviceName) {
+        DeviceEmulator.emulate(deviceName);
+    }
+
+    /** Resets device emulation (restores desktop viewport and default user-agent). */
+    protected void resetDevice() {
+        DeviceEmulator.reset();
     }
 
     private static final class ScenarioContextHolder {

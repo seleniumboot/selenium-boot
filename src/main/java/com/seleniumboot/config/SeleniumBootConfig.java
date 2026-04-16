@@ -84,6 +84,10 @@ public final class SeleniumBootConfig {
         private boolean captureConsoleErrors = false;
         private boolean failOnConsoleErrors = false;
         private List<String> matrix = Collections.emptyList();
+        private String device;   // optional device profile name, e.g. "iPhone 14"
+
+        public String getDevice()              { return device; }
+        public void   setDevice(String device) { this.device = device; }
 
         public String getDownloadDir() { return downloadDir; }
         public void setDownloadDir(String downloadDir) { this.downloadDir = downloadDir; }
@@ -335,6 +339,29 @@ public final class SeleniumBootConfig {
 
         public int  getMaxDurationSeconds()                          { return maxDurationSeconds; }
         public void setMaxDurationSeconds(int maxDurationSeconds)    { this.maxDurationSeconds = maxDurationSeconds; }
+    }
+
+    private Visual visual;
+    public Visual getVisual() { return visual; }
+    public void setVisual(Visual visual) { this.visual = visual; }
+
+    public static final class Visual {
+        private String  baselineDir      = "src/test/resources/baselines";
+        private String  diffDir          = "target/visual-diffs";
+        private double  defaultTolerance = 0;
+        private boolean updateBaselines  = false;
+
+        public String  getBaselineDir()                    { return baselineDir; }
+        public void    setBaselineDir(String v)            { this.baselineDir = v; }
+
+        public String  getDiffDir()                        { return diffDir; }
+        public void    setDiffDir(String v)                { this.diffDir = v; }
+
+        public double  getDefaultTolerance()               { return defaultTolerance; }
+        public void    setDefaultTolerance(double v)       { this.defaultTolerance = v; }
+
+        public boolean isUpdateBaselines()                 { return updateBaselines; }
+        public void    setUpdateBaselines(boolean v)       { this.updateBaselines = v; }
     }
 
     public Api getApi() { return api; }

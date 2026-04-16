@@ -10,6 +10,20 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [1.6.0] — 2026-04-16
+
+### Added
+- **Visual regression testing** — `VisualAssert.assertScreenshot(name)` pixel-by-pixel screenshot comparison; baseline auto-created on first run; diff image written to `target/visual-diffs/`; `VisualTolerance.of(n)` for configurable pixel-difference tolerance; `-DupdateBaselines=true` system property forces baseline regeneration; configurable dirs via `visual.baselineDir` / `visual.diffDir` in `selenium-boot.yml`
+- **Mobile device emulation** — `DeviceEmulator.emulate("iPhone 14")` / `emulateDevice()` + `resetDevice()` in `BasePage`/`BaseTest`; full CDP emulation on Chrome/Edge (viewport, device scale factor, user-agent); window-resize + JS UA override fallback on Firefox; 6 built-in profiles: iPhone 14, iPhone SE, Pixel 7, Galaxy S23, iPad, iPad Pro 12; register custom profiles via `DeviceProfiles.register()`
+- **Clipboard helpers** — `ClipboardHelper.write()` / `read()` / `clear()` backed by a reliable JS global store (`window.__seleniumBootClipboard`); async native clipboard attempted best-effort
+- **GeoLocation mock** — `GeoLocation.set(lat, lon)` / `clear()`; CDP `Emulation.setGeolocationOverride` on Chrome/Edge; `navigator.geolocation` JS override fallback on Firefox
+- **Network interception** — `NetworkMock.stub(urlPattern)` with fluent `StubBuilder`; glob patterns (`**/api/**`); configurable response body, content-type, status code, and delay; auto-cleared after each test
+- **Browser storage helpers** — `StorageHelper.localStorage()`, `sessionStorage()`, `cookies()` — read/write/clear browser storage from tests without JS boilerplate
+- **Fluent Locator API** — `$(css)` / `$(By)` returning a chainable `Locator`; methods: `filter()`, `withText()`, `within()`, `nth()`; auto-wait terminal actions: `click()`, `type()`, `getText()`, `isVisible()`, `count()`, `element()`, `elements()`
+- **Web-First Assertions** — `assertThat(By)` / `assertThat(Locator)` returning `LocatorAssert`; auto-retrying assertions: `isVisible()`, `isHidden()`, `isEnabled()`, `hasText()`, `containsText()`, `hasValue()`, `hasAttribute()`, `hasClass()`, `count()`
+
+---
+
 ## [1.3.0] — 2026-04-07
 
 ### Added

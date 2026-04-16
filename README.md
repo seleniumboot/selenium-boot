@@ -58,7 +58,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.3.0</version>
+    <version>1.6.0</version>
 </dependency>
 ```
 
@@ -623,6 +623,19 @@ ci:
 ---
 
 ## Project Status
+
+### v1.6.0 — 2026-04-16
+
+- **Visual regression testing** — `VisualAssert.assertScreenshot()` pixel-by-pixel comparison; auto-creates baseline on first run; diff image saved to `target/visual-diffs/`; configurable tolerance via `VisualTolerance.of(n)`; `-DupdateBaselines=true` to regenerate
+- **Mobile device emulation** — `DeviceEmulator.emulate("iPhone 14")` / `emulateDevice()` in `BasePage`/`BaseTest`; CDP-based on Chrome/Edge (viewport, scale factor, UA); window-resize fallback on Firefox; 6 built-in profiles (iPhone 14, iPhone SE, Pixel 7, Galaxy S23, iPad, iPad Pro 12) via `DeviceProfiles` registry
+- **Clipboard helpers** — `ClipboardHelper.write/read/clear()` backed by a reliable JS global store
+- **GeoLocation mock** — CDP-based on Chrome/Edge, JS `navigator.geolocation` override on Firefox
+- **Network interception** — `NetworkMock.stub(pattern)` stubs API responses via CDP `Fetch` domain; glob patterns, custom status, delay, auto-cleanup after each test
+- **Browser storage helpers** — `StorageHelper.localStorage()`, `sessionStorage()`, `cookies()` for reading/writing browser storage in tests
+- **Fluent Locator API** — `$(css)` / `$(By)` chainable locator: `filter()`, `withText()`, `within()`, `nth()`, auto-wait terminals
+- **Web-First Assertions** — `assertThat(By/Locator)` with auto-retry: `isVisible`, `isHidden`, `hasText`, `containsText`, `hasAttribute`, `hasClass`, `count`
+
+---
 
 ### v1.3.0 — 2026-04-07
 
