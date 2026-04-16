@@ -96,6 +96,10 @@ public class TestTiming {
     public String getRecordingPath() { return recordingPath; }
     public void setRecordingPath(String recordingPath) { this.recordingPath = recordingPath; }
 
+    private String tracePath;
+    public String getTracePath() { return tracePath; }
+    public void setTracePath(String tracePath) { this.tracePath = tracePath; }
+
     private final java.util.List<com.seleniumboot.steps.StepRecord> steps =
             new java.util.concurrent.CopyOnWriteArrayList<>();
 

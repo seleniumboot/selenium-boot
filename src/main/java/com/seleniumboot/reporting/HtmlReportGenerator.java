@@ -276,6 +276,7 @@ public final class HtmlReportGenerator {
         String errorMsg      = test.has("errorMessage")  ? test.get("errorMessage").asText()  : null;
         String stackTrace    = test.has("stackTrace")    ? test.get("stackTrace").asText()    : null;
         String recordingPath = test.has("recordingPath") ? test.get("recordingPath").asText() : null;
+        String tracePath     = test.has("tracePath")     ? test.get("tracePath").asText()     : null;
         String browser     = test.has("browser")      ? capitalize(test.get("browser").asText()) : "";
         String screenshotCell = buildScreenshotCell(test);
         String groupKey    = escapeHtml(groupId);
@@ -292,13 +293,14 @@ public final class HtmlReportGenerator {
             String errorHtml     = errorMsg      != null ? "<div class=\"error-msg\">"      + escapeHtml(errorMsg)   + "</div>" : "";
             String traceHtml     = stackTrace    != null ? "<pre class=\"stack-trace\">"    + escapeHtml(stackTrace) + "</pre>" : "";
             String recordingHtml = recordingPath != null ? buildRecordingCell(recordingPath) : "";
+            String traceLink     = tracePath     != null ? buildTraceLink(tracePath) : "";
             String stepsSection = !stepsHtml.isEmpty()
                     ? "<div class=\"step-timeline-section\"><div class=\"step-timeline-header\">Steps (" + test.get("steps").size() + ")</div>"
                       + "<div class=\"step-timeline\">" + stepsHtml + "</div></div>"
                     : "";
             String detailDisplay = collapsed ? " style=\"display:none\"" : "";
             detailRow = "<tr class=\"detail-row group-member\" data-group=\"" + groupKey + "\" id=\"detail-" + rowIndex + "\"" + detailDisplay + ">"
-                    + "<td colspan=\"" + colspan + "\"><div class=\"detail-panel\">" + stepsSection + recordingHtml + errorHtml + traceHtml + "</div></td>"
+                    + "<td colspan=\"" + colspan + "\"><div class=\"detail-panel\">" + traceLink + stepsSection + recordingHtml + errorHtml + traceHtml + "</div></td>"
                     + "</tr>";
         }
 
@@ -430,6 +432,13 @@ public final class HtmlReportGenerator {
         // Fallback: show path
         return "<div class=\"recording-section\"><span class=\"recording-label\">&#x1F3A5; Recording:</span> "
                 + "<span class=\"recording-path\">" + escapeHtml(recordingPath) + "</span></div>";
+    }
+
+    private static String buildTraceLink(String tracePath) {
+        // tracePath is relative to target/ — the report is also at target/, so the href is correct
+        return "<div class=\"trace-link-section\">"
+                + "<a href=\"" + escapeHtml(tracePath) + "\" target=\"_blank\" class=\"trace-link\">"
+                + "&#x1F50D; View Trace</a></div>";
     }
 
     private static String buildStepTimeline(JsonNode test) {

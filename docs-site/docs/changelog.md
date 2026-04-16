@@ -10,6 +10,13 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [1.7.0] — 2026-04-16
+
+### Added
+- **Trace Viewer** — `tracing.enabled: true` in `selenium-boot.yml` generates a self-contained HTML trace file per failed test at `target/traces/{ClassName}/{testMethod}-trace.html`; the file embeds a clickable step timeline (each step shows its screenshot on click), a final-state screenshot taken at the moment of failure, the error message, and full stack trace; zero CDN dependencies — all CSS/JS are inlined; `captureOnPass: true` option to generate traces for passing tests too; HTML report shows a **"View Trace"** link in the failure detail panel
+
+---
+
 ## [1.6.0] — 2026-04-16
 
 ### Added

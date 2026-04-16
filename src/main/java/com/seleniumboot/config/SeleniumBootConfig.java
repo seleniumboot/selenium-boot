@@ -345,6 +345,21 @@ public final class SeleniumBootConfig {
     public Visual getVisual() { return visual; }
     public void setVisual(Visual visual) { this.visual = visual; }
 
+    private Tracing tracing;
+    public Tracing getTracing() { return tracing; }
+    public void setTracing(Tracing tracing) { this.tracing = tracing; }
+
+    public static final class Tracing {
+        private boolean enabled       = false;
+        private boolean captureOnPass = false;
+
+        public boolean isEnabled()              { return enabled; }
+        public void    setEnabled(boolean v)    { this.enabled = v; }
+
+        public boolean isCaptureOnPass()           { return captureOnPass; }
+        public void    setCaptureOnPass(boolean v) { this.captureOnPass = v; }
+    }
+
     public static final class Visual {
         private String  baselineDir      = "src/test/resources/baselines";
         private String  diffDir          = "target/visual-diffs";

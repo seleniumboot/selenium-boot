@@ -58,7 +58,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.6.0</version>
+    <version>1.7.0</version>
 </dependency>
 ```
 
@@ -623,6 +623,12 @@ ci:
 ---
 
 ## Project Status
+
+### v1.7.0 — 2026-04-16
+
+- **Trace Viewer** — `tracing.enabled: true` generates a self-contained dark-themed `target/traces/{Class}/{method}-trace.html` per failed test; embeds step timeline with screenshots, final-state screenshot, error message + stack trace; zero CDN dependencies; `captureOnPass: true` option to trace passing tests too; "View Trace" link appears in the HTML report's failure detail panel
+
+---
 
 ### v1.6.0 — 2026-04-16
 

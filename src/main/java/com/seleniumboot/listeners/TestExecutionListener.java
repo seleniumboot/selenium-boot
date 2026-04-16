@@ -15,6 +15,7 @@ import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.metrics.ExecutionMetrics;
 import com.seleniumboot.network.NetworkMock;
 import com.seleniumboot.precondition.ApiHealthChecker;
+import com.seleniumboot.tracing.TraceRecorder;
 import com.seleniumboot.precondition.DependsOnApi;
 import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.recording.RecordingManager;
@@ -128,6 +129,7 @@ public final class TestExecutionListener implements ITestListener {
         RecordingManager.stop(); // discard frames — test passed
         ExecutionMetrics.recordStatus(testId, "PASSED");
         ExecutionMetrics.markEnd(testId);
+        saveTraceIfEnabled(testId, result.getMethod().getMethodName(), true);
         HookRegistry.onTestEnd(testId, "PASSED");
         if (!isApiTest(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         com.seleniumboot.testdata.TestDataStore.clear();
@@ -156,6 +158,7 @@ public final class TestExecutionListener implements ITestListener {
         if (result.getThrowable() != null) {
             ExecutionMetrics.recordError(testId, result.getThrowable());
         }
+        saveTraceIfEnabled(testId, result.getMethod().getMethodName(), false);
         HookRegistry.onTestFailure(testId, result.getThrowable());
         String screenshotPath = isApiTest(result) ? null : ScreenshotManager.capture(testName);
         ExecutionMetrics.recordScreenshot(testId, screenshotPath);
@@ -273,6 +276,15 @@ public final class TestExecutionListener implements ITestListener {
                 com.seleniumboot.testdata.TestDataLoader.load(annotation.value())
             );
         }
+    }
+
+    private void saveTraceIfEnabled(String testId, String testName, boolean isPassing) {
+        try {
+            SeleniumBootConfig.Tracing tracing = SeleniumBootContext.getConfig().getTracing();
+            if (tracing == null || !tracing.isEnabled()) return;
+            if (isPassing && !tracing.isCaptureOnPass()) return;
+            TraceRecorder.save(testId, testName);
+        } catch (Exception ignored) {}
     }
 
     @Override
