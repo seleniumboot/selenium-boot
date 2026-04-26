@@ -1,6 +1,6 @@
 # Selenium Boot
 
-**An Opinionated, Spring Boot–Inspired Framework for Java QA Automation**
+**A Zero-Boilerplate, Production-Ready Framework for Java QA Automation**
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.seleniumboot/selenium-boot)](https://central.sonatype.com/artifact/io.github.seleniumboot/selenium-boot)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
@@ -11,7 +11,7 @@
 
 ## Overview
 
-Selenium Boot is an opinionated, production-ready automation framework for Java Selenium, inspired by the philosophy of Spring Boot.
+Selenium Boot is a zero-boilerplate, production-ready automation framework for Java Selenium, inspired by the philosophy of Spring Boot.
 
 It eliminates repetitive boilerplate by providing sensible defaults, a standardized project structure, and a convention-over-configuration approach — while keeping Selenium fully visible and accessible.
 
@@ -58,7 +58,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.7.0</version>
+    <version>1.8.0</version>
 </dependency>
 ```
 
@@ -623,6 +623,14 @@ ci:
 ---
 
 ## Project Status
+
+### v1.8.0 — 2026-04-16
+
+- **Self-Healing Locators** — `locators.selfHealing: true`; when `waitForVisible`/`waitForClickable` times out, framework automatically tries fallback strategies: extract `id` from CSS `#foo` or XPath `@id`, `name` from CSS `[name]` or XPath `@name`, text from XPath `text()`, class from CSS `.btn`, `data-testid`; healed tests get `⚠ healed` badge in HTML report; `target/healed-locators.json` lists every healed locator after suite
+- **AI-Assisted Failure Analysis** — `ai.failureAnalysis: true` + `ai.apiKey: ${CLAUDE_API_KEY}`; on test failure calls `claude-haiku-4-5-20251001` with error message, stack trace, step log, URL, and page title; plain-English root-cause + fix suggestion embedded in HTML report below the stack trace; bounded by `ai.timeoutSeconds` (default 20s); fully non-blocking — never affects suite result
+- **Flakiness Prediction** — reads last `flakiness.historyRuns` (default 20) JSON files from `target/metrics-history/`; computes per-test failure rate; classifies as `STABLE` (<10%), `WATCH` (10–33%), `HIGH` (≥33%); **Flakiness Radar** card in HTML report; `target/flakiness-report.json`; `flakiness.failOnHighFlakiness: true` to gate builds
+
+---
 
 ### v1.7.0 — 2026-04-16
 

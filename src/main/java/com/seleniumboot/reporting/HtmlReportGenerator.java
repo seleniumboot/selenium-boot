@@ -202,8 +202,9 @@ public final class HtmlReportGenerator {
             }
         }
 
-        String retrySection   = buildRetrySection(flakyTests, recoveredTests);
-        String slowestSection = tests != null ? buildSlowestTests(tests) : "";
+        String retrySection     = buildRetrySection(flakyTests, recoveredTests);
+        String slowestSection   = tests != null ? buildSlowestTests(tests) : "";
+        String flakinessSection = buildFlakinessSection();
         String failureRows    = buildFailureRows(tests, isMatrixRun);
         String failureBadge   = failedTests > 0
                 ? "<span class=\"nav-count nav-count-fail\">" + failedTests + "</span>"
@@ -225,6 +226,7 @@ public final class HtmlReportGenerator {
                 .replace("{{RECOVERED_TESTS}}", String.valueOf(recoveredTests))
                 .replace("{{RETRY_SECTION}}", retrySection)
                 .replace("{{SLOWEST_TESTS}}", slowestSection)
+                .replace("{{FLAKINESS_SECTION}}", flakinessSection)
                 .replace("{{DONUT_DATA}}", donutData)
                 .replace("{{ROWS}}", rows.toString())
                 .replace("{{FAILURE_ROWS}}", failureRows)
@@ -277,30 +279,40 @@ public final class HtmlReportGenerator {
         String stackTrace    = test.has("stackTrace")    ? test.get("stackTrace").asText()    : null;
         String recordingPath = test.has("recordingPath") ? test.get("recordingPath").asText() : null;
         String tracePath     = test.has("tracePath")     ? test.get("tracePath").asText()     : null;
+        int    healedCount   = test.has("healedCount")   ? test.get("healedCount").asInt()    : 0;
+        String aiAnalysis    = test.has("aiAnalysis")    ? test.get("aiAnalysis").asText()    : null;
         String browser     = test.has("browser")      ? capitalize(test.get("browser").asText()) : "";
         String screenshotCell = buildScreenshotCell(test);
         String groupKey    = escapeHtml(groupId);
         int colspan        = showBrowser ? 8 : 7;
 
-        String retryBadge = retryCount > 0
+        String retryBadge  = retryCount > 0
                 ? "<span class=\"retry-badge\">&#x21bb; " + retryCount + "x</span> "
+                : "";
+        String healedBadge = healedCount > 0
+                ? "<span class=\"healed-badge\" title=\"" + healedCount
+                  + " locator(s) auto-healed\">&#x26A0; healed</span> "
                 : "";
 
         String stepsHtml   = buildStepTimeline(test);
-        boolean hasDetail  = errorMsg != null || stackTrace != null || !stepsHtml.isEmpty() || recordingPath != null;
+        boolean hasDetail  = errorMsg != null || stackTrace != null || !stepsHtml.isEmpty()
+                             || recordingPath != null || aiAnalysis != null;
         String detailRow   = "";
         if (hasDetail) {
             String errorHtml     = errorMsg      != null ? "<div class=\"error-msg\">"      + escapeHtml(errorMsg)   + "</div>" : "";
             String traceHtml     = stackTrace    != null ? "<pre class=\"stack-trace\">"    + escapeHtml(stackTrace) + "</pre>" : "";
             String recordingHtml = recordingPath != null ? buildRecordingCell(recordingPath) : "";
             String traceLink     = tracePath     != null ? buildTraceLink(tracePath) : "";
+            String aiHtml        = aiAnalysis    != null ? buildAiAnalysisPanel(aiAnalysis) : "";
             String stepsSection = !stepsHtml.isEmpty()
                     ? "<div class=\"step-timeline-section\"><div class=\"step-timeline-header\">Steps (" + test.get("steps").size() + ")</div>"
                       + "<div class=\"step-timeline\">" + stepsHtml + "</div></div>"
                     : "";
             String detailDisplay = collapsed ? " style=\"display:none\"" : "";
             detailRow = "<tr class=\"detail-row group-member\" data-group=\"" + groupKey + "\" id=\"detail-" + rowIndex + "\"" + detailDisplay + ">"
-                    + "<td colspan=\"" + colspan + "\"><div class=\"detail-panel\">" + traceLink + stepsSection + recordingHtml + errorHtml + traceHtml + "</div></td>"
+                    + "<td colspan=\"" + colspan + "\"><div class=\"detail-panel\">"
+                    + traceLink + stepsSection + recordingHtml + aiHtml + errorHtml + traceHtml
+                    + "</div></td>"
                     + "</tr>";
         }
 
@@ -317,7 +329,7 @@ public final class HtmlReportGenerator {
                 + " data-group=\"" + groupKey + "\""
                 + " data-status=\"" + status + "\""
                 + " data-test=\"" + methodName.toLowerCase() + "\">"
-                + "<td class=\"test-id\">" + retryBadge + methodName + "</td>"
+                + "<td class=\"test-id\">" + retryBadge + healedBadge + methodName + "</td>"
                 + "<td class=\"desc-cell\">" + description + "</td>"
                 + browserCell
                 + "<td><span class=\"status-badge " + statusClass + "\">" + status + "</span></td>"
@@ -432,6 +444,45 @@ public final class HtmlReportGenerator {
         // Fallback: show path
         return "<div class=\"recording-section\"><span class=\"recording-label\">&#x1F3A5; Recording:</span> "
                 + "<span class=\"recording-path\">" + escapeHtml(recordingPath) + "</span></div>";
+    }
+
+    private static String buildAiAnalysisPanel(String analysis) {
+        return "<div class=\"ai-analysis-section\">"
+                + "<div class=\"ai-analysis-header\">&#x1F916; AI Failure Analysis</div>"
+                + "<div class=\"ai-analysis-body\">" + escapeHtml(analysis) + "</div>"
+                + "</div>";
+    }
+
+    private static String buildFlakinessSection() {
+        java.util.List<com.seleniumboot.flakiness.FlakinessScore> scores =
+                com.seleniumboot.flakiness.FlakinessAnalyzer.getLastResult();
+        java.util.List<com.seleniumboot.flakiness.FlakinessScore> risky = scores.stream()
+                .filter(s -> s.getRisk() != com.seleniumboot.flakiness.FlakinessScore.Risk.STABLE)
+                .collect(java.util.stream.Collectors.toList());
+        if (risky.isEmpty()) return "";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<div class=\"card section-mb\">\n");
+        sb.append("  <div class=\"card-header\">&#x26A0; Flakiness Radar</div>\n");
+        sb.append("  <div class=\"card-body flakiness-section\">\n");
+        for (com.seleniumboot.flakiness.FlakinessScore s : risky) {
+            String riskClass = s.getRisk() == com.seleniumboot.flakiness.FlakinessScore.Risk.HIGH
+                    ? "risk-high" : "risk-watch";
+            String riskLabel = s.getRisk().name();
+            int lastDot = s.getTestId().lastIndexOf('.');
+            String shortName = lastDot >= 0 ? s.getTestId().substring(lastDot + 1) : s.getTestId();
+            sb.append("    <div class=\"flakiness-item\">\n");
+            sb.append("      <span class=\"").append(riskClass).append("\">").append(riskLabel).append("</span>\n");
+            sb.append("      <span class=\"flakiness-name\" title=\"").append(escapeHtml(s.getTestId())).append("\">")
+              .append(escapeHtml(shortName)).append("</span>\n");
+            sb.append("      <span class=\"flakiness-rate\">")
+              .append(String.format("%.1f", s.getFailureRate())).append("% fail")
+              .append(" (").append(s.getRunsAnalysed()).append(" runs)")
+              .append("</span>\n");
+            sb.append("    </div>\n");
+        }
+        sb.append("  </div>\n</div>\n");
+        return sb.toString();
     }
 
     private static String buildTraceLink(String tracePath) {

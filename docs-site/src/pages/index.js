@@ -9,52 +9,72 @@ const features = [
   {
     icon: '⚡',
     title: 'Zero Boilerplate',
-    description: 'Extend BaseTest. Write @Test methods. Everything else — driver lifecycle, waits, retry, reports — is handled automatically.',
+    description: 'Extend BaseTest. Write @Test methods. Driver lifecycle, waits, retry, reports, and screenshots are handled automatically — no setup code required.',
   },
   {
     icon: '📄',
     title: 'YAML Configuration',
-    description: 'One selenium-boot.yml controls browser, parallel threads, timeouts, retry, CI thresholds, and more. Switch environments with a profile flag.',
+    description: 'One selenium-boot.yml controls browser, parallel threads, timeouts, retry, CI thresholds, tracing, AI analysis, and more. Switch environments with a profile flag.',
   },
   {
     icon: '🔁',
-    title: 'Smart Retry',
-    description: 'retry.enabled: true retries every flaky test automatically. Use @Retryable for per-method control. Recovered vs still-failing shown in the report.',
-  },
-  {
-    icon: '⏳',
-    title: 'WaitEngine',
-    description: 'Fluent explicit waits built in — waitForVisible, waitForClickable, waitForText, waitForPageLoad, and a custom condition escape hatch.',
-  },
-  {
-    icon: '📊',
-    title: 'Advanced HTML Report',
-    description: 'Tabbed dashboard with pass rate, donut chart, slowest tests, step timeline, base64 screenshots, dark mode, and collapsible test groups.',
-  },
-  {
-    icon: '🪜',
-    title: 'Step Logging',
-    description: 'StepLogger.step("name") logs named steps with timestamps. Optional per-step screenshots. Full timeline visible in the Failures tab.',
-  },
-  {
-    icon: '🔌',
-    title: 'Extensible',
-    description: 'Java SPI-powered plugin system. Register custom browser providers, report adapters (Slack, Allure), and lifecycle hooks — zero framework changes.',
-  },
-  {
-    icon: '🤖',
-    title: 'CI-Ready',
-    description: 'Auto-detects GitHub Actions, Jenkins, CircleCI, and more. Forces headless, adjusts thread count, emits JUnit XML. Includes ready-to-use workflow templates.',
+    title: 'Smart Retry + Flakiness Radar',
+    description: 'Auto-retry flaky tests with @Retryable or globally. After each run, Flakiness Prediction analyses history and ranks HIGH / WATCH / STABLE tests in the report dashboard.',
   },
   {
     icon: '📋',
     title: 'Page Object Toolkit',
-    description: 'BasePage provides wait-backed click, type, getText, isDisplayed. SmartLocator tries multiple strategies in order. Built-in iFrame helpers and file upload support.',
+    description: 'BasePage covers click, type, getText, dropdowns, alerts, hover, scroll, iFrame helpers, Shadow DOM, and file upload — all wait-backed. SmartLocator tries multiple strategies in order.',
+  },
+  {
+    icon: '🔗',
+    title: 'Fluent Locator API',
+    description: '$(".row").filter(".active").nth(0).click() — Playwright-style chainable locators. assertThat(By.id("title")).hasText("Welcome") auto-retries until the condition is met or times out.',
+  },
+  {
+    icon: '🌐',
+    title: 'Network & Storage Mocking',
+    description: 'Stub API responses via CDP: networkMock().stub("**/api/users").returnJson(...). Read/write localStorage, sessionStorage, cookies, geolocation, and clipboard in tests — no JS boilerplate.',
+  },
+  {
+    icon: '📸',
+    title: 'Visual Regression + Mobile',
+    description: 'assertScreenshot("homepage") compares pixel-by-pixel against a stored baseline. emulateDevice("iPhone 14") applies full CDP viewport + UA emulation. 6 built-in device profiles; register your own.',
+  },
+  {
+    icon: '🪜',
+    title: 'Step Logging + Trace Viewer',
+    description: 'StepLogger.step("name", true) captures named steps with screenshots. On failure a self-contained dark-themed trace HTML is generated — clickable step timeline, final screenshot, and stack trace.',
+  },
+  {
+    icon: '📊',
+    title: 'Advanced HTML Report',
+    description: 'Tabbed dashboard: pass-rate gauge, donut chart, retry badges, expandable error + stack trace rows, AI analysis panel, Flakiness Radar, "View Trace" links, filter bar, search, and dark mode.',
+  },
+  {
+    icon: '🩺',
+    title: 'Self-Healing Locators',
+    description: 'When a locator times out, the framework automatically tries fallback strategies — id, name, text, class, data-testid — and continues the test. Healed locators are logged and flagged in the report.',
+  },
+  {
+    icon: '🧠',
+    title: 'AI Failure Analysis',
+    description: 'Set ai.failureAnalysis: true and point to your Claude API key. On every failure, Claude Haiku analyses the error, steps, URL, and title — and embeds a plain-English root-cause + fix in the report.',
   },
   {
     icon: '🔐',
     title: '@PreCondition',
-    description: 'Eliminate @BeforeMethod login boilerplate. Declare @PreCondition("loginAsAdmin") on a test — the framework runs the setup once, caches cookies + localStorage, and restores the session automatically.',
+    description: 'Eliminate @BeforeMethod login boilerplate. Declare @PreCondition("loginAsAdmin") — the framework runs setup once, caches cookies + localStorage, and restores the session for every test.',
+  },
+  {
+    icon: '🔌',
+    title: 'Extensible via SPI',
+    description: 'Java ServiceLoader plugin system. Register custom driver providers, report adapters (Allure, Slack, Teams), and lifecycle hooks — zero framework code changes needed.',
+  },
+  {
+    icon: '🤖',
+    title: 'CI-Ready',
+    description: 'Auto-detects GitHub Actions, Jenkins, CircleCI, and GitLab CI. Forces headless, adjusts thread count, emits JUnit XML, and enforces pass-rate / flakiness gates to fail the build on regressions.',
   },
 ];
 
@@ -94,7 +114,7 @@ export default function Home() {
                 <pre>{`<dependency>
   <groupId>io.github.seleniumboot</groupId>
   <artifactId>selenium-boot</artifactId>
-  <version>1.7.0</version>
+  <version>1.8.0</version>
 </dependency>`}</pre>
               </div>
             </div>

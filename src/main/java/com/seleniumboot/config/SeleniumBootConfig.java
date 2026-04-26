@@ -349,6 +349,59 @@ public final class SeleniumBootConfig {
     public Tracing getTracing() { return tracing; }
     public void setTracing(Tracing tracing) { this.tracing = tracing; }
 
+    private Locators locators;
+    public Locators getLocators() { return locators; }
+    public void setLocators(Locators locators) { this.locators = locators; }
+
+    public static final class Locators {
+        private boolean selfHealing = false;
+
+        public boolean isSelfHealing()           { return selfHealing; }
+        public void    setSelfHealing(boolean v) { this.selfHealing = v; }
+    }
+
+    private Ai ai;
+    public Ai getAi() { return ai; }
+    public void setAi(Ai ai) { this.ai = ai; }
+
+    public static final class Ai {
+        private boolean failureAnalysis = false;
+        private String  apiKey          = null;
+        private String  model           = "claude-haiku-4-5-20251001";
+        private int     timeoutSeconds  = 20;
+
+        public boolean isFailureAnalysis()               { return failureAnalysis; }
+        public void    setFailureAnalysis(boolean v)     { this.failureAnalysis = v; }
+
+        public String  getApiKey()                       { return apiKey; }
+        public void    setApiKey(String v)               { this.apiKey = v; }
+
+        public String  getModel()                        { return model; }
+        public void    setModel(String v)                { this.model = v; }
+
+        public int     getTimeoutSeconds()               { return timeoutSeconds; }
+        public void    setTimeoutSeconds(int v)          { this.timeoutSeconds = v; }
+    }
+
+    private Flakiness flakiness;
+    public Flakiness getFlakiness() { return flakiness; }
+    public void setFlakiness(Flakiness flakiness) { this.flakiness = flakiness; }
+
+    public static final class Flakiness {
+        private int     historyRuns          = 20;
+        private double  highRiskThreshold    = 33.0;
+        private boolean failOnHighFlakiness  = false;
+
+        public int     getHistoryRuns()                   { return historyRuns; }
+        public void    setHistoryRuns(int v)              { this.historyRuns = v; }
+
+        public double  getHighRiskThreshold()             { return highRiskThreshold; }
+        public void    setHighRiskThreshold(double v)     { this.highRiskThreshold = v; }
+
+        public boolean isFailOnHighFlakiness()            { return failOnHighFlakiness; }
+        public void    setFailOnHighFlakiness(boolean v)  { this.failOnHighFlakiness = v; }
+    }
+
     public static final class Tracing {
         private boolean enabled       = false;
         private boolean captureOnPass = false;

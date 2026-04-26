@@ -10,6 +10,15 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [1.8.0] ��� 2026-04-16
+
+### Added
+- **Self-Healing Locators** — `locators.selfHealing: true`; when `waitForVisible`/`waitForClickable` times out the framework automatically tries fallback strategies derived from the original `By` descriptor: extract `id` from CSS `#foo` / XPath `@id`, `name` from CSS `[name]` / XPath `@name`, text from XPath `text()`, class from CSS `.className`, `data-testid` and `placeholder` attributes; healed tests get a `⚠ healed` badge in the HTML report; `target/healed-locators.json` lists every healed locator for developer review
+- **AI-Assisted Failure Analysis** — `ai.failureAnalysis: true` + `ai.apiKey: ${CLAUDE_API_KEY}`; on test failure calls `claude-haiku-4-5-20251001` (configurable via `ai.model`) with error, stack trace, step log, URL, and page title; the plain-English root-cause analysis + suggested fix is embedded in the HTML report failure detail panel; call bounded by `ai.timeoutSeconds` (default 20s); fully non-blocking — never affects suite outcome
+- **Flakiness Prediction** — reads last `N` JSON run files from `target/metrics-history/`; classifies each test as `STABLE` (<10% failure rate), `WATCH` (10–threshold%), or `HIGH` (≥threshold); results shown in a new **Flakiness Radar** card on the HTML report Dashboard; exported to `target/flakiness-report.json`; optional `flakiness.failOnHighFlakiness: true` CI gate
+
+---
+
 ## [1.7.0] — 2026-04-16
 
 ### Added

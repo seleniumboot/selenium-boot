@@ -92,6 +92,15 @@ public final class ExecutionMetrics {
         TIMINGS.computeIfPresent(testId, (k, v) -> { v.setTracePath(path); return v; });
     }
 
+    public static void recordHeal(String testId) {
+        TIMINGS.computeIfPresent(testId, (k, v) -> { v.incrementHealed(); return v; });
+    }
+
+    public static void recordAiAnalysis(String testId, String analysis) {
+        if (analysis == null) return;
+        TIMINGS.computeIfPresent(testId, (k, v) -> { v.setAiAnalysis(analysis); return v; });
+    }
+
     public static TestTiming getTiming(String testId) {
         return TIMINGS.get(testId);
     }
@@ -331,6 +340,12 @@ public final class ExecutionMetrics {
             }
             if (timing.getTracePath() != null) {
                 testEntry.put("tracePath", timing.getTracePath());
+            }
+            if (timing.getHealedCount() > 0) {
+                testEntry.put("healedCount", timing.getHealedCount());
+            }
+            if (timing.getAiAnalysis() != null) {
+                testEntry.put("aiAnalysis", timing.getAiAnalysis());
             }
             if (!timing.getSteps().isEmpty()) {
                 List<Map<String, Object>> stepList = new ArrayList<>();

@@ -1,6 +1,8 @@
 package com.seleniumboot.listeners;
 
 import com.seleniumboot.ci.BuildThresholdEnforcer;
+import com.seleniumboot.flakiness.FlakinessAnalyzer;
+import com.seleniumboot.healing.HealLog;
 import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
@@ -75,6 +77,8 @@ public final class SuiteExecutionListener implements ISuiteListener {
     public void onFinish(ISuite suite) {
         ExecutionMetrics.printSummary();
         ExecutionMetrics.exportToJson();
+        HealLog.export();
+        FlakinessAnalyzer.analyze();
 
         // Machine-readable JUnit XML for CI test result parsing
         JUnitXmlReporter.export(

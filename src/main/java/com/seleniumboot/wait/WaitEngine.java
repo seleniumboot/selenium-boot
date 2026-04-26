@@ -2,9 +2,13 @@ package com.seleniumboot.wait;
 
 import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.driver.DriverManager;
+import com.seleniumboot.healing.SelfHealingLocator;
 import com.seleniumboot.internal.SeleniumBootContext;
+import com.seleniumboot.metrics.ExecutionMetrics;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -39,8 +43,13 @@ public final class WaitEngine {
     // ----------------------------------------------------------
 
     public static WebElement waitForVisible(By locator) {
-        return createWait()
-                .until(ExpectedConditions.visibilityOfElementLocated(locator));
+        try {
+            return createWait().until(ExpectedConditions.visibilityOfElementLocated(locator));
+        } catch (TimeoutException | NoSuchElementException e) {
+            WebElement healed = tryHeal(locator);
+            if (healed != null) return healed;
+            throw e;
+        }
     }
 
     public static boolean waitForInvisible(By locator) {
@@ -53,8 +62,13 @@ public final class WaitEngine {
     // ----------------------------------------------------------
 
     public static WebElement waitForClickable(By locator) {
-        return createWait()
-                .until(ExpectedConditions.elementToBeClickable(locator));
+        try {
+            return createWait().until(ExpectedConditions.elementToBeClickable(locator));
+        } catch (TimeoutException | NoSuchElementException e) {
+            WebElement healed = tryHeal(locator);
+            if (healed != null) return healed;
+            throw e;
+        }
     }
 
     public static boolean waitForStaleness(WebElement element) {
@@ -210,5 +224,19 @@ public final class WaitEngine {
 
     public static <T> T wait(ExpectedCondition<T> condition) {
         return createWait().until(condition);
+    }
+
+    // ----------------------------------------------------------
+    // Self-healing fallback
+    // ----------------------------------------------------------
+
+    private static WebElement tryHeal(By locator) {
+        if (!SelfHealingLocator.isEnabled()) return null;
+        String testId = SeleniumBootContext.getCurrentTestId();
+        WebElement healed = SelfHealingLocator.tryHeal(DriverManager.getDriver(), locator, testId);
+        if (healed != null) {
+            ExecutionMetrics.recordHeal(testId);
+        }
+        return healed;
     }
 }

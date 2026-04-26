@@ -13,6 +13,7 @@ import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.hooks.HookRegistry;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.metrics.ExecutionMetrics;
+import com.seleniumboot.ai.AiFailureAnalyzer;
 import com.seleniumboot.network.NetworkMock;
 import com.seleniumboot.precondition.ApiHealthChecker;
 import com.seleniumboot.tracing.TraceRecorder;
@@ -159,6 +160,7 @@ public final class TestExecutionListener implements ITestListener {
             ExecutionMetrics.recordError(testId, result.getThrowable());
         }
         saveTraceIfEnabled(testId, result.getMethod().getMethodName(), false);
+        runAiAnalysisIfEnabled(testId);
         HookRegistry.onTestFailure(testId, result.getThrowable());
         String screenshotPath = isApiTest(result) ? null : ScreenshotManager.capture(testName);
         ExecutionMetrics.recordScreenshot(testId, screenshotPath);
@@ -276,6 +278,21 @@ public final class TestExecutionListener implements ITestListener {
                 com.seleniumboot.testdata.TestDataLoader.load(annotation.value())
             );
         }
+    }
+
+    private void runAiAnalysisIfEnabled(String testId) {
+        try {
+            String pageUrl   = null;
+            String pageTitle = null;
+            try {
+                org.openqa.selenium.WebDriver driver = DriverManager.getDriver();
+                if (driver != null) {
+                    pageUrl   = driver.getCurrentUrl();
+                    pageTitle = driver.getTitle();
+                }
+            } catch (Exception ignored) {}
+            AiFailureAnalyzer.analyze(testId, pageUrl, pageTitle);
+        } catch (Exception ignored) {}
     }
 
     private void saveTraceIfEnabled(String testId, String testName, boolean isPassing) {

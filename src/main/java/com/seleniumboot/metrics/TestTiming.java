@@ -100,6 +100,14 @@ public class TestTiming {
     public String getTracePath() { return tracePath; }
     public void setTracePath(String tracePath) { this.tracePath = tracePath; }
 
+    private int healedCount;
+    public int  getHealedCount()  { return healedCount; }
+    public void incrementHealed() { this.healedCount++; }
+
+    private String aiAnalysis;
+    public String getAiAnalysis()             { return aiAnalysis; }
+    public void   setAiAnalysis(String v)     { this.aiAnalysis = v; }
+
     private final java.util.List<com.seleniumboot.steps.StepRecord> steps =
             new java.util.concurrent.CopyOnWriteArrayList<>();
 
