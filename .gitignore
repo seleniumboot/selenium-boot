@@ -48,3 +48,5 @@ presentations/
 docs-site/node_modules/
 docs-site/.docusaurus/
 docs-site/build/
+
+articles/*

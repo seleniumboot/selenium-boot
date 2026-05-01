@@ -68,6 +68,25 @@
         </dependency>
 
         <!--
+            Cucumber integration — optional so it is NOT pulled transitively for TestNG-only users.
+            Consumers who use Cucumber must add both cucumber-java and cucumber-testng
+            to their own project with a matching version.
+        -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>7.20.1</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-testng</artifactId>
+            <version>7.20.1</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!--
             JUnit 5 support — optional so it is NOT pulled transitively for TestNG users.
             Consumers who use JUnit 5 must add junit-jupiter to their own project.
         -->

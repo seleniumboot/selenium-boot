@@ -39,7 +39,7 @@ public interface ExecutionHook {
     default void onTestStart(String testId) {}
 
     /**
-     * Called at the end of each test method (success or skip), after the driver is quit.
+     * Called at the end of each test method (success or skip), before the driver is quit.
      *
      * @param testId fully-qualified test method name
      * @param status {@code "PASSED"} or {@code "SKIPPED"}

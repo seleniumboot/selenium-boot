@@ -59,6 +59,7 @@ public final class TestExecutionListener implements ITestListener {
 
     @Override
     public void onTestStart(ITestResult result) {
+        if (isCucumberScenario(result)) return;
         String testId = result.getMethod().getQualifiedName();
         SeleniumBootContext.setCurrentTestId(testId);
         ExecutionMetrics.clearSteps(testId);   // discard stale steps from prior retry attempt
@@ -88,6 +89,7 @@ public final class TestExecutionListener implements ITestListener {
 
     @Override
     public void onTestSuccess(ITestResult result) {
+        if (isCucumberScenario(result)) return;
         String testId = result.getMethod().getQualifiedName();
 
         if (!isApiTest(result) && ConsoleErrorCollector.isEnabled()) {
@@ -144,6 +146,7 @@ public final class TestExecutionListener implements ITestListener {
 
     @Override
     public void onTestFailure(ITestResult result) {
+        if (isCucumberScenario(result)) return;
         String testName = result.getMethod().getMethodName();
         String testId = result.getMethod().getQualifiedName();
 
@@ -176,6 +179,7 @@ public final class TestExecutionListener implements ITestListener {
 
     @Override
     public void onTestSkipped(ITestResult result) {
+        if (isCucumberScenario(result)) return;
         String testId = result.getMethod().getQualifiedName();
         ExecutionMetrics.recordStatus(testId, "SKIPPED");
         ExecutionMetrics.markEnd(testId);
@@ -306,6 +310,26 @@ public final class TestExecutionListener implements ITestListener {
 
     @Override
     public void onStart(ITestContext context) {
+    }
+
+    /**
+     * Returns true when the result represents a Cucumber scenario execution
+     * (AbstractTestNGCucumberTests#runScenario). CucumberHooks owns the full
+     * lifecycle for those tests — this listener must be a no-op to avoid
+     * duplicate entries in ExecutionMetrics.
+     */
+    private boolean isCucumberScenario(ITestResult result) {
+        if (!"runScenario".equals(result.getMethod().getMethodName())) return false;
+        try {
+            Class<?> base = Class.forName(
+                "io.cucumber.testng.AbstractTestNGCucumberTests",
+                false,
+                result.getTestClass().getRealClass().getClassLoader()
+            );
+            return base.isAssignableFrom(result.getTestClass().getRealClass());
+        } catch (ClassNotFoundException | NoClassDefFoundError e) {
+            return false;
+        }
     }
 
     @Override
