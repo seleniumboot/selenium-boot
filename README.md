@@ -58,7 +58,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.9.0</version>
+    <version>1.10.0</version>
 </dependency>
 ```
 
@@ -623,6 +623,10 @@ ci:
 ---
 
 ## Project Status
+
+### v1.10.0 — 2026-05-02
+
+- **JUnit 5 Support** — `SeleniumBootExtension` (`@ExtendWith`) handles driver lifecycle, screenshot on failure, AI analysis, trace, and recording; `WebDriver` injectable as test method parameter; `BaseJUnit5Test` base class with `getDriver()`, `getWait()`, `open()`, `$()`, `assertThat()`, `step()`; `@EnableSeleniumBoot` composed annotation; `SeleniumBootLauncherListener` generates HTML report when the JUnit Platform test plan finishes (registered via ServiceLoader — no config needed); parallel execution via `junit-platform.properties`
 
 ### v1.9.0 — 2026-05-02
 

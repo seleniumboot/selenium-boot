@@ -76,6 +76,16 @@ const features = [
     title: 'CI-Ready',
     description: 'Auto-detects GitHub Actions, Jenkins, CircleCI, and GitLab CI. Forces headless, adjusts thread count, emits JUnit XML, and enforces pass-rate / flakiness gates to fail the build on regressions.',
   },
+  {
+    icon: '🥒',
+    title: 'BDD / Cucumber',
+    description: 'BaseCucumberTest + BaseCucumberSteps wire Cucumber into the full framework — driver lifecycle, step timeline, screenshots, and HTML report per scenario. Add the glue path and go.',
+  },
+  {
+    icon: '5️⃣',
+    title: 'JUnit 5 Support',
+    description: 'Extend BaseJUnit5Test or use @ExtendWith(SeleniumBootExtension.class). Full parity with TestNG: driver injection, $(), assertThat(), step(), HTML report, AI analysis, and trace viewer.',
+  },
 ];
 
 function Feature({ icon, title, description }) {
@@ -114,7 +124,7 @@ export default function Home() {
                 <pre>{`<dependency>
   <groupId>io.github.seleniumboot</groupId>
   <artifactId>selenium-boot</artifactId>
-  <version>1.9.0</version>
+  <version>1.10.0</version>
 </dependency>`}</pre>
               </div>
             </div>

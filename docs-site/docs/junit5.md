@@ -6,90 +6,128 @@ sidebar_position: 10
 
 # JUnit 5 Support
 
-:::info Roadmap
-JUnit 5 support is planned for a future release. The current version of Selenium Boot is built on **TestNG**. This page tracks what JUnit 5 support will look like when it ships.
-:::
+Selenium Boot supports both **TestNG** (built-in) and **JUnit 5** (opt-in). The JUnit 5 integration provides the same lifecycle — driver management, HTML report, step timeline, screenshots, AI failure analysis, tracing, and flakiness tracking — with zero configuration beyond adding the dependency.
 
 ---
 
-## Current status
+## Setup
 
-Selenium Boot `0.7.x` supports **TestNG only**. The core framework (driver management, config loading, reporting, retry) is TestNG-specific.
+```xml title="pom.xml"
+<dependency>
+    <groupId>io.github.seleniumboot</groupId>
+    <artifactId>selenium-boot</artifactId>
+    <version>1.10.0</version>
+</dependency>
+
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>5.10.2</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.junit.platform</groupId>
+    <artifactId>junit-platform-launcher</artifactId>
+    <version>1.10.2</version>
+    <scope>test</scope>
+</dependency>
+```
+
+No extra Surefire configuration needed — Maven Surefire 3.x auto-detects JUnit 5.
 
 ---
 
-## Planned JUnit 5 API
+## Option A — Extend `BaseJUnit5Test`
 
-The JUnit 5 integration will use a JUnit Extension (`@ExtendWith`) to inject the WebDriver and framework services:
+The simplest approach. Identical to extending `BaseTest` in TestNG:
 
 ```java
-// Planned API — not yet available
+class LoginTest extends BaseJUnit5Test {
+
+    @Test
+    void validLogin() {
+        open();
+        step("Enter credentials");
+        $("input#username").type("admin");
+        $("input#password").type("secret");
+        $("button[type='submit']").click();
+
+        step("Verify dashboard", true);
+        assertThat(By.id("dashboard")).isVisible();
+    }
+}
+```
+
+`BaseJUnit5Test` provides: `getDriver()`, `getWait()`, `open()`, `open(path)`, `$()`, `assertThat()`, `step()`.
+
+---
+
+## Option B — `@EnableSeleniumBoot`
+
+Composed annotation for your own base class:
+
+```java
+@EnableSeleniumBoot
+abstract class AppTest {
+    protected WebDriver getDriver() { return DriverManager.getDriver(); }
+}
+```
+
+---
+
+## Option C — Parameter injection
+
+No base class needed. Inject `WebDriver` directly into test methods:
+
+```java
 @ExtendWith(SeleniumBootExtension.class)
-public class LoginTest {
+class LoginTest {
 
     @Test
     void validLogin(WebDriver driver) {
         driver.get("https://example.com/login");
-        // ...
-    }
-}
-```
-
-Or with constructor injection:
-
-```java
-@ExtendWith(SeleniumBootExtension.class)
-public class LoginTest {
-
-    private final WebDriver driver;
-
-    LoginTest(WebDriver driver) {
-        this.driver = driver;
-    }
-
-    @Test
-    void validLogin() {
-        driver.get("https://example.com/login");
+        driver.findElement(By.id("username")).sendKeys("admin");
+        driver.findElement(By.cssSelector("button[type='submit']")).click();
     }
 }
 ```
 
 ---
 
-## What will carry over
+## Parallel execution
 
-All framework features are planned to be available under JUnit 5:
+```properties title="src/test/resources/junit-platform.properties"
+junit.jupiter.execution.parallel.enabled=true
+junit.jupiter.execution.parallel.mode.default=concurrent
+junit.jupiter.execution.parallel.config.strategy=fixed
+junit.jupiter.execution.parallel.config.fixed.parallelism=4
+```
+
+ThreadLocal driver isolation makes all three options thread-safe.
+
+---
+
+## Feature parity with TestNG
 
 | Feature | Status |
 |---|---|
-| Auto driver provisioning | Planned |
-| `selenium-boot.yml` config | Planned |
-| Parallel execution | Planned |
-| Retry (`@Retryable`) | Planned |
-| `WaitEngine` | Planned |
-| `BasePage` | Planned |
-| `StepLogger` | Planned |
-| HTML report | Planned |
-| JUnit XML output | Native — JUnit 5 generates this already |
-
----
-
-## Using TestNG today
-
-Until JUnit 5 support ships, use TestNG. It provides everything JUnit 5 does for UI testing and integrates cleanly with Maven Surefire:
-
-```xml title="pom.xml"
-<dependency>
-    <groupId>io.github.selenium-boot</groupId>
-    <artifactId>selenium-boot</artifactId>
-    <version>1.9.0</version>
-</dependency>
-```
-
-No extra TestNG dependency is required — it is included transitively.
-
----
-
-## Track this feature
-
-Follow the GitHub repository for updates on JUnit 5 support.
+| Auto driver provisioning | ✅ |
+| `selenium-boot.yml` config | ✅ |
+| Parallel execution | ✅ |
+| `WaitEngine` | ✅ |
+| `BasePage` | ✅ |
+| `StepLogger` / `step()` | ✅ |
+| HTML report + step timeline | ✅ |
+| Screenshot on failure | ✅ |
+| AI failure analysis | ✅ |
+| Trace viewer | ✅ |
+| Self-healing locators | ✅ |
+| Fluent Locator API `$()` | ✅ |
+| Web-first assertions `assertThat()` | ✅ |
+| Network mocking | ✅ |
+| Visual regression | ✅ |
+| Flakiness prediction | ✅ |
+| Video recording | ✅ |
+| JUnit XML output | Native |
+| `@Retryable` retry | Planned |
+| `@PreCondition` session cache | Planned |

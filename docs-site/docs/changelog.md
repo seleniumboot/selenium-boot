@@ -10,6 +10,13 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [1.10.0] — 2026-05-02
+
+### Added
+- **JUnit 5 Support** — `SeleniumBootExtension` (`@ExtendWith`) provides full lifecycle: driver creation in `beforeEach`, screenshot + error recording + AI analysis + trace + recording in `afterEach` (via `context.getExecutionException()`), per-suite driver cleanup in `afterAll`; `WebDriver` injectable as a test method parameter via `ParameterResolver`; `BaseJUnit5Test` base class with `getDriver()`, `getWait()`, `open()`, `$()`, `assertThat()`, `step()`; `@EnableSeleniumBoot` composed annotation; `SeleniumBootLauncherListener` (`TestExecutionListener`) generates HTML report, JSON metrics, and flakiness analysis when the JUnit Platform test plan finishes — registered automatically via `META-INF/services`; `junit-platform-launcher` declared as optional dependency; parallel execution supported via `junit-platform.properties`
+
+---
+
 ## [1.9.0] — 2026-05-02
 
 ### Added

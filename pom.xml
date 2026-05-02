@@ -6,7 +6,7 @@
 
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.9.0</version>
+    <version>1.10.0</version>
     <packaging>jar</packaging>
 
     <name>Selenium Boot</name>
@@ -88,12 +88,20 @@
 
         <!--
             JUnit 5 support — optional so it is NOT pulled transitively for TestNG users.
-            Consumers who use JUnit 5 must add junit-jupiter to their own project.
+            Consumers who use JUnit 5 must add junit-jupiter and junit-platform-launcher
+            to their own project.
         -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.10.2</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>1.10.2</version>
             <optional>true</optional>
         </dependency>
 
