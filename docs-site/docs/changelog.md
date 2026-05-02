@@ -10,6 +10,17 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [1.9.0] — 2026-05-02
+
+### Added
+- **BDD / Cucumber Integration** — `BaseCucumberTest` (runner base), `BaseCucumberSteps` (step definition base with `getDriver()`, `open()`, `$()`, `assertThat()`), `CucumberHooks` (automatic driver lifecycle, metrics, screenshots, and report per scenario), `CucumberStepLogger` (Cucumber plugin that pipes Gherkin step names into the HTML report step timeline), `CucumberContext` (ThreadLocal `Scenario` holder); fully parallel-safe via ThreadLocal isolation; Scenario Outlines produce individual HTML report entries per example row; `cucumber.properties` support for IDE single-scenario execution; `cucumber-java` and `cucumber-testng` declared as optional dependencies — only pulled in by consumers who opt in
+
+### Changed
+- `TestExecutionListener` — skips all `onTest*` callbacks for Cucumber runner tests (`AbstractTestNGCucumberTests#runScenario`) to prevent duplicate HTML report entries when running BDD and TestNG tests in the same suite
+- `ExecutionHook.onTestEnd` javadoc corrected: fires *before* driver quit, not after
+
+---
+
 ## [1.8.0] — 2026-04-16
 
 ### Added

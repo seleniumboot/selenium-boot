@@ -58,7 +58,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.8.0</version>
+    <version>1.9.0</version>
 </dependency>
 ```
 
@@ -623,6 +623,10 @@ ci:
 ---
 
 ## Project Status
+
+### v1.9.0 — 2026-05-02
+
+- **BDD / Cucumber Integration** — `BaseCucumberTest` runner base + `BaseCucumberSteps` step definition base (`getDriver()`, `open()`, `$()`, `assertThat()`); `CucumberHooks` manages driver lifecycle, metrics, and screenshots per scenario automatically; `CucumberStepLogger` plugin streams Gherkin step names into the HTML report step timeline; `cucumber-java` and `cucumber-testng` declared as optional — consumers add their own version; `cucumber.properties` support for IDE single-scenario runs; Scenario Outlines produce individual report entries per example row
 
 ### v1.8.0 — 2026-04-16
 
