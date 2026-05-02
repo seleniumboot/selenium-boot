@@ -61,6 +61,7 @@ const sidebars = {
       ],
     },
     'junit5',
+    'cucumber',
     'changelog',
   ],
 };
