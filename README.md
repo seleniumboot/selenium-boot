@@ -58,7 +58,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.11.0</version>
+    <version>1.12.0</version>
 </dependency>
 ```
 
@@ -623,6 +623,12 @@ ci:
 ---
 
 ## Project Status
+
+### v1.12.0 — 2026-05-03
+
+- **Multi-Session Testing** — `withSession("alice", () -> { ... })` runs a lambda with a named browser session active; `session("name")` returns the raw `WebDriver`; all named sessions are automatically closed at test end; nested `withSession()` calls supported via stack-based driver restoration; available in `BaseTest` and `BaseJUnit5Test`
+- **Database Assertions** — `db().assertRowExists(table, conditions)`, `db().assertNoRow()`, `db().assertRowCount()`, `db().query(sql, params).assertValue(column, expected)`, `db().scalar(sql, params)`; plain JDBC, no ORM dependency; named datasources via `db("reporting")`; connections pooled per thread and closed automatically at test end
+- New `sessions.maxPerTest` and `database.*` config blocks in `selenium-boot.yml`
 
 ### v1.11.0 — 2026-05-03
 

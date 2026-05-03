@@ -15,12 +15,14 @@ import com.seleniumboot.visual.VisualTolerance;
 import com.seleniumboot.client.ApiClient;
 import com.seleniumboot.context.ScenarioContext;
 import com.seleniumboot.context.SuiteContext;
+import com.seleniumboot.db.DbClient;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.listeners.SuiteExecutionListener;
 import com.seleniumboot.listeners.TestExecutionListener;
 import com.seleniumboot.locator.Locator;
 import com.seleniumboot.network.NetworkMock;
+import com.seleniumboot.session.MultiSessionManager;
 import com.seleniumboot.testdata.TestDataStore;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -210,6 +212,72 @@ public abstract class BaseTest {
     /** Resets device emulation (restores desktop viewport and default user-agent). */
     protected void resetDevice() {
         DeviceEmulator.reset();
+    }
+
+    // ----------------------------------------------------------
+    // Phase 18 — Multi-Session Testing
+    // ----------------------------------------------------------
+
+    /**
+     * Returns the named session's {@link WebDriver}.
+     * Creates a new browser instance on first access; reuses it on subsequent calls.
+     * The session is automatically closed at test end.
+     *
+     * <pre>
+     * WebDriver adminDriver = session("admin");
+     * adminDriver.get(baseUrl + "/admin");
+     * </pre>
+     */
+    protected WebDriver session(String name) {
+        return MultiSessionManager.getSession(name);
+    }
+
+    /**
+     * Switches the active driver to the named session, runs the action,
+     * then restores the previous driver. All framework methods ({@code open()},
+     * {@code $()}, {@code assertThat()}) use the session driver inside the lambda.
+     *
+     * <pre>
+     * withSession("admin", () -&gt; {
+     *     open("/admin/approvals");
+     *     $(By.id("approve-btn")).click();
+     * });
+     * withSession("user", () -&gt; {
+     *     open("/dashboard");
+     *     assertThat(By.id("status")).hasText("Approved");
+     * });
+     * </pre>
+     */
+    protected void withSession(String name, MultiSessionManager.SessionAction action) {
+        MultiSessionManager.withSession(name, action);
+    }
+
+    // ----------------------------------------------------------
+    // Phase 18 — Database Assertions
+    // ----------------------------------------------------------
+
+    /**
+     * Returns a {@link DbClient} backed by the default {@code database} config block.
+     *
+     * <pre>
+     * db().assertRowExists("users", Map.of("email", "alice@example.com"));
+     * db().query("SELECT name FROM users WHERE id = ?", 1).assertValue("name", "Alice");
+     * </pre>
+     */
+    protected DbClient db() {
+        return DbClient.forDefault();
+    }
+
+    /**
+     * Returns a {@link DbClient} backed by the named entry under
+     * {@code database.datasources} in {@code selenium-boot.yml}.
+     *
+     * <pre>
+     * db("reporting").assertRowCount("monthly_summary", 12);
+     * </pre>
+     */
+    protected DbClient db(String datasource) {
+        return DbClient.forNamed(datasource);
     }
 
     private static final class ScenarioContextHolder {

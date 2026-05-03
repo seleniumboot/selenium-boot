@@ -432,6 +432,56 @@ public final class SeleniumBootConfig {
         public void    setUpdateBaselines(boolean v)       { this.updateBaselines = v; }
     }
 
+    private Sessions sessions;
+    public Sessions getSessions() { return sessions; }
+    public void setSessions(Sessions sessions) { this.sessions = sessions; }
+
+    public static final class Sessions {
+        private int maxPerTest = 2;
+        public int  getMaxPerTest()        { return maxPerTest; }
+        public void setMaxPerTest(int v)   { this.maxPerTest = v; }
+    }
+
+    private Database database;
+    public Database getDatabase() { return database; }
+    public void setDatabase(Database database) { this.database = database; }
+
+    public static final class Database {
+        private String url;
+        private String username;
+        private String password;
+        private String driver;
+        private java.util.Map<String, DataSource> datasources = new java.util.LinkedHashMap<>();
+
+        public String getUrl()              { return url; }
+        public void   setUrl(String v)      { this.url = v; }
+        public String getUsername()         { return username; }
+        public void   setUsername(String v) { this.username = v; }
+        public String getPassword()         { return password; }
+        public void   setPassword(String v) { this.password = v; }
+        public String getDriver()           { return driver; }
+        public void   setDriver(String v)   { this.driver = v; }
+
+        public java.util.Map<String, DataSource> getDatasources() { return datasources; }
+        public void setDatasources(java.util.Map<String, DataSource> v) { this.datasources = v != null ? v : new java.util.LinkedHashMap<>(); }
+
+        public static final class DataSource {
+            private String url;
+            private String username;
+            private String password;
+            private String driver;
+
+            public String getUrl()              { return url; }
+            public void   setUrl(String v)      { this.url = v; }
+            public String getUsername()         { return username; }
+            public void   setUsername(String v) { this.username = v; }
+            public String getPassword()         { return password; }
+            public void   setPassword(String v) { this.password = v; }
+            public String getDriver()           { return driver; }
+            public void   setDriver(String v)   { this.driver = v; }
+        }
+    }
+
     public Api getApi() { return api; }
     public void setApi(Api api) { this.api = api; }
 

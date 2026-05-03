@@ -4,9 +4,11 @@ import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.assertion.LocatorAssert;
 import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.browser.ConsoleErrorCollector;
+import com.seleniumboot.db.DbClient;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.locator.Locator;
+import com.seleniumboot.session.MultiSessionManager;
 import com.seleniumboot.steps.StepLogger;
 import com.seleniumboot.steps.StepStatus;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -100,5 +102,46 @@ public abstract class BaseJUnit5Test {
     /** Logs a named step with an explicit status. */
     protected void step(String name, StepStatus status) {
         StepLogger.step(name, status);
+    }
+
+    // ----------------------------------------------------------
+    // Phase 18 — Multi-Session Testing
+    // ----------------------------------------------------------
+
+    /**
+     * Returns the named session's {@link WebDriver}, creating it on first access.
+     * All named sessions are closed automatically at test end.
+     */
+    protected WebDriver session(String name) {
+        return MultiSessionManager.getSession(name);
+    }
+
+    /**
+     * Switches the active driver to the named session for the duration of the action,
+     * then restores the previous driver.
+     *
+     * <pre>
+     * withSession("admin", () -&gt; {
+     *     open("/admin");
+     *     $(By.id("approve")).click();
+     * });
+     * </pre>
+     */
+    protected void withSession(String name, MultiSessionManager.SessionAction action) {
+        MultiSessionManager.withSession(name, action);
+    }
+
+    // ----------------------------------------------------------
+    // Phase 18 — Database Assertions
+    // ----------------------------------------------------------
+
+    /** Database assertions against the default {@code database} config block. */
+    protected DbClient db() {
+        return DbClient.forDefault();
+    }
+
+    /** Database assertions against a named datasource under {@code database.datasources}. */
+    protected DbClient db(String datasource) {
+        return DbClient.forNamed(datasource);
     }
 }

@@ -10,6 +10,15 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [1.12.0] — 2026-05-03
+
+### Added
+- **Multi-Session Testing** — `withSession("alice", () -> { ... })` switches the active driver to a named session for the duration of the lambda and restores the previous driver on exit; `session("name")` returns the named `WebDriver` directly; all named sessions are automatically closed at test end; nested `withSession()` calls supported via a stack-based override in `DriverManager`; available in `BaseTest` (TestNG), `BaseJUnit5Test` (JUnit 5), and through `MultiSessionManager` directly
+- **Database Assertions** — JDBC-backed `DbClient` with `assertRowExists(table, conditions)`, `assertNoRow(table, conditions)`, `assertRowCount(table, expected)`, `assertRowCount(table, where, expected)`, `query(sql, params).assertValue(column, expected)`, `query(sql, params).value(column)`, and `scalar(sql, params)`; plain `java.sql.DriverManager` — no ORM or extra dependency; named datasources via `db("reporting")`; connections cached per thread and closed automatically at test end; `DbAssertException extends AssertionError` so failures appear as test failures
+- `sessions.maxPerTest` and `database` config blocks added to `SeleniumBootConfig`
+
+---
+
 ## [1.11.0] — 2026-05-03
 
 ### Added

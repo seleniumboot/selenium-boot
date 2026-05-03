@@ -22,6 +22,14 @@ public final class DriverManager {
 
     private static final ThreadLocal<WebDriver> DRIVER = ThreadLocal.withInitial(() -> null);
 
+    /**
+     * Stack of named-session driver overrides pushed by {@code MultiSessionManager.withSession()}.
+     * When non-empty, {@code getDriver()} returns the top of the stack instead of the primary driver.
+     * Stack allows nested {@code withSession()} calls to restore the correct previous session.
+     */
+    private static final ThreadLocal<java.util.Deque<WebDriver>> SESSION_STACK =
+            ThreadLocal.withInitial(java.util.ArrayDeque::new);
+
     /** Tracks all drivers created under per-suite lifecycle for bulk teardown. */
     private static final java.util.Set<WebDriver> SUITE_DRIVERS =
             java.util.concurrent.ConcurrentHashMap.newKeySet();
@@ -146,14 +154,41 @@ public final class DriverManager {
     }
 
     // ==========================================================
+    // Named-session override (MultiSessionManager)
+    // ==========================================================
+
+    /**
+     * Pushes a named-session driver onto the override stack.
+     * While on the stack, {@link #getDriver()} returns this driver.
+     * Call {@link #popSessionOverride()} to restore the previous driver.
+     */
+    public static void pushSessionOverride(WebDriver driver) {
+        SESSION_STACK.get().push(driver);
+    }
+
+    /**
+     * Pops the topmost named-session driver from the override stack.
+     * After popping, {@link #getDriver()} returns the driver that was active before the push.
+     */
+    public static void popSessionOverride() {
+        java.util.Deque<WebDriver> stack = SESSION_STACK.get();
+        if (!stack.isEmpty()) stack.pop();
+        if (stack.isEmpty()) SESSION_STACK.remove();
+    }
+
+    // ==========================================================
     // Driver Access
     // ==========================================================
 
     /**
      * Get WebDriver bound to current thread.
-     * Performs health check before returning.
+     * When a named-session override is active (via {@code withSession()}), returns that driver.
+     * Otherwise performs a health check and returns the primary thread driver.
      */
     public static WebDriver getDriver() {
+
+        java.util.Deque<WebDriver> stack = SESSION_STACK.get();
+        if (!stack.isEmpty()) return stack.peek();
 
         WebDriver driver = DRIVER.get();
 

@@ -7,6 +7,7 @@ import com.seleniumboot.browser.ConsoleErrorCollector;
 import com.seleniumboot.client.ApiClient;
 import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.context.ScenarioContext;
+import com.seleniumboot.db.DbConnectionFactory;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.healing.HealLog;
 import com.seleniumboot.hooks.HookRegistry;
@@ -16,6 +17,7 @@ import com.seleniumboot.metrics.ExecutionMetrics;
 import com.seleniumboot.network.NetworkMock;
 import com.seleniumboot.recording.RecordingManager;
 import com.seleniumboot.reporting.ScreenshotManager;
+import com.seleniumboot.session.MultiSessionManager;
 import com.seleniumboot.steps.StepLogger;
 import com.seleniumboot.steps.StepStatus;
 import com.seleniumboot.testdata.TestDataStore;
@@ -153,6 +155,8 @@ public class SeleniumBootExtension
                 HookRegistry.onTestEnd(testId, "PASSED");
             }
         } finally {
+            MultiSessionManager.clearAll();
+            DbConnectionFactory.closeAll();
             ScenarioContext.clear();
             TestDataStore.clear();
             ApiClient.clearGlobalAuth();
