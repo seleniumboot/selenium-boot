@@ -23,6 +23,7 @@ import com.seleniumboot.steps.StepStatus;
 import com.seleniumboot.testdata.TestDataStore;
 import com.seleniumboot.listeners.Retryable;
 import com.seleniumboot.precondition.PreConditionRunner;
+import com.seleniumboot.test.NoBrowser;
 import com.seleniumboot.tracing.TraceRecorder;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -88,18 +89,21 @@ public class SeleniumBootExtension
         ExecutionMetrics.recordTestClass(testId, context.getRequiredTestClass().getSimpleName());
         ExecutionMetrics.recordDescription(testId, context.getDisplayName());
 
-        DriverManager.createDriver();
+        boolean noBrowser = skipBrowser(context);
+        if (!noBrowser) {
+            DriverManager.createDriver();
 
-        // Run @PreCondition if present on method or class (first attempt — not a retry)
-        PreConditionRunner.run(context.getRequiredTestMethod(), false);
+            // Run @PreCondition if present on method or class (first attempt — not a retry)
+            PreConditionRunner.run(context.getRequiredTestMethod(), false);
 
-        SeleniumBootConfig.Recording rec = SeleniumBootContext.getConfig().getRecording();
-        if (rec != null && rec.isEnabled()) {
-            RecordingManager.start(DriverManager.getDriver(), rec.getFps(), rec.getMaxDurationSeconds());
-        }
+            SeleniumBootConfig.Recording rec = SeleniumBootContext.getConfig().getRecording();
+            if (rec != null && rec.isEnabled()) {
+                RecordingManager.start(DriverManager.getDriver(), rec.getFps(), rec.getMaxDurationSeconds());
+            }
 
-        if (ConsoleErrorCollector.isEnabled()) {
-            ConsoleErrorCollector.injectShim();
+            if (ConsoleErrorCollector.isEnabled()) {
+                ConsoleErrorCollector.injectShim();
+            }
         }
 
         HookRegistry.onTestStart(testId);
@@ -111,28 +115,31 @@ public class SeleniumBootExtension
         String testName = context.getRequiredTestMethod().getName();
         Optional<Throwable> failure = context.getExecutionException();
 
+        boolean noBrowser = skipBrowser(context);
         try {
             if (failure.isPresent()) {
                 Throwable cause = failure.get();
 
-                if (ConsoleErrorCollector.isEnabled()) {
+                if (!noBrowser && ConsoleErrorCollector.isEnabled()) {
                     List<String> errors = ConsoleErrorCollector.collect();
                     errors.forEach(e -> StepLogger.step("[JS Error] " + e, StepStatus.WARN));
                 }
 
-                String screenshotPath = ScreenshotManager.capture(testName);
+                String screenshotPath = noBrowser ? null : ScreenshotManager.capture(testName);
                 ExecutionMetrics.recordScreenshot(testId, screenshotPath);
                 ExecutionMetrics.recordError(testId, cause);
                 ExecutionMetrics.recordStatus(testId, "FAILED");
                 ExecutionMetrics.markEnd(testId);
 
-                saveTraceIfEnabled(testId, testName, false);
+                if (!noBrowser) {
+                    saveTraceIfEnabled(testId, testName, false);
+                    RecordingManager.saveOnFailure(testId);
+                }
                 runAiAnalysisIfEnabled(testId);
-                RecordingManager.saveOnFailure(testId);
                 HookRegistry.onTestFailure(testId, cause);
 
             } else {
-                if (ConsoleErrorCollector.isEnabled()) {
+                if (!noBrowser && ConsoleErrorCollector.isEnabled()) {
                     List<String> errors = ConsoleErrorCollector.collect();
                     errors.forEach(e -> StepLogger.step("[JS Error] " + e, StepStatus.WARN));
 
@@ -150,8 +157,10 @@ public class SeleniumBootExtension
 
                 ExecutionMetrics.recordStatus(testId, "PASSED");
                 ExecutionMetrics.markEnd(testId);
-                saveTraceIfEnabled(testId, testName, true);
-                RecordingManager.stop();
+                if (!noBrowser) {
+                    saveTraceIfEnabled(testId, testName, true);
+                    RecordingManager.stop();
+                }
                 HookRegistry.onTestEnd(testId, "PASSED");
             }
         } finally {
@@ -162,7 +171,7 @@ public class SeleniumBootExtension
             ApiClient.clearGlobalAuth();
             BrowserContext.clear();
             NetworkMock.cleanup();
-            if (DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
+            if (!noBrowser && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
             SeleniumBootContext.clearCurrentTestId();
         }
     }
@@ -289,5 +298,11 @@ public class SeleniumBootExtension
             } catch (Exception ignored) {}
             AiFailureAnalyzer.analyze(testId, pageUrl, pageTitle);
         } catch (Exception ignored) {}
+    }
+
+    private boolean skipBrowser(ExtensionContext context) {
+        Method m = context.getRequiredTestMethod();
+        return m.isAnnotationPresent(NoBrowser.class) ||
+               context.getRequiredTestClass().isAnnotationPresent(NoBrowser.class);
     }
 }

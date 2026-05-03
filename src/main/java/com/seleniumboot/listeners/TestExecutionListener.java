@@ -26,6 +26,7 @@ import com.seleniumboot.session.MultiSessionManager;
 import com.seleniumboot.steps.StepLogger;
 import com.seleniumboot.steps.StepStatus;
 import com.seleniumboot.test.BaseApiTest;
+import com.seleniumboot.test.NoBrowser;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
@@ -79,7 +80,7 @@ public final class TestExecutionListener implements ITestListener {
         // before creating a browser session so no resources are wasted.
         checkApiDependencies(result);
 
-        if (!isApiTest(result)) {
+        if (!skipBrowser(result)) {
             DriverManager.createDriver();
             startRecordingIfEnabled();
         }
@@ -94,7 +95,7 @@ public final class TestExecutionListener implements ITestListener {
         if (isCucumberScenario(result)) return;
         String testId = result.getMethod().getQualifiedName();
 
-        if (!isApiTest(result) && ConsoleErrorCollector.isEnabled()) {
+        if (!skipBrowser(result) && ConsoleErrorCollector.isEnabled()) {
             List<String> errors = ConsoleErrorCollector.collect();
             errors.forEach(e -> StepLogger.step("[JS Error] " + e, StepStatus.WARN));
             jsErrorsLogged.set(true);
@@ -118,7 +119,7 @@ public final class TestExecutionListener implements ITestListener {
             softFailures.forEach(msg ->
                 StepLogger.step("[Soft Assertion Failed] " + msg, StepStatus.FAIL));
             // Single screenshot at flush time
-            String screenshotPath = ScreenshotManager.capture(result.getMethod().getMethodName());
+            String screenshotPath = !skipBrowser(result) ? ScreenshotManager.capture(result.getMethod().getMethodName()) : null;
             ExecutionMetrics.recordScreenshot(result.getMethod().getQualifiedName(), screenshotPath);
             // Build combined error message
             String combined = softFailures.size() + " soft assertion(s) failed:\n" +
@@ -136,7 +137,7 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.markEnd(testId);
         saveTraceIfEnabled(testId, result.getMethod().getMethodName(), true);
         HookRegistry.onTestEnd(testId, "PASSED");
-        if (!isApiTest(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
+        if (!skipBrowser(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         MultiSessionManager.clearAll();
         DbConnectionFactory.closeAll();
         com.seleniumboot.testdata.TestDataStore.clear();
@@ -154,12 +155,12 @@ public final class TestExecutionListener implements ITestListener {
         String testName = result.getMethod().getMethodName();
         String testId = result.getMethod().getQualifiedName();
 
-        if (!isApiTest(result) && ConsoleErrorCollector.isEnabled() && !jsErrorsLogged.get()) {
+        if (!skipBrowser(result) && ConsoleErrorCollector.isEnabled() && !jsErrorsLogged.get()) {
             ConsoleErrorCollector.collect().forEach(e -> StepLogger.step("[JS Error] " + e, StepStatus.WARN));
         }
         jsErrorsLogged.set(false);
 
-        String recordingPath = isApiTest(result) ? null : RecordingManager.saveOnFailure(testId);
+        String recordingPath = skipBrowser(result) ? null : RecordingManager.saveOnFailure(testId);
         ExecutionMetrics.recordRecording(testId, recordingPath);
         ExecutionMetrics.recordStatus(testId, "FAILED");
         ExecutionMetrics.markEnd(testId);
@@ -169,9 +170,9 @@ public final class TestExecutionListener implements ITestListener {
         saveTraceIfEnabled(testId, result.getMethod().getMethodName(), false);
         runAiAnalysisIfEnabled(testId);
         HookRegistry.onTestFailure(testId, result.getThrowable());
-        String screenshotPath = isApiTest(result) ? null : ScreenshotManager.capture(testName);
+        String screenshotPath = skipBrowser(result) ? null : ScreenshotManager.capture(testName);
         ExecutionMetrics.recordScreenshot(testId, screenshotPath);
-        if (!isApiTest(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
+        if (!skipBrowser(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         MultiSessionManager.clearAll();
         DbConnectionFactory.closeAll();
         com.seleniumboot.testdata.TestDataStore.clear();
@@ -190,7 +191,7 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.recordStatus(testId, "SKIPPED");
         ExecutionMetrics.markEnd(testId);
         HookRegistry.onTestEnd(testId, "SKIPPED");
-        if (!isApiTest(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
+        if (!skipBrowser(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         MultiSessionManager.clearAll();
         DbConnectionFactory.closeAll();
         com.seleniumboot.testdata.TestDataStore.clear();
@@ -226,6 +227,17 @@ public final class TestExecutionListener implements ITestListener {
 
     private boolean isApiTest(ITestResult result) {
         return BaseApiTest.class.isAssignableFrom(result.getTestClass().getRealClass());
+    }
+
+    private boolean isNoBrowserTest(ITestResult result) {
+        java.lang.reflect.Method m = result.getMethod().getConstructorOrMethod().getMethod();
+        return m.isAnnotationPresent(NoBrowser.class) ||
+               result.getTestClass().getRealClass().isAnnotationPresent(NoBrowser.class);
+    }
+
+    /** Returns true for tests that must not create/use a WebDriver. */
+    private boolean skipBrowser(ITestResult result) {
+        return isApiTest(result) || isNoBrowserTest(result);
     }
 
     private void applyUseAuth(ITestResult result) {

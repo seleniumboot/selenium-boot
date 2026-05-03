@@ -10,6 +10,13 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [1.13.0] — 2026-05-03
+
+### Added
+- **`@NoBrowser`** — class- or method-level annotation that tells the framework to skip all browser operations for that test: no `WebDriver` created, no recording started, no screenshot captured, no trace saved, no driver quit; all other services (HTML report, step timeline, `ExecutionMetrics`, retry, CI gates, hooks, `@TestData`, `ScenarioContext`) continue to work; available in `BaseTest` (TestNG) and `BaseJUnit5Test` (JUnit 5); designed for database assertions, file checks, or any non-UI logic in tests that extend `BaseTest` rather than `BaseApiTest`
+
+---
+
 ## [1.12.0] — 2026-05-03
 
 ### Added

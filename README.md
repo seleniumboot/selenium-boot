@@ -58,7 +58,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.12.0</version>
+    <version>1.13.0</version>
 </dependency>
 ```
 
@@ -623,6 +623,10 @@ ci:
 ---
 
 ## Project Status
+
+### v1.13.0 — 2026-05-03
+
+- **`@NoBrowser`** — annotate a test class or method to skip WebDriver creation entirely; no Chrome/Firefox window opened, no screenshot/recording/trace; all other framework services (report, steps, metrics, retry, hooks) still active; ideal for database assertions, API-only tests that extend `BaseTest`, and any test that does not touch the browser
 
 ### v1.12.0 — 2026-05-03
 
