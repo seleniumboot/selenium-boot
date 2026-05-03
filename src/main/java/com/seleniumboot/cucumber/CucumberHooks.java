@@ -60,7 +60,10 @@ public class CucumberHooks {
         // 4. Register testId so StepLogger and ScreenshotManager resolve it
         SeleniumBootContext.setCurrentTestId(testId);
 
-        // 5. Initialize metrics — detect retry when testId already exists
+        // 5. Per-scenario retry tag — set/clear before RetryListener fires
+        applyRetryTag(scenario);
+
+        // 6. Initialize metrics — detect retry when testId already exists
         if (ExecutionMetrics.getTiming(testId) != null) {
             ExecutionMetrics.recordRetry(testId);
         }
@@ -171,6 +174,42 @@ public class CucumberHooks {
 
     private static String sanitize(String input) {
         return input == null ? "unnamed" : input.replaceAll("[^a-zA-Z0-9\\-_.]", "_");
+    }
+
+    /**
+     * Reads the {@code @retryable} or {@code @retryable=N} tag from the scenario
+     * and stores the max-retry count in {@link CucumberRetryContext} so that
+     * {@link com.seleniumboot.listeners.RetryListener} can apply it after the scenario finishes.
+     *
+     * <p>Tag formats:
+     * <ul>
+     *   <li>{@code @retryable}    — use the global {@code retry.maxAttempts} from config</li>
+     *   <li>{@code @retryable=2}  — exactly 2 retries regardless of config</li>
+     * </ul>
+     *
+     * <p>If no {@code @retryable} tag is present, any prior override is cleared so the
+     * global config applies unchanged.
+     */
+    private static void applyRetryTag(Scenario scenario) {
+        for (String tag : scenario.getSourceTagNames()) {
+            String normalized = tag.startsWith("@") ? tag.substring(1) : tag;
+            if (normalized.equalsIgnoreCase("retryable")) {
+                // No value — use global config (signal with -1 cleared, rely on config)
+                CucumberRetryContext.clear();
+                return;
+            }
+            if (normalized.toLowerCase().startsWith("retryable=")) {
+                String value = normalized.substring("retryable=".length()).trim();
+                try {
+                    CucumberRetryContext.set(Integer.parseInt(value));
+                } catch (NumberFormatException e) {
+                    CucumberRetryContext.clear();
+                }
+                return;
+            }
+        }
+        // No @retryable tag — clear any leftover from a prior scenario on this thread
+        CucumberRetryContext.clear();
     }
 
     private void safeQuitDriver() {

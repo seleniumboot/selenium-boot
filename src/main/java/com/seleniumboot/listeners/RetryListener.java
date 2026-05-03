@@ -50,13 +50,23 @@ public final class RetryListener implements IRetryAnalyzer {
             return false;
         }
 
-        // Per-method maxAttempts overrides global config
+        // Per-method @Retryable.maxAttempts overrides global config
         int maxAttempts = retryConfig.getMaxAttempts();
         if (isAnnotated) {
             Retryable annotation = method.getAnnotation(Retryable.class);
             if (annotation != null && annotation.maxAttempts() >= 0) {
                 maxAttempts = annotation.maxAttempts();
             }
+        }
+
+        // Cucumber @retryable=N tag overrides everything (set by CucumberHooks)
+        try {
+            int cucumberOverride = com.seleniumboot.cucumber.CucumberRetryContext.get();
+            if (cucumberOverride >= 0) {
+                maxAttempts = cucumberOverride;
+            }
+        } catch (Exception ignored) {
+            // CucumberRetryContext unavailable (non-Cucumber run) — use resolved value
         }
 
         if (attempt < maxAttempts) {

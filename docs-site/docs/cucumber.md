@@ -159,6 +159,8 @@ cucumber.monochrome=true
 
 ## Retry
 
+### Global retry
+
 Enable retry in `selenium-boot.yml` — all scenarios that fail will be retried automatically:
 
 ```yaml title="selenium-boot.yml"
@@ -167,13 +169,37 @@ retry:
   maxAttempts: 1   # 1 retry = 2 total attempts per scenario
 ```
 
+### Per-scenario retry tag
+
+Override the global config for individual scenarios using the `@retryable` or `@retryable=N` tag:
+
+```gherkin
+# Use global retry.maxAttempts from selenium-boot.yml
+@retryable
+Scenario: Login sometimes flakes on slow CI
+  Given the user is on the login page
+  When they submit valid credentials
+  Then the dashboard is visible
+
+# Exactly 2 retries regardless of global config
+@retryable=2
+Scenario: Very flaky third-party widget
+  Given the widget is loaded
+  Then it should display the correct value
+```
+
+Tag formats:
+
+| Tag | Behaviour |
+|---|---|
+| `@retryable` | Retry using `retry.maxAttempts` from config |
+| `@retryable=N` | Retry exactly N times (overrides config) |
+
+### How it works
+
 When a scenario fails, the **entire scenario reruns from step 1** with a fresh driver. The app is in a clean state for every retry attempt.
 
 Retried scenarios show a **↻ 1x** badge in the HTML report. The final status (PASSED or FAILED after all attempts) is what appears in the report.
-
-:::note
-Cucumber retry is scenario-level and global — all scenarios retry equally based on `retry.maxAttempts`. Per-scenario retry control via tags is not yet supported.
-:::
 
 ---
 
