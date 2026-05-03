@@ -49,6 +49,35 @@ public final class PreConditionRunner {
     }
 
     /**
+     * JUnit 5 / framework-agnostic entry point.
+     *
+     * <p>Looks for {@link PreCondition} on the test method, then on the declaring class.
+     * Runs or restores the session for each condition name.
+     *
+     * @param testMethod the test method about to execute
+     * @param isRetry    true when this is a retry attempt — invalidates the cached session
+     *                   so the provider runs fresh rather than restoring a potentially
+     *                   broken session from the failed attempt
+     */
+    public static void run(Method testMethod, boolean isRetry) {
+        PreCondition annotation = testMethod.getAnnotation(PreCondition.class);
+        if (annotation == null) {
+            annotation = testMethod.getDeclaringClass().getAnnotation(PreCondition.class);
+        }
+        if (annotation == null) return;
+
+        WebDriver driver = DriverManager.getDriver();
+        for (String conditionName : annotation.value()) {
+            if (isRetry) SessionCache.invalidate(conditionName);
+            if (SessionCache.isValid(conditionName)) {
+                restoreSession(conditionName, driver);
+            } else {
+                runProvider(conditionName, driver);
+            }
+        }
+    }
+
+    /**
      * Clears all session caches for the current thread.
      * Called at suite end to release memory.
      */

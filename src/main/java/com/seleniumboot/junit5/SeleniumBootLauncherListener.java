@@ -8,6 +8,7 @@ import com.seleniumboot.hooks.HookRegistry;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.metrics.ExecutionMetrics;
 import com.seleniumboot.reporting.JUnitXmlReporter;
+import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.reporting.ReportAdapterRegistry;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestPlan;
@@ -36,6 +37,7 @@ public class SeleniumBootLauncherListener implements TestExecutionListener {
             JUnitXmlReporter.export(ExecutionMetrics.getTimings(), System.currentTimeMillis());
 
             ReportAdapterRegistry.generateAll();
+            PreConditionRunner.clearAll();
             HookRegistry.onSuiteEnd();
 
             SeleniumBootConfig config = SeleniumBootContext.getConfig();

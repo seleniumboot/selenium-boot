@@ -94,6 +94,63 @@ class LoginTest {
 
 ---
 
+## @PreCondition — Session caching
+
+Use `@PreCondition` on a method or class to run a named setup step once and cache the session (cookies + localStorage). Subsequent tests with the same condition name restore the cached session instead of repeating the setup.
+
+```java
+class DashboardTest extends BaseJUnit5Test {
+
+    @Test
+    @PreCondition("loginAsAdmin")
+    @DisplayName("View dashboard — session restored, no re-login")
+    void viewDashboard() {
+        open("/dashboard");
+        assertThat(By.id("welcome-header")).isVisible();
+    }
+
+    @Test
+    @PreCondition("loginAsAdmin")
+    @DisplayName("Edit profile — same cached session reused")
+    void editProfile() {
+        open("/profile");
+        assertThat(By.id("profile-form")).isVisible();
+    }
+}
+```
+
+Apply to a class to cover all its test methods:
+
+```java
+@PreCondition("loginAsAdmin")
+class AdminTest extends BaseJUnit5Test {
+    @Test void viewUsers() { ... }
+    @Test void viewReports() { ... }
+}
+```
+
+The condition provider lives in a `BaseConditions` subclass registered via SPI — same as TestNG:
+
+```java
+public class AppConditions extends BaseConditions {
+
+    @ConditionProvider("loginAsAdmin")
+    public void loginAsAdmin() {
+        open("/");
+        new LoginPage(getDriver()).login("admin", "secret");
+    }
+}
+```
+
+```
+src/test/resources/META-INF/services/com.seleniumboot.precondition.BaseConditions
+→ com.yourcompany.conditions.AppConditions
+```
+
+On retry, the cached session is automatically invalidated and the provider reruns fresh.
+
+---
+
 ## Retry
 
 Use `@Retryable` on a method or class. The framework retries with a **fresh driver** on each attempt:
@@ -166,4 +223,4 @@ ThreadLocal driver isolation makes all three options thread-safe.
 | Video recording | ✅ |
 | JUnit XML output | Native |
 | `@Retryable` retry | ✅ |
-| `@PreCondition` session cache | Planned |
+| `@PreCondition` session cache | ✅ |

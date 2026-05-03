@@ -20,6 +20,7 @@ import com.seleniumboot.steps.StepLogger;
 import com.seleniumboot.steps.StepStatus;
 import com.seleniumboot.testdata.TestDataStore;
 import com.seleniumboot.listeners.Retryable;
+import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.tracing.TraceRecorder;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -86,6 +87,9 @@ public class SeleniumBootExtension
         ExecutionMetrics.recordDescription(testId, context.getDisplayName());
 
         DriverManager.createDriver();
+
+        // Run @PreCondition if present on method or class (first attempt — not a retry)
+        PreConditionRunner.run(context.getRequiredTestMethod(), false);
 
         SeleniumBootConfig.Recording rec = SeleniumBootContext.getConfig().getRecording();
         if (rec != null && rec.isEnabled()) {
@@ -194,6 +198,10 @@ public class SeleniumBootExtension
                     ExecutionMetrics.clearSteps(testId);
                     try { DriverManager.quitDriver(); } catch (Exception ignored) {}
                     DriverManager.createDriver();
+
+                    // Re-apply @PreCondition with isRetry=true — invalidates cache
+                    // so the provider reruns rather than restoring a broken session
+                    PreConditionRunner.run(invocationContext.getExecutable(), true);
 
                     Method m = invocationContext.getExecutable();
                     m.setAccessible(true);

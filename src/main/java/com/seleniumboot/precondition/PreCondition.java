@@ -42,7 +42,7 @@ import java.lang.annotation.Target;
  * @since 0.8.0
  */
 @SeleniumBootApi(since = "0.8.0")
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PreCondition {
 
