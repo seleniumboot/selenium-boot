@@ -18,7 +18,7 @@ Add Cucumber to your project alongside Selenium Boot:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
 </dependency>
 
 <dependency>

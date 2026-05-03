@@ -28,7 +28,7 @@ No WebDriver binaries required — Selenium Manager handles browser driver downl
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
 </dependency>
 ```
 

@@ -60,7 +60,10 @@ public class CucumberHooks {
         // 4. Register testId so StepLogger and ScreenshotManager resolve it
         SeleniumBootContext.setCurrentTestId(testId);
 
-        // 5. Initialize metrics entry for this scenario
+        // 5. Initialize metrics — detect retry when testId already exists
+        if (ExecutionMetrics.getTiming(testId) != null) {
+            ExecutionMetrics.recordRetry(testId);
+        }
         ExecutionMetrics.clearSteps(testId);
         ExecutionMetrics.markStart(testId);
         ExecutionMetrics.recordTestClass(testId, featureTitle(scenario.getUri()));

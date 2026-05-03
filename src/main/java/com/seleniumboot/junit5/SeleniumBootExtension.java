@@ -19,16 +19,21 @@ import com.seleniumboot.reporting.ScreenshotManager;
 import com.seleniumboot.steps.StepLogger;
 import com.seleniumboot.steps.StepStatus;
 import com.seleniumboot.testdata.TestDataStore;
+import com.seleniumboot.listeners.Retryable;
 import com.seleniumboot.tracing.TraceRecorder;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.InvocationInterceptor;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolver;
+import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
 import org.openqa.selenium.WebDriver;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,7 +69,7 @@ import java.util.Optional;
 public class SeleniumBootExtension
         implements BeforeAllCallback, AfterAllCallback,
                    BeforeEachCallback, AfterEachCallback,
-                   ParameterResolver {
+                   ParameterResolver, InvocationInterceptor {
 
     @Override
     public void beforeAll(ExtensionContext context) {
@@ -159,6 +164,79 @@ public class SeleniumBootExtension
         DriverManager.quitAllSuiteDrivers();
         DriverManager.quitDriver();
         HealLog.export();
+    }
+
+    // ── Retry via InvocationInterceptor ───────────────────────────────────
+
+    @Override
+    public void interceptTestMethod(
+            Invocation<Void> invocation,
+            ReflectiveInvocationContext<Method> invocationContext,
+            ExtensionContext context) throws Throwable {
+
+        int maxRetries = resolveMaxRetries(context);
+
+        if (maxRetries <= 0) {
+            invocation.proceed();
+            return;
+        }
+
+        String testId = testId(context);
+        Throwable lastFailure = null;
+
+        for (int attempt = 1; attempt <= maxRetries + 1; attempt++) {
+            try {
+                if (attempt == 1) {
+                    invocation.proceed();
+                } else {
+                    // Record retry, recreate driver, re-invoke via reflection
+                    ExecutionMetrics.recordRetry(testId);
+                    ExecutionMetrics.clearSteps(testId);
+                    try { DriverManager.quitDriver(); } catch (Exception ignored) {}
+                    DriverManager.createDriver();
+
+                    Method m = invocationContext.getExecutable();
+                    m.setAccessible(true);
+                    Object[] args = invocationContext.getArguments().stream()
+                            .map(a -> a instanceof WebDriver ? DriverManager.getDriver() : a)
+                            .toArray();
+                    try {
+                        m.invoke(context.getRequiredTestInstance(), args);
+                    } catch (InvocationTargetException e) {
+                        throw e.getCause();
+                    }
+                }
+                return; // attempt succeeded
+            } catch (Throwable t) {
+                lastFailure = t;
+            }
+        }
+        throw lastFailure;
+    }
+
+    private int resolveMaxRetries(ExtensionContext context) {
+        // 1. Method-level @Retryable
+        Retryable onMethod = context.getRequiredTestMethod().getAnnotation(Retryable.class);
+        if (onMethod != null) {
+            return onMethod.maxAttempts() >= 0 ? onMethod.maxAttempts() : configMaxRetries();
+        }
+        // 2. Class-level @Retryable
+        Retryable onClass = context.getRequiredTestClass().getAnnotation(Retryable.class);
+        if (onClass != null) {
+            return onClass.maxAttempts() >= 0 ? onClass.maxAttempts() : configMaxRetries();
+        }
+        // 3. Global config
+        return configMaxRetries();
+    }
+
+    private int configMaxRetries() {
+        try {
+            SeleniumBootConfig.Retry retry = SeleniumBootContext.getConfig().getRetry();
+            if (retry == null || !retry.isEnabled()) return 0;
+            return Math.max(0, retry.getMaxAttempts());
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     // ── Parameter injection — WebDriver as test method parameter ──────────

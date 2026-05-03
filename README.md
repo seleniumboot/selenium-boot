@@ -58,7 +58,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
 </dependency>
 ```
 
@@ -623,6 +623,12 @@ ci:
 ---
 
 ## Project Status
+
+### v1.11.0 — 2026-05-03
+
+- **`@Retryable` for JUnit 5** — `InvocationInterceptor` in `SeleniumBootExtension` retries failed test methods with full driver recreation between attempts; `@Retryable(maxAttempts = N)` on method or class overrides global config
+- **`@Retryable` for Cucumber** — entire scenario reruns from step 1 with a fresh driver via `RetryAnnotationTransformer`; retry detected in `CucumberHooks` and shown as retry badge in HTML report
+- `@Retryable` — new `maxAttempts` attribute + class-level target; fully backward-compatible
 
 ### v1.10.0 — 2026-05-02
 

@@ -10,6 +10,17 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [1.11.0] — 2026-05-03
+
+### Added
+- **`@Retryable` for JUnit 5** — `SeleniumBootExtension` implements `InvocationInterceptor`; `interceptTestMethod` catches failures and retries the test method with full driver recreation between attempts; `@Retryable` can be placed on the method or the class; `maxAttempts` attribute overrides the global `retry.maxAttempts` config; `WebDriver` parameter arguments are re-resolved to the new driver on each retry attempt
+- **`@Retryable` for Cucumber** — `RetryAnnotationTransformer` applies TestNG retry to `AbstractTestNGCucumberTests.runScenario`; the entire scenario reruns from step 1 with a fresh driver per retry; `CucumberHooks.beforeScenario` detects retries (testId already in metrics) and records retry count so the HTML report shows the retry badge
+
+### Changed
+- `@Retryable` — added `maxAttempts` attribute (default `-1` = use config); added `TYPE` target so it can be placed on a class to retry all its test methods; fully backward-compatible — existing usages without the attribute continue to work
+
+---
+
 ## [1.10.0] — 2026-05-02
 
 ### Added

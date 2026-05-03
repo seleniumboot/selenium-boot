@@ -50,7 +50,14 @@ public final class RetryListener implements IRetryAnalyzer {
             return false;
         }
 
+        // Per-method maxAttempts overrides global config
         int maxAttempts = retryConfig.getMaxAttempts();
+        if (isAnnotated) {
+            Retryable annotation = method.getAnnotation(Retryable.class);
+            if (annotation != null && annotation.maxAttempts() >= 0) {
+                maxAttempts = annotation.maxAttempts();
+            }
+        }
 
         if (attempt < maxAttempts) {
             attempt++;

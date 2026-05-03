@@ -21,7 +21,16 @@ import java.lang.annotation.Target;
  * </pre>
  */
 @SeleniumBootApi(since = "0.5.0")
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Retryable {
+
+    /**
+     * Maximum number of retry attempts after the first failure.
+     * {@code -1} (default) falls back to {@code retry.maxAttempts} in
+     * {@code selenium-boot.yml}. Positive values override the config.
+     *
+     * <p>Total runs = {@code maxAttempts + 1}.
+     */
+    int maxAttempts() default -1;
 }
