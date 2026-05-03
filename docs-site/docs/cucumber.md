@@ -157,6 +157,26 @@ cucumber.monochrome=true
 
 ---
 
+## Retry
+
+Enable retry in `selenium-boot.yml` — all scenarios that fail will be retried automatically:
+
+```yaml title="selenium-boot.yml"
+retry:
+  enabled: true
+  maxAttempts: 1   # 1 retry = 2 total attempts per scenario
+```
+
+When a scenario fails, the **entire scenario reruns from step 1** with a fresh driver. The app is in a clean state for every retry attempt.
+
+Retried scenarios show a **↻ 1x** badge in the HTML report. The final status (PASSED or FAILED after all attempts) is what appears in the report.
+
+:::note
+Cucumber retry is scenario-level and global — all scenarios retry equally based on `retry.maxAttempts`. Per-scenario retry control via tags is not yet supported.
+:::
+
+---
+
 ## Run via Maven
 
 ```bash

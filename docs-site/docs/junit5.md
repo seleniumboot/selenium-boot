@@ -94,6 +94,42 @@ class LoginTest {
 
 ---
 
+## Retry
+
+Use `@Retryable` on a method or class. The framework retries with a **fresh driver** on each attempt:
+
+```java
+class LoginTest extends BaseJUnit5Test {
+
+    @Test
+    @Retryable(maxAttempts = 1)   // 1 retry = 2 total runs
+    void flakyLogin() {
+        open();
+        new LoginPage(getDriver()).login("admin", "secret");
+        assertThat(By.id("dashboard")).isVisible();
+    }
+}
+```
+
+Place `@Retryable` on the class to apply to all its test methods:
+
+```java
+@Retryable(maxAttempts = 2)
+class FlakyTest extends BaseJUnit5Test { ... }
+```
+
+`maxAttempts` overrides the global `retry.maxAttempts` from `selenium-boot.yml`. Omit it to use the config value:
+
+```yaml title="selenium-boot.yml"
+retry:
+  enabled: true
+  maxAttempts: 1
+```
+
+Retried tests show a **↻ Nx** badge in the HTML report.
+
+---
+
 ## Parallel execution
 
 ```properties title="src/test/resources/junit-platform.properties"
@@ -129,5 +165,5 @@ ThreadLocal driver isolation makes all three options thread-safe.
 | Flakiness prediction | ✅ |
 | Video recording | ✅ |
 | JUnit XML output | Native |
-| `@Retryable` retry | Planned |
+| `@Retryable` retry | ✅ |
 | `@PreCondition` session cache | Planned |
