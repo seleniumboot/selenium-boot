@@ -44,13 +44,25 @@ No `WebDriver` setup. No `@AfterMethod` teardown. No wait helpers. No retry conf
 | **Driver lifecycle** | One driver per thread, created before each test, quit after |
 | **YAML configuration** | Browser, parallel, timeouts, retry — all in one file |
 | **Smart waits** | `WaitEngine` with 10+ built-in conditions |
-| **Retry** | Global or per-method, configurable attempts |
+| **Retry** | Global, per-method `@Retryable`, or per-Cucumber-scenario `@retryable` tag |
 | **Screenshots** | Auto-captured on failure, base64-embedded in report |
 | **Step logging** | Named steps with optional per-step screenshots |
-| **HTML report** | Tabbed dashboard — overview, test cases, failures |
+| **HTML report** | Tabbed dashboard — overview, test cases, failures, flakiness radar |
 | **JUnit XML** | Parsed natively by Jenkins, GitHub Actions, GitLab CI |
 | **CI auto-detection** | Headless forced, threads auto-tuned, no config changes needed |
 | **Extensibility** | SPI-based plugins, custom drivers, hooks, report adapters |
+| **JUnit 5** | Full feature parity via `@ExtendWith(SeleniumBootExtension.class)` or `BaseJUnit5Test` |
+| **BDD / Cucumber** | `BaseCucumberSteps`, `CucumberHooks`, per-scenario steps in HTML report |
+| **API testing** | `BaseApiTest`, fluent `ApiClient`, JSONPath, schema validation, hybrid UI+API |
+| **Fluent locators** | `$("selector").filter().nth().withText()` — Playwright-style chainable locators |
+| **Web-first assertions** | `assertThat(By.id("x")).isVisible()` — auto-retrying until timeout |
+| **Multi-session testing** | `withSession("admin", () -> { ... })` — two browsers in one test |
+| **Database assertions** | `db().assertRowExists()`, `db().query().assertValue()` — plain JDBC, no ORM |
+| **Email verification** | `mailbox().waitForEmail(to("user@test.com"))` — Mailhog, Mailtrap, Outlook, IMAP |
+| **`@NoBrowser`** | Skip WebDriver for non-UI tests — DB assertions, API checks, file operations |
+| **AI failure analysis** | Claude explains why a test failed and suggests a fix |
+| **Self-healing locators** | Automatic fallback strategies when a locator fails |
+| **Flakiness prediction** | Risk scores from run history, radar chart in report |
 
 ---
 

@@ -62,6 +62,54 @@ timeouts:
 ci:
   failOnPassRateBelow: 80   # 0 = disabled. Fail build if pass rate < 80%
   maxFlakyTests: 3          # -1 = disabled. Fail if more than 3 tests retried
+
+# ── Database Assertions ─────────────────────────────────────────────────────
+database:
+  url:      jdbc:postgresql://localhost/mydb
+  username: ${DB_USER}
+  password: ${DB_PASS}
+  driver:   org.postgresql.Driver  # optional; auto-detected from URL by most drivers
+
+  # Named datasources (access via db("reporting"))
+  datasources:
+    reporting:
+      url:      jdbc:postgresql://localhost/reporting
+      username: ${REPORTING_DB_USER}
+      password: ${REPORTING_DB_PASS}
+
+# ── Multi-Session Testing ───────────────────────────────────────────────────
+sessions:
+  maxPerTest: 2   # max named sessions per test (guard against resource leaks)
+
+# ── Email Verification ──────────────────────────────────────────────────────
+email:
+  provider: mailhog          # mailhog | mailtrap | outlook | imap
+  timeoutSeconds: 30         # default wait for waitForEmail()
+  pollIntervalMs: 1000       # polling interval
+  autoClear: false           # clear inbox before each test automatically
+
+  mailhog:
+    host: localhost
+    port: 8025
+
+  mailtrap:
+    apiToken:  ${MAILTRAP_TOKEN}
+    accountId: ${MAILTRAP_ACCOUNT_ID}
+    inboxId:   ${MAILTRAP_INBOX_ID}
+
+  outlook:
+    tenantId:     ${AZURE_TENANT_ID}
+    clientId:     ${AZURE_CLIENT_ID}
+    clientSecret: ${AZURE_CLIENT_SECRET}
+    mailbox:      test-inbox@yourcompany.com
+
+  imap:
+    host:     imap.gmail.com
+    port:     993
+    ssl:      true
+    username: ${EMAIL_USER}
+    password: ${EMAIL_PASS}
+    folder:   INBOX
 ```
 
 ---
