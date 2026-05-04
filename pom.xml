@@ -6,7 +6,7 @@
 
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.13.0</version>
+    <version>2.0.0</version>
     <packaging>jar</packaging>
 
     <name>Selenium Boot</name>
@@ -113,6 +113,17 @@
             <groupId>com.networknt</groupId>
             <artifactId>json-schema-validator</artifactId>
             <version>1.4.3</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!--
+            IMAP email provider — optional so it is NOT pulled transitively.
+            Consumers who use provider: imap must add this to their own project.
+        -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.1</version>
             <optional>true</optional>
         </dependency>
 

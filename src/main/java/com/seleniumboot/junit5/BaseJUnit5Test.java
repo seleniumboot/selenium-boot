@@ -6,6 +6,8 @@ import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.browser.ConsoleErrorCollector;
 import com.seleniumboot.db.DbClient;
 import com.seleniumboot.driver.DriverManager;
+import com.seleniumboot.email.EmailCriteria;
+import com.seleniumboot.email.MailboxClient;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.locator.Locator;
 import com.seleniumboot.session.MultiSessionManager;
@@ -143,5 +145,19 @@ public abstract class BaseJUnit5Test {
     /** Database assertions against a named datasource under {@code database.datasources}. */
     protected DbClient db(String datasource) {
         return DbClient.forNamed(datasource);
+    }
+
+    // ----------------------------------------------------------
+    // Phase 19 — Email Verification
+    // ----------------------------------------------------------
+
+    /** Inbox client configured from {@code email.*} in {@code selenium-boot.yml}. */
+    protected MailboxClient mailbox() {
+        return MailboxClient.create();
+    }
+
+    /** Shorthand for {@link EmailCriteria#to(String)} — use inside {@code mailbox().waitForEmail(...)}. */
+    protected EmailCriteria to(String address) {
+        return EmailCriteria.to(address);
     }
 }

@@ -58,7 +58,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.13.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -623,6 +623,12 @@ ci:
 ---
 
 ## Project Status
+
+### v2.0.0 — 2026-05-04
+
+- **Email Verification** — `mailbox().waitForEmail(to("user@example.com"))` polls until an email arrives; `email.assertSubject()`, `email.assertBodyContains()`, `email.extractLink(linkText)` for anchor extraction; `mailbox().clear()` purges the inbox; `email.autoClear: true` clears automatically before each test
+- **Four backends**: Mailhog (local/Docker), Mailtrap (hosted sandbox), Outlook/Office 365 (Microsoft Graph API — app-only OAuth2, no user login), IMAP (Gmail, Yahoo, any standards-compliant server via optional `jakarta.mail` dep)
+- Outlook config: `tenantId`, `clientId`, `clientSecret`, `mailbox` — OAuth2 token auto-refreshed and cached
 
 ### v1.13.0 — 2026-05-03
 

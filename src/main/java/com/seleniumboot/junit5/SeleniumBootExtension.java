@@ -22,6 +22,7 @@ import com.seleniumboot.steps.StepLogger;
 import com.seleniumboot.steps.StepStatus;
 import com.seleniumboot.testdata.TestDataStore;
 import com.seleniumboot.listeners.Retryable;
+import com.seleniumboot.email.MailboxClient;
 import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.test.NoBrowser;
 import com.seleniumboot.tracing.TraceRecorder;
@@ -106,6 +107,7 @@ public class SeleniumBootExtension
             }
         }
 
+        autoClearEmailIfEnabled();
         HookRegistry.onTestStart(testId);
     }
 
@@ -297,6 +299,16 @@ public class SeleniumBootExtension
                 if (d != null) { pageUrl = d.getCurrentUrl(); pageTitle = d.getTitle(); }
             } catch (Exception ignored) {}
             AiFailureAnalyzer.analyze(testId, pageUrl, pageTitle);
+        } catch (Exception ignored) {}
+    }
+
+    private static void autoClearEmailIfEnabled() {
+        try {
+            com.seleniumboot.config.SeleniumBootConfig.Email emailCfg =
+                    SeleniumBootContext.getConfig().getEmail();
+            if (emailCfg != null && emailCfg.isAutoClear()) {
+                MailboxClient.create().clear();
+            }
         } catch (Exception ignored) {}
     }
 

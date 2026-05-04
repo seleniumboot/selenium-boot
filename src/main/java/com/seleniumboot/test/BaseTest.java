@@ -17,6 +17,8 @@ import com.seleniumboot.context.ScenarioContext;
 import com.seleniumboot.context.SuiteContext;
 import com.seleniumboot.db.DbClient;
 import com.seleniumboot.driver.DriverManager;
+import com.seleniumboot.email.EmailCriteria;
+import com.seleniumboot.email.MailboxClient;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.listeners.SuiteExecutionListener;
 import com.seleniumboot.listeners.TestExecutionListener;
@@ -278,6 +280,33 @@ public abstract class BaseTest {
      */
     protected DbClient db(String datasource) {
         return DbClient.forNamed(datasource);
+    }
+
+    // ----------------------------------------------------------
+    // Phase 19 — Email Verification
+    // ----------------------------------------------------------
+
+    /**
+     * Returns an email inbox client configured from {@code email.*} in
+     * {@code selenium-boot.yml}. Supports Mailhog, Mailtrap, Outlook, and IMAP.
+     *
+     * <pre>
+     * Email email = mailbox().waitForEmail(to("user@example.com"));
+     * email.assertSubject("Verify your account");
+     * String link = email.extractLink("Verify Email");
+     * open(link);
+     * </pre>
+     */
+    protected MailboxClient mailbox() {
+        return MailboxClient.create();
+    }
+
+    /**
+     * Shorthand for {@link EmailCriteria#to(String)} —
+     * use inside {@code mailbox().waitForEmail(to("..."))} without a static import.
+     */
+    protected EmailCriteria to(String address) {
+        return EmailCriteria.to(address);
     }
 
     private static final class ScenarioContextHolder {

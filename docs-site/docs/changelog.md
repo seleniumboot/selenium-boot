@@ -10,6 +10,21 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [2.0.0] — 2026-05-04
+
+### Added
+- **Email Verification** — `mailbox().waitForEmail(criteria)` polls the inbox until a matching email arrives or the configured timeout expires; fluent criteria: `to(address)`, `.subject(text)`, `.containing(text)`, `.timeout(seconds)`; `Email` value object with `assertSubject()`, `assertBodyContains()`, `extractLink(linkText)` (finds href of anchor by visible text); `mailbox().clear()` purges the inbox; `email.autoClear: true` clears automatically before each test; `to(address)` shorthand available directly in `BaseTest` / `BaseJUnit5Test` (no static import needed)
+- **Mailhog provider** — polls `GET /api/v2/messages`, parses multipart MIME; `DELETE /api/v1/messages` to clear; ideal for local dev and CI Docker
+- **Mailtrap provider** — Mailtrap v1 REST API; `Api-Token` header auth; `PATCH /clean` to clear
+- **Outlook / Office 365 provider** — Microsoft Graph API with app-only OAuth2 client credentials (no user sign-in); token auto-refreshed and cached; reads `GET /users/{mailbox}/messages`; deletes per-message; setup: register Azure AD app, grant `Mail.Read` + `Mail.ReadWrite` application permissions, admin consent
+- **IMAP provider** — connects to any IMAP server (Gmail app passwords, Yahoo, corporate); SSL/STARTTLS configurable; requires optional `com.sun.mail:jakarta.mail:2.0.1` consumer dependency; helpful error thrown if jar missing
+
+### Changed
+- `BaseTest` / `BaseJUnit5Test` — new `mailbox()` and `to(address)` protected methods
+- `SeleniumBootConfig` — new `email` block with `provider`, `timeoutSeconds`, `pollIntervalMs`, `autoClear`, `mailhog`, `mailtrap`, `outlook`, `imap` sub-sections
+
+---
+
 ## [1.13.0] — 2026-05-03
 
 ### Added

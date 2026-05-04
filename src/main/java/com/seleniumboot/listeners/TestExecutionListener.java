@@ -22,6 +22,7 @@ import com.seleniumboot.precondition.DependsOnApi;
 import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.recording.RecordingManager;
 import com.seleniumboot.reporting.ScreenshotManager;
+import com.seleniumboot.email.MailboxClient;
 import com.seleniumboot.session.MultiSessionManager;
 import com.seleniumboot.steps.StepLogger;
 import com.seleniumboot.steps.StepStatus;
@@ -84,6 +85,7 @@ public final class TestExecutionListener implements ITestListener {
             DriverManager.createDriver();
             startRecordingIfEnabled();
         }
+        autoClearEmailIfEnabled();
         applyUseAuth(result);
         PreConditionRunner.run(result);
         loadTestData(result);
@@ -227,6 +229,16 @@ public final class TestExecutionListener implements ITestListener {
 
     private boolean isApiTest(ITestResult result) {
         return BaseApiTest.class.isAssignableFrom(result.getTestClass().getRealClass());
+    }
+
+    private void autoClearEmailIfEnabled() {
+        try {
+            com.seleniumboot.config.SeleniumBootConfig.Email emailCfg =
+                    SeleniumBootContext.getConfig().getEmail();
+            if (emailCfg != null && emailCfg.isAutoClear()) {
+                MailboxClient.create().clear();
+            }
+        } catch (Exception ignored) {}
     }
 
     private boolean isNoBrowserTest(ITestResult result) {

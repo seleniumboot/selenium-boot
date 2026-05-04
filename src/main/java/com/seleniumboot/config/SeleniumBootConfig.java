@@ -432,6 +432,97 @@ public final class SeleniumBootConfig {
         public void    setUpdateBaselines(boolean v)       { this.updateBaselines = v; }
     }
 
+    private Email email;
+    public Email getEmail() { return email; }
+    public void setEmail(Email email) { this.email = email; }
+
+    public static final class Email {
+        private String  provider        = "mailhog";
+        private int     timeoutSeconds  = 30;
+        private int     pollIntervalMs  = 1000;
+        private boolean autoClear       = false;
+
+        public String  getProvider()              { return provider; }
+        public void    setProvider(String v)      { this.provider = v; }
+        public int     getTimeoutSeconds()        { return timeoutSeconds; }
+        public void    setTimeoutSeconds(int v)   { this.timeoutSeconds = v; }
+        public int     getPollIntervalMs()        { return pollIntervalMs; }
+        public void    setPollIntervalMs(int v)   { this.pollIntervalMs = v; }
+        public boolean isAutoClear()              { return autoClear; }
+        public void    setAutoClear(boolean v)    { this.autoClear = v; }
+
+        private Mailhog  mailhog  = new Mailhog();
+        private Mailtrap mailtrap = new Mailtrap();
+        private Outlook  outlook  = new Outlook();
+        private Imap     imap     = new Imap();
+
+        public Mailhog  getMailhog()              { return mailhog; }
+        public void     setMailhog(Mailhog v)     { this.mailhog = v; }
+        public Mailtrap getMailtrap()             { return mailtrap; }
+        public void     setMailtrap(Mailtrap v)   { this.mailtrap = v; }
+        public Outlook  getOutlook()              { return outlook; }
+        public void     setOutlook(Outlook v)     { this.outlook = v; }
+        public Imap     getImap()                 { return imap; }
+        public void     setImap(Imap v)           { this.imap = v; }
+
+        public static final class Mailhog {
+            private String host = "localhost";
+            private int    port = 8025;
+            public String getHost()          { return host; }
+            public void   setHost(String v)  { this.host = v; }
+            public int    getPort()          { return port; }
+            public void   setPort(int v)     { this.port = v; }
+        }
+
+        public static final class Mailtrap {
+            private String apiToken;
+            private String accountId;
+            private String inboxId;
+            public String getApiToken()           { return apiToken; }
+            public void   setApiToken(String v)   { this.apiToken = v; }
+            public String getAccountId()          { return accountId; }
+            public void   setAccountId(String v)  { this.accountId = v; }
+            public String getInboxId()            { return inboxId; }
+            public void   setInboxId(String v)    { this.inboxId = v; }
+        }
+
+        public static final class Outlook {
+            private String tenantId;
+            private String clientId;
+            private String clientSecret;
+            private String mailbox;
+            public String getTenantId()              { return tenantId; }
+            public void   setTenantId(String v)      { this.tenantId = v; }
+            public String getClientId()              { return clientId; }
+            public void   setClientId(String v)      { this.clientId = v; }
+            public String getClientSecret()          { return clientSecret; }
+            public void   setClientSecret(String v)  { this.clientSecret = v; }
+            public String getMailbox()               { return mailbox; }
+            public void   setMailbox(String v)       { this.mailbox = v; }
+        }
+
+        public static final class Imap {
+            private String  host;
+            private int     port     = 993;
+            private boolean ssl      = true;
+            private String  username;
+            private String  password;
+            private String  folder   = "INBOX";
+            public String  getHost()              { return host; }
+            public void    setHost(String v)      { this.host = v; }
+            public int     getPort()              { return port; }
+            public void    setPort(int v)         { this.port = v; }
+            public boolean isSsl()                { return ssl; }
+            public void    setSsl(boolean v)      { this.ssl = v; }
+            public String  getUsername()          { return username; }
+            public void    setUsername(String v)  { this.username = v; }
+            public String  getPassword()          { return password; }
+            public void    setPassword(String v)  { this.password = v; }
+            public String  getFolder()            { return folder; }
+            public void    setFolder(String v)    { this.folder = v; }
+        }
+    }
+
     private Sessions sessions;
     public Sessions getSessions() { return sessions; }
     public void setSessions(Sessions sessions) { this.sessions = sessions; }
