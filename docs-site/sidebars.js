@@ -63,6 +63,7 @@ const sidebars = {
     'junit5',
     'cucumber',
     'email-verification',
+    'cloud-execution',
     'changelog',
   ],
 };

@@ -40,13 +40,37 @@ browser:
 
 # ── Execution ───────────────────────────────────────────────────────────────
 execution:
-  mode: local               # local | remote
+  mode: local               # local | remote | browserstack | saucelabs
   baseUrl: https://your-app.com
   gridUrl: http://localhost:4444   # only for remote mode
 
   parallel: none            # none | methods | classes | tests
   threadCount: 1            # ignored when parallel: none
   maxActiveSessions: 5      # max concurrent browser instances (semaphore)
+
+  # ── BrowserStack (mode: browserstack) ──────────────────────────────────────
+  browserstack:
+    username:      ${BS_USER}
+    accessKey:     ${BS_KEY}
+    os:            Windows          # Windows | OS X
+    osVersion:     "11"
+    browser:       chrome           # chrome | firefox | edge | safari
+    browserVersion: latest
+    device:                         # optional — mobile device name
+    realMobile:    true
+    capabilities:                   # raw bstack:options overrides
+      debug: false
+
+  # ── Sauce Labs (mode: saucelabs) ───────────────────────────────────────────
+  saucelabs:
+    username:      ${SAUCE_USER}
+    accessKey:     ${SAUCE_KEY}
+    region:        us-west-1        # us-west-1 | eu-central | apac-southeast
+    platformName:  "Windows 11"
+    browser:       chrome
+    browserVersion: latest
+    capabilities:                   # raw sauce:options overrides
+      recordVideo: true
 
 # ── Retry ───────────────────────────────────────────────────────────────────
 retry:

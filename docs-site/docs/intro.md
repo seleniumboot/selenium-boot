@@ -60,6 +60,7 @@ No `WebDriver` setup. No `@AfterMethod` teardown. No wait helpers. No retry conf
 | **Database assertions** | `db().assertRowExists()`, `db().query().assertValue()` — plain JDBC, no ORM |
 | **Email verification** | `mailbox().waitForEmail(to("user@test.com"))` — Mailhog, Mailtrap, Outlook, IMAP |
 | **`@NoBrowser`** | Skip WebDriver for non-UI tests — DB assertions, API checks, file operations |
+| **BrowserStack / Sauce Labs** | `execution.mode: browserstack` or `saucelabs` — cloud browsers with session URL in HTML report |
 | **AI failure analysis** | Claude explains why a test failed and suggests a fix |
 | **Self-healing locators** | Automatic fallback strategies when a locator fails |
 | **Flakiness prediction** | Risk scores from run history, radar chart in report |
