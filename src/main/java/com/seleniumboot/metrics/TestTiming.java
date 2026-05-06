@@ -108,6 +108,10 @@ public class TestTiming {
     public String getAiAnalysis()             { return aiAnalysis; }
     public void   setAiAnalysis(String v)     { this.aiAnalysis = v; }
 
+    private String sessionUrl;
+    public String getSessionUrl()             { return sessionUrl; }
+    public void   setSessionUrl(String v)     { this.sessionUrl = v; }
+
     private final java.util.List<com.seleniumboot.steps.StepRecord> steps =
             new java.util.concurrent.CopyOnWriteArrayList<>();
 

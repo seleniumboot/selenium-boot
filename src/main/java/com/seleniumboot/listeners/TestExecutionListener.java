@@ -83,6 +83,8 @@ public final class TestExecutionListener implements ITestListener {
 
         if (!skipBrowser(result)) {
             DriverManager.createDriver();
+            String sessionUrl = DriverManager.getCloudSessionUrl();
+            if (sessionUrl != null) ExecutionMetrics.recordSessionUrl(testId, sessionUrl);
             startRecordingIfEnabled();
         }
         autoClearEmailIfEnabled();

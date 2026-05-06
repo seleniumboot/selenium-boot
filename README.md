@@ -58,7 +58,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 
@@ -623,6 +623,12 @@ ci:
 ---
 
 ## Project Status
+
+### v2.1.0 — 2026-05-04
+
+- **BrowserStack integration** — `execution.mode: browserstack` + `browserstack.username/accessKey/os/osVersion/browser/browserVersion`; W3C `bstack:options` capabilities; mobile device support via `device` + `realMobile`; session dashboard URL auto-injected into HTML report as "☁ View Session" link
+- **Sauce Labs integration** — `execution.mode: saucelabs` + `saucelabs.username/accessKey/region/platformName/browser/browserVersion`; three regions: `us-west-1`, `eu-central`, `apac-southeast`; W3C `sauce:options` capabilities; session dashboard URL in HTML report
+- Existing `mode: remote` (self-hosted Selenium Grid) unchanged — all three remote modes coexist
 
 ### v2.0.0 — 2026-05-04
 

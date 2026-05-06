@@ -92,6 +92,11 @@ public final class ExecutionMetrics {
         TIMINGS.computeIfPresent(testId, (k, v) -> { v.setTracePath(path); return v; });
     }
 
+    public static void recordSessionUrl(String testId, String url) {
+        if (url == null) return;
+        TIMINGS.computeIfPresent(testId, (k, v) -> { v.setSessionUrl(url); return v; });
+    }
+
     public static void recordHeal(String testId) {
         TIMINGS.computeIfPresent(testId, (k, v) -> { v.incrementHealed(); return v; });
     }
@@ -346,6 +351,9 @@ public final class ExecutionMetrics {
             }
             if (timing.getAiAnalysis() != null) {
                 testEntry.put("aiAnalysis", timing.getAiAnalysis());
+            }
+            if (timing.getSessionUrl() != null) {
+                testEntry.put("sessionUrl", timing.getSessionUrl());
             }
             if (!timing.getSteps().isEmpty()) {
                 List<Map<String, Object>> stepList = new ArrayList<>();

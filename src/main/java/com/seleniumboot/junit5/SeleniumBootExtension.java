@@ -93,6 +93,8 @@ public class SeleniumBootExtension
         boolean noBrowser = skipBrowser(context);
         if (!noBrowser) {
             DriverManager.createDriver();
+            String sessionUrl = DriverManager.getCloudSessionUrl();
+            if (sessionUrl != null) ExecutionMetrics.recordSessionUrl(testId, sessionUrl);
 
             // Run @PreCondition if present on method or class (first attempt — not a retry)
             PreConditionRunner.run(context.getRequiredTestMethod(), false);

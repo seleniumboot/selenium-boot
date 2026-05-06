@@ -10,6 +10,38 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [2.1.0] — 2026-05-04
+
+### Added
+- **BrowserStack integration** — `execution.mode: browserstack`; `BrowserStackProvider` builds W3C `bstack:options` capabilities from YAML config; supports desktop (`os`, `osVersion`, `browser`, `browserVersion`) and mobile (`device`, `realMobile`); raw `bstack:options` overrides via `capabilities` map; zero test-code change — all framework features work identically
+- **Sauce Labs integration** — `execution.mode: saucelabs`; `SauceLabsProvider` builds W3C `sauce:options` capabilities; three regions supported: `us-west-1`, `eu-central`, `apac-southeast`; raw `sauce:options` overrides via `capabilities` map
+- **Cloud session URL in HTML report** — after driver creation on BrowserStack or Sauce Labs, the session dashboard URL is captured from the remote session ID and stored; HTML report shows a **"☁ View Session"** link in the test detail panel linking directly to the BrowserStack/Sauce video and logs
+- `DriverManager.getCloudSessionUrl()` — public accessor for the current thread's cloud session URL; `null` when running locally or against a self-hosted grid
+
+### Config
+```yaml
+execution:
+  mode: browserstack   # or: saucelabs | remote | local
+
+  browserstack:
+    username:      ${BS_USER}
+    accessKey:     ${BS_KEY}
+    os:            Windows
+    osVersion:     "11"
+    browser:       chrome
+    browserVersion: latest
+
+  saucelabs:
+    username:      ${SAUCE_USER}
+    accessKey:     ${SAUCE_KEY}
+    region:        us-west-1      # us-west-1 | eu-central | apac-southeast
+    platformName:  "Windows 11"
+    browser:       chrome
+    browserVersion: latest
+```
+
+---
+
 ## [2.0.0] — 2026-05-04
 
 ### Added

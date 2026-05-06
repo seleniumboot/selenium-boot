@@ -124,7 +124,7 @@ export default function Home() {
                 <pre>{`<dependency>
   <groupId>io.github.seleniumboot</groupId>
   <artifactId>selenium-boot</artifactId>
-  <version>2.0.0</version>
+  <version>2.1.0</version>
 </dependency>`}</pre>
               </div>
             </div>

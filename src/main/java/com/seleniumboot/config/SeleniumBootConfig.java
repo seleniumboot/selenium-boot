@@ -194,6 +194,70 @@ public final class SeleniumBootConfig {
         public void setMaxActiveSessions(int maxActiveSessions) {
             this.maxActiveSessions = maxActiveSessions;
         }
+
+        private BrowserStack browserstack = new BrowserStack();
+        private SauceLabs    saucelabs    = new SauceLabs();
+
+        public BrowserStack getBrowserstack()                  { return browserstack; }
+        public void         setBrowserstack(BrowserStack v)    { this.browserstack = v; }
+        public SauceLabs    getSaucelabs()                     { return saucelabs; }
+        public void         setSaucelabs(SauceLabs v)          { this.saucelabs = v; }
+
+        public static final class BrowserStack {
+            private String  username;
+            private String  accessKey;
+            private String  os;
+            private String  osVersion;
+            private String  browser        = "chrome";
+            private String  browserVersion = "latest";
+            private String  device;
+            private boolean realMobile     = true;
+            private java.util.Map<String, Object> capabilities = new java.util.LinkedHashMap<>();
+
+            public String  getUsername()              { return username; }
+            public void    setUsername(String v)      { this.username = v; }
+            public String  getAccessKey()             { return accessKey; }
+            public void    setAccessKey(String v)     { this.accessKey = v; }
+            public String  getOs()                    { return os; }
+            public void    setOs(String v)            { this.os = v; }
+            public String  getOsVersion()             { return osVersion; }
+            public void    setOsVersion(String v)     { this.osVersion = v; }
+            public String  getBrowser()               { return browser; }
+            public void    setBrowser(String v)       { this.browser = v; }
+            public String  getBrowserVersion()        { return browserVersion; }
+            public void    setBrowserVersion(String v){ this.browserVersion = v; }
+            public String  getDevice()                { return device; }
+            public void    setDevice(String v)        { this.device = v; }
+            public boolean isRealMobile()             { return realMobile; }
+            public void    setRealMobile(boolean v)   { this.realMobile = v; }
+            public java.util.Map<String, Object> getCapabilities() { return capabilities; }
+            public void setCapabilities(java.util.Map<String, Object> v) { this.capabilities = v != null ? v : new java.util.LinkedHashMap<>(); }
+        }
+
+        public static final class SauceLabs {
+            private String  username;
+            private String  accessKey;
+            private String  region         = "us-west-1";
+            private String  platformName   = "Windows 11";
+            private String  browser        = "chrome";
+            private String  browserVersion = "latest";
+            private java.util.Map<String, Object> capabilities = new java.util.LinkedHashMap<>();
+
+            public String  getUsername()              { return username; }
+            public void    setUsername(String v)      { this.username = v; }
+            public String  getAccessKey()             { return accessKey; }
+            public void    setAccessKey(String v)     { this.accessKey = v; }
+            public String  getRegion()                { return region; }
+            public void    setRegion(String v)        { this.region = v; }
+            public String  getPlatformName()          { return platformName; }
+            public void    setPlatformName(String v)  { this.platformName = v; }
+            public String  getBrowser()               { return browser; }
+            public void    setBrowser(String v)       { this.browser = v; }
+            public String  getBrowserVersion()        { return browserVersion; }
+            public void    setBrowserVersion(String v){ this.browserVersion = v; }
+            public java.util.Map<String, Object> getCapabilities() { return capabilities; }
+            public void setCapabilities(java.util.Map<String, Object> v) { this.capabilities = v != null ? v : new java.util.LinkedHashMap<>(); }
+        }
     }
 
     public static final class Retry {

@@ -22,6 +22,9 @@ public final class DriverManager {
 
     private static final ThreadLocal<WebDriver> DRIVER = ThreadLocal.withInitial(() -> null);
 
+    /** Session dashboard URL set after driver creation for cloud providers (BrowserStack / Sauce Labs). */
+    private static final ThreadLocal<String> CLOUD_SESSION_URL = ThreadLocal.withInitial(() -> null);
+
     /**
      * Stack of named-session driver overrides pushed by {@code MultiSessionManager.withSession()}.
      * When non-empty, {@code getDriver()} returns the top of the stack instead of the primary driver.
@@ -129,6 +132,19 @@ public final class DriverManager {
 
             DRIVER.set(driver);
 
+            // Capture cloud session URL for BrowserStack / Sauce Labs
+            try {
+                String mode = SeleniumBootContext.getConfig().getExecution().getMode();
+                if (driver instanceof org.openqa.selenium.remote.RemoteWebDriver rdw) {
+                    String sessionId = rdw.getSessionId().toString();
+                    if ("browserstack".equalsIgnoreCase(mode)) {
+                        CLOUD_SESSION_URL.set(BrowserStackProvider.SESSION_URL_PREFIX + sessionId);
+                    } else if ("saucelabs".equalsIgnoreCase(mode)) {
+                        CLOUD_SESSION_URL.set(SauceLabsProvider.SESSION_URL_PREFIX + sessionId);
+                    }
+                }
+            } catch (Exception ignored) {}
+
             // Register in suite-driver registry when lifecycle is per-suite
             if (isPerSuite()) {
                 SUITE_DRIVERS.add(driver);
@@ -170,6 +186,15 @@ public final class DriverManager {
      * Pops the topmost named-session driver from the override stack.
      * After popping, {@link #getDriver()} returns the driver that was active before the push.
      */
+    /**
+     * Returns the cloud session dashboard URL (BrowserStack or Sauce Labs) for the
+     * current thread's driver, or {@code null} when running locally or against a
+     * custom Selenium Grid.
+     */
+    public static String getCloudSessionUrl() {
+        return CLOUD_SESSION_URL.get();
+    }
+
     public static void popSessionOverride() {
         java.util.Deque<WebDriver> stack = SESSION_STACK.get();
         if (!stack.isEmpty()) stack.pop();
@@ -270,6 +295,7 @@ public final class DriverManager {
             System.err.println("[Selenium Boot] Driver quit failed: " + e.getMessage());
         } finally {
             DRIVER.remove();
+            CLOUD_SESSION_URL.remove();
         }
 
         System.out.println("[Selenium Boot] Active sessions: " + activeSessions());

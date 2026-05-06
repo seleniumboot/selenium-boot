@@ -20,6 +20,14 @@ public final class DriverProviderFactory {
             return new RemoteDriverProvider();
         }
 
+        if ("browserstack".equalsIgnoreCase(executionMode)) {
+            return new BrowserStackProvider();
+        }
+
+        if ("saucelabs".equalsIgnoreCase(executionMode)) {
+            return new SauceLabsProvider();
+        }
+
         // Custom providers registered via SPI or programmatically take precedence
         DriverProvider custom = DriverProviderRegistry.find(browser);
         if (custom != null) {

@@ -279,6 +279,7 @@ public final class HtmlReportGenerator {
         String stackTrace    = test.has("stackTrace")    ? test.get("stackTrace").asText()    : null;
         String recordingPath = test.has("recordingPath") ? test.get("recordingPath").asText() : null;
         String tracePath     = test.has("tracePath")     ? test.get("tracePath").asText()     : null;
+        String sessionUrl    = test.has("sessionUrl")    ? test.get("sessionUrl").asText()    : null;
         int    healedCount   = test.has("healedCount")   ? test.get("healedCount").asInt()    : 0;
         String aiAnalysis    = test.has("aiAnalysis")    ? test.get("aiAnalysis").asText()    : null;
         String browser     = test.has("browser")      ? capitalize(test.get("browser").asText()) : "";
@@ -303,6 +304,7 @@ public final class HtmlReportGenerator {
             String traceHtml     = stackTrace    != null ? "<pre class=\"stack-trace\">"    + escapeHtml(stackTrace) + "</pre>" : "";
             String recordingHtml = recordingPath != null ? buildRecordingCell(recordingPath) : "";
             String traceLink     = tracePath     != null ? buildTraceLink(tracePath) : "";
+            String sessionLink   = sessionUrl    != null ? buildSessionLink(sessionUrl) : "";
             String aiHtml        = aiAnalysis    != null ? buildAiAnalysisPanel(aiAnalysis) : "";
             String stepsSection = !stepsHtml.isEmpty()
                     ? "<div class=\"step-timeline-section\"><div class=\"step-timeline-header\">Steps (" + test.get("steps").size() + ")</div>"
@@ -311,7 +313,7 @@ public final class HtmlReportGenerator {
             String detailDisplay = collapsed ? " style=\"display:none\"" : "";
             detailRow = "<tr class=\"detail-row group-member\" data-group=\"" + groupKey + "\" id=\"detail-" + rowIndex + "\"" + detailDisplay + ">"
                     + "<td colspan=\"" + colspan + "\"><div class=\"detail-panel\">"
-                    + traceLink + stepsSection + recordingHtml + aiHtml + errorHtml + traceHtml
+                    + sessionLink + traceLink + stepsSection + recordingHtml + aiHtml + errorHtml + traceHtml
                     + "</div></td>"
                     + "</tr>";
         }
@@ -483,6 +485,12 @@ public final class HtmlReportGenerator {
         }
         sb.append("  </div>\n</div>\n");
         return sb.toString();
+    }
+
+    private static String buildSessionLink(String url) {
+        return "<div class=\"trace-link-section\">"
+                + "<a href=\"" + escapeHtml(url) + "\" target=\"_blank\" class=\"trace-link\">"
+                + "&#x2601; View Session</a></div>";
     }
 
     private static String buildTraceLink(String tracePath) {
