@@ -64,6 +64,8 @@ No `WebDriver` setup. No `@AfterMethod` teardown. No wait helpers. No retry conf
 | **AI failure analysis** | Claude explains why a test failed and suggests a fix |
 | **Self-healing locators** | Automatic fallback strategies when a locator fails |
 | **Flakiness prediction** | Risk scores from run history, radar chart in report |
+| **External test data** | `@TestData("csv:...")`, `@TestData(value="excel:...", sheet="Login")`, `@TestData("db:SELECT...")` |
+| **Clock mocking** | `clock().set("2030-01-01T00:00:00Z")` — JS `Date` override, auto-reset after each test |
 
 ---
 

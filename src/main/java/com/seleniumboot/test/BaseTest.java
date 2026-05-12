@@ -1,6 +1,7 @@
 package com.seleniumboot.test;
 
 import com.seleniumboot.api.SeleniumBootApi;
+import com.seleniumboot.clock.TestClock;
 import com.seleniumboot.assertion.LocatorAssert;
 import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.assertion.SoftAssertionCollector;
@@ -307,6 +308,26 @@ public abstract class BaseTest {
      */
     protected EmailCriteria to(String address) {
         return EmailCriteria.to(address);
+    }
+
+    // ----------------------------------------------------------
+    // Phase 21 — Clock Mocking
+    // ----------------------------------------------------------
+
+    /**
+     * Returns a {@link TestClock} that controls the browser's perception of time.
+     * Call after {@link #open()} so the page is loaded before injecting the mock.
+     *
+     * <pre>
+     * clock().set("2030-06-01T00:00:00Z");
+     * open("/dashboard");
+     * assertThat(By.id("trial-banner")).hasText("Your trial expired 30 days ago");
+     * </pre>
+     *
+     * The clock is reset automatically at the end of each test.
+     */
+    protected TestClock clock() {
+        return TestClock.create();
     }
 
     private static final class ScenarioContextHolder {

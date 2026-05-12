@@ -64,6 +64,8 @@ const sidebars = {
     'cucumber',
     'email-verification',
     'cloud-execution',
+    'external-test-data',
+    'clock-mocking',
     'changelog',
   ],
 };

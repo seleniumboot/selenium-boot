@@ -23,6 +23,7 @@ import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.recording.RecordingManager;
 import com.seleniumboot.reporting.ScreenshotManager;
 import com.seleniumboot.email.MailboxClient;
+import com.seleniumboot.clock.TestClock;
 import com.seleniumboot.session.MultiSessionManager;
 import com.seleniumboot.steps.StepLogger;
 import com.seleniumboot.steps.StepStatus;
@@ -141,6 +142,7 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.markEnd(testId);
         saveTraceIfEnabled(testId, result.getMethod().getMethodName(), true);
         HookRegistry.onTestEnd(testId, "PASSED");
+        TestClock.autoReset();
         if (!skipBrowser(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         MultiSessionManager.clearAll();
         DbConnectionFactory.closeAll();
@@ -176,6 +178,7 @@ public final class TestExecutionListener implements ITestListener {
         HookRegistry.onTestFailure(testId, result.getThrowable());
         String screenshotPath = skipBrowser(result) ? null : ScreenshotManager.capture(testName);
         ExecutionMetrics.recordScreenshot(testId, screenshotPath);
+        TestClock.autoReset();
         if (!skipBrowser(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         MultiSessionManager.clearAll();
         DbConnectionFactory.closeAll();
@@ -195,6 +198,7 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.recordStatus(testId, "SKIPPED");
         ExecutionMetrics.markEnd(testId);
         HookRegistry.onTestEnd(testId, "SKIPPED");
+        TestClock.autoReset();
         if (!skipBrowser(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         MultiSessionManager.clearAll();
         DbConnectionFactory.closeAll();
@@ -313,7 +317,9 @@ public final class TestExecutionListener implements ITestListener {
         }
         if (annotation != null) {
             com.seleniumboot.testdata.TestDataStore.set(
-                com.seleniumboot.testdata.TestDataLoader.load(annotation.value())
+                com.seleniumboot.testdata.TestDataLoader.load(
+                    annotation.value(), annotation.sheet(), annotation.row()
+                )
             );
         }
     }

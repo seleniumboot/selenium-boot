@@ -20,7 +20,7 @@ import java.util.Map;
  */
 public final class DbConnectionFactory {
 
-    static final String DEFAULT = "__default__";
+    public static final String DEFAULT = "__default__";
 
     private static final ThreadLocal<Map<String, Connection>> CONNECTIONS =
             ThreadLocal.withInitial(LinkedHashMap::new);

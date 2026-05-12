@@ -134,6 +134,11 @@ email:
     username: ${EMAIL_USER}
     password: ${EMAIL_PASS}
     folder:   INBOX
+
+# ── Clock Mocking ────────────────────────────────────────────────────────────
+clock:
+  injectHeader: false      # send X-Mock-Date header to server
+  headerName: X-Mock-Date
 ```
 
 ---

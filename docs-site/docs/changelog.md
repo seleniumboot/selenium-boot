@@ -10,6 +10,25 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [2.2.0] — 2026-05-12
+
+### Added
+- **External `@TestData` sources** — `@TestData` now accepts `csv:`, `excel:`, and `db:` prefixes in addition to the existing JSON/YAML files; `sheet` attribute selects an Excel worksheet; `row` attribute picks the zero-based data row (header excluded); type coercion applied automatically (integers, doubles, booleans); Apache POI required for Excel (add `poi-ooxml:5.2.5` to your project, optional dep)
+- **CSV source** — `@TestData("csv:testdata/logins.csv")` — RFC 4180 quoting support, built-in parser, no extra dependency
+- **Excel source** — `@TestData(value = "excel:testdata/users.xlsx", sheet = "Login")` — reads XLSX via Apache POI; cell type mapping (numeric → `long`/`double`, date-formatted → ISO string, boolean → `Boolean`)
+- **DB source** — `@TestData("db:SELECT username, password FROM test_users WHERE active=1")` — executes against the `database` config block; first result row loaded; participates in per-test connection lifecycle
+- **`TestClock`** — `clock().set("2030-01-01T00:00:00Z")` injects a JS `Date` override into the browser; `clock().advance(Duration.ofDays(30))` fast-forwards relative to the current mock; `clock().reset()` restores real time; all three available via `clock()` in `BaseTest` and `BaseJUnit5Test`; auto-reset called automatically after every test (pass, fail, skip)
+- `clock` config block: `clock.injectHeader` / `clock.headerName` for optional server-side date header propagation
+
+### Config
+```yaml
+clock:
+  injectHeader: false      # send X-Mock-Date header to server
+  headerName: X-Mock-Date
+```
+
+---
+
 ## [2.1.0] — 2026-05-04
 
 ### Added

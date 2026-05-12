@@ -58,7 +58,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>2.1.0</version>
+    <version>2.2.0</version>
 </dependency>
 ```
 
@@ -623,6 +623,11 @@ ci:
 ---
 
 ## Project Status
+
+### v2.2.0 — 2026-05-12
+
+- **External `@TestData` sources** — `@TestData("csv:testdata/logins.csv")` (built-in parser), `@TestData(value="excel:testdata/users.xlsx", sheet="Login")` (Apache POI optional dep), `@TestData("db:SELECT username, password FROM test_users LIMIT 1")` (JDBC via `database` config); `row` attribute selects zero-based data row (header excluded); type coercion: integers, doubles, booleans
+- **`TestClock`** — `clock().set("2030-01-01T00:00:00Z")` injects a JS `Date` override into the browser; `clock().advance(Duration.ofDays(30))` fast-forwards from current mock; `clock().reset()` restores real time; auto-reset after every test (no cleanup needed); available via `clock()` in `BaseTest` and `BaseJUnit5Test`
 
 ### v2.1.0 — 2026-05-04
 

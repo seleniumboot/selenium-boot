@@ -597,6 +597,20 @@ public final class SeleniumBootConfig {
         public void setMaxPerTest(int v)   { this.maxPerTest = v; }
     }
 
+    private Clock clock;
+    public Clock getClock() { return clock; }
+    public void setClock(Clock clock) { this.clock = clock; }
+
+    public static final class Clock {
+        private boolean injectHeader = false;
+        private String  headerName   = "X-Mock-Date";
+
+        public boolean isInjectHeader()              { return injectHeader; }
+        public void    setInjectHeader(boolean v)    { this.injectHeader = v; }
+        public String  getHeaderName()               { return headerName; }
+        public void    setHeaderName(String v)       { this.headerName = v; }
+    }
+
     private Database database;
     public Database getDatabase() { return database; }
     public void setDatabase(Database database) { this.database = database; }

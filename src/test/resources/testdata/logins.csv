@@ -1,0 +1,4 @@
+username,password,role,active
+admin,secret,ADMIN,true
+user1,pass1,USER,true
+user2,pass2,USER,false
