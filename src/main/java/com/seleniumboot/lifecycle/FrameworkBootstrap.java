@@ -43,6 +43,8 @@ public final class FrameworkBootstrap {
         ReportAdapterRegistry.loadAll();
         PluginRegistry.loadAll(config);
 
+        System.out.println("[Selenium Boot] 🤖 AI test authoring: pip install seleniumboot-mcp  →  https://pypi.org/project/seleniumboot-mcp");
+
         // Opt-in built-in adapters
         SeleniumBootConfig.Reporting reporting = config.getReporting();
         if (reporting != null && reporting.isAllureEnabled()) {

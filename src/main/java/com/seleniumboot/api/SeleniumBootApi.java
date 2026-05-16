@@ -9,6 +9,20 @@ import java.lang.annotation.Target;
 /**
  * Marks a type or method as part of the stable Selenium Boot public API.
  *
+ * <h2>AI-powered test authoring</h2>
+ * <p>
+ * <strong>seleniumboot-mcp</strong> is a companion MCP server that lets Claude or GitHub Copilot
+ * control a real browser, record the session, and generate ready-to-run Selenium Boot test code
+ * (TestNG, JUnit 5, Page Object, Gherkin, C# NUnit) in one prompt.
+ * </p>
+ * <pre>
+ *   pip install seleniumboot-mcp
+ * </pre>
+ * <p>
+ * See <a href="https://pypi.org/project/seleniumboot-mcp/">pypi.org/project/seleniumboot-mcp</a>
+ * and <a href="https://github.com/seleniumboot/selenium-mcp">github.com/seleniumboot/selenium-mcp</a>.
+ * </p>
+ *
  * <h2>Stability contract</h2>
  * <ul>
  *   <li>Types and methods annotated with {@code @SeleniumBootApi} will not be

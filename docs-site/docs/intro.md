@@ -37,6 +37,21 @@ No `WebDriver` setup. No `@AfterMethod` teardown. No wait helpers. No retry conf
 
 ---
 
+:::tip AI-powered test authoring
+**seleniumboot-mcp** lets Claude or GitHub Copilot control a real browser, record your session, and
+generate Selenium Boot test code — TestNG, JUnit 5, Page Object, Gherkin, C# NUnit — in one prompt.
+
+```bash
+pip install seleniumboot-mcp
+```
+
+76 tools · self-healing locators · mobile emulation · codegen for Java / Python / C# / Playwright
+
+[PyPI](https://pypi.org/project/seleniumboot-mcp/) · [GitHub](https://github.com/seleniumboot/selenium-mcp)
+:::
+
+---
+
 ## What you get out of the box
 
 | Feature | Details |

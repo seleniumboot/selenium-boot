@@ -9,6 +9,15 @@
 
 ---
 
+> **AI-powered test authoring for Selenium Boot users**
+> Use **seleniumboot-mcp** to let Claude / GitHub Copilot control a real browser, record your session, and generate ready-to-run Selenium Boot test code — TestNG, JUnit 5, Page Object, Gherkin, or C# NUnit.
+> ```
+> pip install seleniumboot-mcp
+> ```
+> [PyPI](https://pypi.org/project/seleniumboot-mcp/) · [GitHub](https://github.com/seleniumboot/selenium-mcp) · 76 tools · self-healing locators · codegen for Java / Python / C# / Playwright
+
+---
+
 ## Overview
 
 Selenium Boot is a zero-boilerplate, production-ready automation framework for Java Selenium, inspired by the philosophy of Spring Boot.

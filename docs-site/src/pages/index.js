@@ -87,6 +87,11 @@ const features = [
     title: 'Extensible via SPI',
     description: 'Java ServiceLoader plugin system. Register custom driver providers, report adapters (Allure, Slack, Teams), and lifecycle hooks — zero framework code changes needed.',
   },
+  {
+    icon: '🤖',
+    title: 'AI Test Authoring (MCP)',
+    description: 'seleniumboot-mcp lets Claude or GitHub Copilot control a real browser, record the session, and generate Selenium Boot test code in one prompt. pip install seleniumboot-mcp',
+  },
 ];
 
 const stats = [
