@@ -67,7 +67,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>2.2.0</version>
+    <version>2.3.0</version>
 </dependency>
 ```
 
@@ -632,6 +632,10 @@ ci:
 ---
 
 ## Project Status
+
+### v2.3.0 — 2026-05-17
+
+- **Test Quarantine** — `selenium-quarantine.yml` committed to the repo lists tests to skip; survives fresh CI clones; plain string or structured-with-reason format; class-only entry skips all methods in the class; Cucumber support via `@quarantine` tag; `quarantine.enabled: false` disables without editing the file
 
 ### v2.2.0 — 2026-05-12
 

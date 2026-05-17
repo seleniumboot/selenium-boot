@@ -597,6 +597,22 @@ public final class SeleniumBootConfig {
         public void setMaxPerTest(int v)   { this.maxPerTest = v; }
     }
 
+    private Quarantine quarantine;
+    public Quarantine getQuarantine() { return quarantine; }
+    public void setQuarantine(Quarantine quarantine) { this.quarantine = quarantine; }
+
+    public static final class Quarantine {
+        private boolean enabled      = true;
+        private String  cucumberTag  = "quarantine";
+
+        public boolean isEnabled()              { return enabled; }
+        public void    setEnabled(boolean v)    { this.enabled = v; }
+
+        /** Tag name to look for in Cucumber {@code .feature} files (without the {@code @} prefix). */
+        public String  getCucumberTag()         { return cucumberTag; }
+        public void    setCucumberTag(String v) { this.cucumberTag = v != null ? v : "quarantine"; }
+    }
+
     private Clock clock;
     public Clock getClock() { return clock; }
     public void setClock(Clock clock) { this.clock = clock; }

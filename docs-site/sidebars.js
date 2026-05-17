@@ -66,6 +66,7 @@ const sidebars = {
     'cloud-execution',
     'external-test-data',
     'clock-mocking',
+    'quarantine',
     'changelog',
   ],
 };

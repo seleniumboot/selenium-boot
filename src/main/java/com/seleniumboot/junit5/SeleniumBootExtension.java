@@ -1,6 +1,7 @@
 package com.seleniumboot.junit5;
 
 import com.seleniumboot.ai.AiFailureAnalyzer;
+import com.seleniumboot.quarantine.QuarantineLoader;
 import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.browser.BrowserContext;
 import com.seleniumboot.browser.ConsoleErrorCollector;
@@ -89,6 +90,9 @@ public class SeleniumBootExtension
         ExecutionMetrics.markStart(testId);
         ExecutionMetrics.recordTestClass(testId, context.getRequiredTestClass().getSimpleName());
         ExecutionMetrics.recordDescription(testId, context.getDisplayName());
+
+        // Quarantine check — abort before any resource is allocated
+        checkQuarantine(context);
 
         boolean noBrowser = skipBrowser(context);
         if (!noBrowser) {
@@ -318,5 +322,19 @@ public class SeleniumBootExtension
         Method m = context.getRequiredTestMethod();
         return m.isAnnotationPresent(NoBrowser.class) ||
                context.getRequiredTestClass().isAnnotationPresent(NoBrowser.class);
+    }
+
+    private void checkQuarantine(ExtensionContext context) {
+        try {
+            SeleniumBootConfig.Quarantine cfg = SeleniumBootContext.getConfig().getQuarantine();
+            if (cfg != null && !cfg.isEnabled()) return;
+        } catch (Exception ignored) {}
+
+        String testId = testId(context);
+        if (QuarantineLoader.isQuarantined(testId)) {
+            org.junit.jupiter.api.Assumptions.abort(
+                "[Quarantined] " + testId + " — " + QuarantineLoader.getReason(testId)
+            );
+        }
     }
 }

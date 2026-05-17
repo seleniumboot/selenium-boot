@@ -24,6 +24,7 @@ import com.seleniumboot.recording.RecordingManager;
 import com.seleniumboot.reporting.ScreenshotManager;
 import com.seleniumboot.email.MailboxClient;
 import com.seleniumboot.clock.TestClock;
+import com.seleniumboot.quarantine.QuarantineLoader;
 import com.seleniumboot.session.MultiSessionManager;
 import com.seleniumboot.steps.StepLogger;
 import com.seleniumboot.steps.StepStatus;
@@ -78,6 +79,9 @@ public final class TestExecutionListener implements ITestListener {
             BrowserContext.set(browserOverride);
             ExecutionMetrics.recordBrowser(testId, browserOverride);
         }
+        // Quarantine check — skip before any resource is allocated
+        checkQuarantine(result);
+
         // API health checks — skip immediately if a dependency is down,
         // before creating a browser session so no resources are wasted.
         checkApiDependencies(result);
@@ -208,6 +212,24 @@ public final class TestExecutionListener implements ITestListener {
         BrowserContext.clear();
         SoftAssertions.clear();
         SeleniumBootContext.clearCurrentTestId();
+    }
+
+    private void checkQuarantine(ITestResult result) {
+        try {
+            com.seleniumboot.config.SeleniumBootConfig.Quarantine cfg =
+                    SeleniumBootContext.getConfig().getQuarantine();
+            if (cfg != null && !cfg.isEnabled()) return;
+        } catch (Exception ignored) {}
+
+        String className  = result.getTestClass().getRealClass().getName();
+        String methodName = result.getMethod().getMethodName();
+        String testId     = className + "#" + methodName;
+
+        if (QuarantineLoader.isQuarantined(testId)) {
+            throw new org.testng.SkipException(
+                "[Quarantined] " + testId + " — " + QuarantineLoader.getReason(testId)
+            );
+        }
     }
 
     private void checkApiDependencies(ITestResult result) {

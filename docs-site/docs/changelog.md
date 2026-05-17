@@ -10,6 +10,32 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [2.3.0] — 2026-05-17
+
+### Added
+- **Test Quarantine** — `selenium-quarantine.yml` in the project root lists tests to skip permanently; committed to version control so it survives fresh CI clones; supports TestNG, JUnit 5, and Cucumber; two entry formats: plain string (`com.example.LoginTest#method`) and structured with optional reason (`test: …\nreason: "JIRA-123"`)
+- **Class-level quarantine** — a class-only entry (`com.example.PaymentTest`) skips every method in that class
+- **Cucumber quarantine — two methods**: (1) add `@quarantine` tag to a scenario in the `.feature` file; (2) list entries in `selenium-quarantine.yml` using any of three formats: by Cucumber tag (`"@smoke"` — bulk across all features carrying that tag), by feature file (`login.feature` — all scenarios in the file), or by feature+name (`"login.feature#Login with expired session"` — specific scenario without editing the feature file)
+- **`quarantine.enabled`** flag — set to `false` to temporarily run the full suite without removing entries from the file
+- **File resolution** — system property `-Dselenium.boot.quarantine=`, working directory, classpath (in that order); missing file = silent no-op
+
+### Config
+```yaml
+quarantine:
+  enabled: true           # false = disable without editing the file
+  cucumberTag: quarantine # Cucumber tag name (without @)
+```
+
+```yaml title="selenium-quarantine.yml"
+quarantine:
+  - com.example.tests.LoginTest#loginWithExpiredSession
+  - com.example.tests.PaymentTest                        # entire class
+  - test: com.example.tests.SearchTest#searchSpecial
+    reason: "JIRA-1234 — Unicode handling broken"
+```
+
+---
+
 ## [2.2.0] — 2026-05-12
 
 ### Added

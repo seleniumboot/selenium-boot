@@ -1,0 +1,11 @@
+quarantine:
+  # Plain string entries
+  - com.example.LoginTest#loginWithExpiredSession
+  - com.example.PaymentTest
+
+  # Structured entry with reason
+  - test: com.example.SearchTest#searchWithSpecialChars
+    reason: "Unicode handling broken — JIRA-1234"
+
+  # Structured entry without reason (falls back to generic message)
+  - test: com.example.CheckoutTest#checkoutWithSlowNetwork

@@ -1,6 +1,7 @@
 package com.seleniumboot.cucumber;
 
 import com.seleniumboot.browser.BrowserContext;
+import com.seleniumboot.quarantine.QuarantineLoader;
 import com.seleniumboot.browser.ConsoleErrorCollector;
 import com.seleniumboot.client.ApiClient;
 import com.seleniumboot.context.ScenarioContext;
@@ -50,6 +51,9 @@ public class CucumberHooks {
     public void beforeScenario(Scenario scenario) {
         // 1. Ensure framework is bootstrapped (idempotent)
         FrameworkBootstrap.initialize();
+
+        // 2. Quarantine check — skip before creating any browser session
+        checkCucumberQuarantine(scenario);
 
         // 2. Derive a unique, readable testId for this scenario
         String testId = buildTestId(scenario);
@@ -210,6 +214,40 @@ public class CucumberHooks {
         }
         // No @retryable tag — clear any leftover from a prior scenario on this thread
         CucumberRetryContext.clear();
+    }
+
+    private static void checkCucumberQuarantine(Scenario scenario) {
+        try {
+            com.seleniumboot.config.SeleniumBootConfig.Quarantine cfg =
+                    SeleniumBootContext.getConfig().getQuarantine();
+            if (cfg != null && !cfg.isEnabled()) return;
+
+            // ── 1. In-file tag check (user adds @quarantine to the scenario) ──
+            String configuredTag = (cfg != null && cfg.getCucumberTag() != null)
+                    ? cfg.getCucumberTag() : "quarantine";
+            for (String t : scenario.getSourceTagNames()) {
+                String normalized = t.startsWith("@") ? t.substring(1) : t;
+                if (normalized.equalsIgnoreCase(configuredTag)) {
+                    throw new org.testng.SkipException(
+                        "[Quarantined] " + scenario.getName() + " — @" + configuredTag + " tag present"
+                    );
+                }
+            }
+
+            // ── 2. YAML-based check (tag, feature file, or feature#scenario entries) ──
+            String featureUri    = scenario.getUri() != null ? scenario.getUri().toString() : "";
+            String scenarioName  = scenario.getName() != null ? scenario.getName() : "";
+            java.util.Collection<String> tags = scenario.getSourceTagNames();
+
+            if (QuarantineLoader.isQuarantinedScenario(tags, featureUri, scenarioName)) {
+                throw new org.testng.SkipException(
+                    "[Quarantined] " + scenarioName + " — "
+                    + QuarantineLoader.getScenarioReason(tags, featureUri, scenarioName)
+                );
+            }
+        } catch (org.testng.SkipException e) {
+            throw e;
+        } catch (Exception ignored) {}
     }
 
     private void safeQuitDriver() {
