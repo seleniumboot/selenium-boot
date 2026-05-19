@@ -92,6 +92,11 @@ public final class ExecutionMetrics {
         TIMINGS.computeIfPresent(testId, (k, v) -> { v.setTracePath(path); return v; });
     }
 
+    public static void recordPerformance(String testId, com.seleniumboot.performance.PerformanceMetrics metrics) {
+        if (metrics == null) return;
+        TIMINGS.computeIfPresent(testId, (k, v) -> { v.setPerformanceMetrics(metrics); return v; });
+    }
+
     public static void recordSessionUrl(String testId, String url) {
         if (url == null) return;
         TIMINGS.computeIfPresent(testId, (k, v) -> { v.setSessionUrl(url); return v; });

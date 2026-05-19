@@ -112,6 +112,10 @@ public class TestTiming {
     public String getSessionUrl()             { return sessionUrl; }
     public void   setSessionUrl(String v)     { this.sessionUrl = v; }
 
+    private com.seleniumboot.performance.PerformanceMetrics performanceMetrics;
+    public com.seleniumboot.performance.PerformanceMetrics getPerformanceMetrics()  { return performanceMetrics; }
+    public void setPerformanceMetrics(com.seleniumboot.performance.PerformanceMetrics v) { this.performanceMetrics = v; }
+
     private final java.util.List<com.seleniumboot.steps.StepRecord> steps =
             new java.util.concurrent.CopyOnWriteArrayList<>();
 

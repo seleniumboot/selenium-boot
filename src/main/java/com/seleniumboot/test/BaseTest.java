@@ -2,6 +2,9 @@ package com.seleniumboot.test;
 
 import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.clock.TestClock;
+import com.seleniumboot.performance.PerformanceAssert;
+import com.seleniumboot.performance.PerformanceCollector;
+import com.seleniumboot.performance.PerformanceMetrics;
 import com.seleniumboot.assertion.LocatorAssert;
 import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.assertion.SoftAssertionCollector;
@@ -308,6 +311,43 @@ public abstract class BaseTest {
      */
     protected EmailCriteria to(String address) {
         return EmailCriteria.to(address);
+    }
+
+    // ----------------------------------------------------------
+    // Phase 23 — Performance Assertions (Core Web Vitals)
+    // ----------------------------------------------------------
+
+    /**
+     * Collects Core Web Vitals from the active browser page and returns a fluent
+     * assertion builder. Call after {@link #open()} once the page has loaded.
+     *
+     * <pre>
+     * open("/dashboard");
+     *
+     * assertPerformance()
+     *     .lcp().isBelow(2500)    // Largest Contentful Paint &lt; 2.5 s
+     *     .fcp().isBelow(1800)    // First Contentful Paint &lt; 1.8 s
+     *     .ttfb().isBelow(600)    // Time To First Byte &lt; 600 ms
+     *     .cls().isBelow(0.1);    // Cumulative Layout Shift &lt; 0.1
+     * </pre>
+     *
+     * LCP and CLS are available on Chrome/Edge only. On other browsers those
+     * assertions are silently skipped (not failed).
+     */
+    protected PerformanceAssert assertPerformance() {
+        return PerformanceAssert.of(PerformanceCollector.collect());
+    }
+
+    /**
+     * Collects and returns raw Core Web Vitals for custom inspection or assertions.
+     *
+     * <pre>
+     * PerformanceMetrics perf = collectPerformance();
+     * Assert.assertTrue(perf.lcp() &lt; 3000, "LCP regression detected: " + perf.lcp() + "ms");
+     * </pre>
+     */
+    protected PerformanceMetrics collectPerformance() {
+        return PerformanceCollector.collect();
     }
 
     // ----------------------------------------------------------

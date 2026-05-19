@@ -67,7 +67,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>2.3.0</version>
+    <version>2.4.0</version>
 </dependency>
 ```
 
@@ -632,6 +632,10 @@ ci:
 ---
 
 ## Project Status
+
+### v2.4.0 — 2026-05-19
+
+- **Performance Assertions** — `assertPerformance().lcp().isBelow(2500).fcp().isBelow(1800).ttfb().isBelow(600).cls().isBelow(0.1)` — Core Web Vitals via browser-native `window.performance` API, no extra tool needed; LCP/CLS Chrome/Edge only, others all browsers; unavailable metrics silently skipped; `performance.captureOnEveryTest: true` shows ⚡ metrics strip in HTML report
 
 ### v2.3.0 — 2026-05-17
 

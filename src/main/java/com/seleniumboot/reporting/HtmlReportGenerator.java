@@ -295,9 +295,13 @@ public final class HtmlReportGenerator {
                   + " locator(s) auto-healed\">&#x26A0; healed</span> "
                 : "";
 
+        com.fasterxml.jackson.databind.JsonNode perfNode =
+                test.has("performanceMetrics") && !test.get("performanceMetrics").isNull()
+                ? test.get("performanceMetrics") : null;
+
         String stepsHtml   = buildStepTimeline(test);
         boolean hasDetail  = errorMsg != null || stackTrace != null || !stepsHtml.isEmpty()
-                             || recordingPath != null || aiAnalysis != null;
+                             || recordingPath != null || aiAnalysis != null || perfNode != null;
         String detailRow   = "";
         if (hasDetail) {
             String errorHtml     = errorMsg      != null ? "<div class=\"error-msg\">"      + escapeHtml(errorMsg)   + "</div>" : "";
@@ -306,6 +310,7 @@ public final class HtmlReportGenerator {
             String traceLink     = tracePath     != null ? buildTraceLink(tracePath) : "";
             String sessionLink   = sessionUrl    != null ? buildSessionLink(sessionUrl) : "";
             String aiHtml        = aiAnalysis    != null ? buildAiAnalysisPanel(aiAnalysis) : "";
+            String perfHtml      = perfNode      != null ? buildPerformancePanel(perfNode) : "";
             String stepsSection = !stepsHtml.isEmpty()
                     ? "<div class=\"step-timeline-section\"><div class=\"step-timeline-header\">Steps (" + test.get("steps").size() + ")</div>"
                       + "<div class=\"step-timeline\">" + stepsHtml + "</div></div>"
@@ -313,7 +318,7 @@ public final class HtmlReportGenerator {
             String detailDisplay = collapsed ? " style=\"display:none\"" : "";
             detailRow = "<tr class=\"detail-row group-member\" data-group=\"" + groupKey + "\" id=\"detail-" + rowIndex + "\"" + detailDisplay + ">"
                     + "<td colspan=\"" + colspan + "\"><div class=\"detail-panel\">"
-                    + sessionLink + traceLink + stepsSection + recordingHtml + aiHtml + errorHtml + traceHtml
+                    + perfHtml + sessionLink + traceLink + stepsSection + recordingHtml + aiHtml + errorHtml + traceHtml
                     + "</div></td>"
                     + "</tr>";
         }
@@ -446,6 +451,55 @@ public final class HtmlReportGenerator {
         // Fallback: show path
         return "<div class=\"recording-section\"><span class=\"recording-label\">&#x1F3A5; Recording:</span> "
                 + "<span class=\"recording-path\">" + escapeHtml(recordingPath) + "</span></div>";
+    }
+
+    private static String buildPerformancePanel(com.fasterxml.jackson.databind.JsonNode perf) {
+        double lcp     = perf.has("lcp")      ? perf.get("lcp").asDouble(-1)      : -1;
+        double fcp     = perf.has("fcp")      ? perf.get("fcp").asDouble(-1)      : -1;
+        double ttfb    = perf.has("ttfb")     ? perf.get("ttfb").asDouble(-1)     : -1;
+        double cls     = perf.has("cls")      ? perf.get("cls").asDouble(-1)      : -1;
+        double domLoad = perf.has("domLoad")  ? perf.get("domLoad").asDouble(-1)  : -1;
+        double pgLoad  = perf.has("pageLoad") ? perf.get("pageLoad").asDouble(-1) : -1;
+
+        // Return nothing if all metrics are unavailable
+        if (lcp < 0 && fcp < 0 && ttfb < 0 && cls < 0 && domLoad < 0 && pgLoad < 0) return "";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<div class=\"perf-metrics\"><span class=\"perf-label\">&#x26A1; Performance</span>");
+        if (lcp     >= 0) sb.append(perfChip("LCP",     formatMs(lcp),    lcpClass(lcp)));
+        if (fcp     >= 0) sb.append(perfChip("FCP",     formatMs(fcp),    fcpClass(fcp)));
+        if (ttfb    >= 0) sb.append(perfChip("TTFB",    formatMs(ttfb),   ttfbClass(ttfb)));
+        if (cls     >= 0) sb.append(perfChip("CLS",     String.format("%.3f", cls), clsClass(cls)));
+        if (domLoad >= 0) sb.append(perfChip("DOM",     formatMs(domLoad), "perf-na"));
+        if (pgLoad  >= 0) sb.append(perfChip("Load",    formatMs(pgLoad),  "perf-na"));
+        sb.append("</div>");
+        return sb.toString();
+    }
+
+    private static String perfChip(String label, String value, String cls) {
+        return "<span class=\"perf-chip " + cls + "\">" + label + " " + value + "</span>";
+    }
+
+    private static String formatMs(double ms) {
+        return ms >= 1000
+            ? String.format("%.2fs", ms / 1000)
+            : String.format("%.0fms", ms);
+    }
+
+    private static String lcpClass(double ms) {
+        return ms < 2500 ? "perf-good" : ms < 4000 ? "perf-warn" : "perf-bad";
+    }
+
+    private static String fcpClass(double ms) {
+        return ms < 1800 ? "perf-good" : ms < 3000 ? "perf-warn" : "perf-bad";
+    }
+
+    private static String ttfbClass(double ms) {
+        return ms < 800 ? "perf-good" : ms < 1800 ? "perf-warn" : "perf-bad";
+    }
+
+    private static String clsClass(double score) {
+        return score < 0.1 ? "perf-good" : score < 0.25 ? "perf-warn" : "perf-bad";
     }
 
     private static String buildAiAnalysisPanel(String analysis) {

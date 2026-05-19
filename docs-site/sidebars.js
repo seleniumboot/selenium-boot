@@ -67,6 +67,7 @@ const sidebars = {
     'external-test-data',
     'clock-mocking',
     'quarantine',
+    'performance',
     'changelog',
   ],
 };

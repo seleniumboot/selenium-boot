@@ -1,6 +1,7 @@
 package com.seleniumboot.junit5;
 
 import com.seleniumboot.ai.AiFailureAnalyzer;
+import com.seleniumboot.performance.PerformanceCollector;
 import com.seleniumboot.quarantine.QuarantineLoader;
 import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.browser.BrowserContext;
@@ -163,6 +164,7 @@ public class SeleniumBootExtension
                     }
                 }
 
+                capturePerformanceIfEnabled(testId, context);
                 ExecutionMetrics.recordStatus(testId, "PASSED");
                 ExecutionMetrics.markEnd(testId);
                 if (!noBrowser) {
@@ -322,6 +324,16 @@ public class SeleniumBootExtension
         Method m = context.getRequiredTestMethod();
         return m.isAnnotationPresent(NoBrowser.class) ||
                context.getRequiredTestClass().isAnnotationPresent(NoBrowser.class);
+    }
+
+    private void capturePerformanceIfEnabled(String testId, ExtensionContext context) {
+        try {
+            SeleniumBootConfig.Performance cfg = SeleniumBootContext.getConfig().getPerformance();
+            if (cfg == null || !cfg.isCaptureOnEveryTest()) return;
+            if (skipBrowser(context)) return;
+            com.seleniumboot.metrics.ExecutionMetrics.recordPerformance(
+                testId, PerformanceCollector.collect());
+        } catch (Exception ignored) {}
     }
 
     private void checkQuarantine(ExtensionContext context) {

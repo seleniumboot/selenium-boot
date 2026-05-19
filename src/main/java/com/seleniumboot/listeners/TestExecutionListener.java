@@ -24,6 +24,7 @@ import com.seleniumboot.recording.RecordingManager;
 import com.seleniumboot.reporting.ScreenshotManager;
 import com.seleniumboot.email.MailboxClient;
 import com.seleniumboot.clock.TestClock;
+import com.seleniumboot.performance.PerformanceCollector;
 import com.seleniumboot.quarantine.QuarantineLoader;
 import com.seleniumboot.session.MultiSessionManager;
 import com.seleniumboot.steps.StepLogger;
@@ -141,6 +142,7 @@ public final class TestExecutionListener implements ITestListener {
         }
         SoftAssertions.clear();
 
+        capturePerformanceIfEnabled(testId, result);
         RecordingManager.stop(); // discard frames — test passed
         ExecutionMetrics.recordStatus(testId, "PASSED");
         ExecutionMetrics.markEnd(testId);
@@ -308,14 +310,15 @@ public final class TestExecutionListener implements ITestListener {
     private ApiAuth resolveAuthStrategy(SeleniumBootConfig.Api.AuthStrategy s) {
         String type = s.getType();
         if (type == null) return null;
-        switch (type.toLowerCase()) {
-            case "bearer": return ApiAuth.bearerToken(resolveEnvVar(s.getToken()));
-            case "basic":  return ApiAuth.basicAuth(resolveEnvVar(s.getUsername()), resolveEnvVar(s.getPassword()));
-            case "oauth2": return ApiAuth.oauth2(resolveEnvVar(s.getTokenUrl()),
-                                                 resolveEnvVar(s.getClientId()),
-                                                 resolveEnvVar(s.getClientSecret()));
-            default: throw new IllegalArgumentException("[UseAuth] Unknown auth type: '" + type + "'. Use bearer, basic, or oauth2");
-        }
+        return switch (type.toLowerCase()) {
+            case "bearer" -> ApiAuth.bearerToken(resolveEnvVar(s.getToken()));
+            case "basic"  -> ApiAuth.basicAuth(resolveEnvVar(s.getUsername()), resolveEnvVar(s.getPassword()));
+            case "oauth2" -> ApiAuth.oauth2(resolveEnvVar(s.getTokenUrl()),
+                                            resolveEnvVar(s.getClientId()),
+                                            resolveEnvVar(s.getClientSecret()));
+            default       -> throw new IllegalArgumentException(
+                "[UseAuth] Unknown auth type: '" + type + "'. Use bearer, basic, or oauth2");
+        };
     }
 
     private String resolveEnvVar(String value) {
@@ -344,6 +347,16 @@ public final class TestExecutionListener implements ITestListener {
                 )
             );
         }
+    }
+
+    private void capturePerformanceIfEnabled(String testId, ITestResult result) {
+        try {
+            SeleniumBootConfig.Performance cfg = SeleniumBootContext.getConfig().getPerformance();
+            if (cfg == null || !cfg.isCaptureOnEveryTest()) return;
+            if (skipBrowser(result)) return;
+            com.seleniumboot.performance.PerformanceMetrics metrics = PerformanceCollector.collect();
+            ExecutionMetrics.recordPerformance(testId, metrics);
+        } catch (Exception ignored) {}
     }
 
     private void runAiAnalysisIfEnabled(String testId) {

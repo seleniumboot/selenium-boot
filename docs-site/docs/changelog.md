@@ -10,6 +10,28 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [2.4.0] — 2026-05-19
+
+### Added
+- **Performance Assertions (Core Web Vitals)** — `assertPerformance()` collects LCP, FCP, TTFB, CLS, DOM load, and page load from the active browser page using browser-native APIs (`window.performance.getEntriesByType()`); no extra dependency or proxy required
+- Fluent assertion chain: `.lcp().isBelow(2500).fcp().isBelow(1800).ttfb().isBelow(600).cls().isBelow(0.1)` with colour-coded error messages showing actual vs threshold values
+- `collectPerformance()` — raw `PerformanceMetrics` access for custom assertions or logging
+- LCP/CLS available on Chrome/Edge only; assertions on unavailable metrics are silently skipped (not failed), enabling cross-browser test suites
+- `performance.captureOnEveryTest: true` — auto-captures metrics after every passing test; ⚡ Performance strip with green/yellow/red chips shown in the HTML report test detail panel
+- `PerformanceAssert`, `PerformanceMetrics`, `PerformanceCollector` all available via `clock()` pattern in `BaseTest` and `BaseJUnit5Test`
+
+### Config
+```yaml
+performance:
+  captureOnEveryTest: false   # show metrics in HTML report for every test
+  lcpWarnMs:  2500
+  fcpWarnMs:  1800
+  ttfbWarnMs: 800
+  clsWarn:    0.1
+```
+
+---
+
 ## [2.3.0] — 2026-05-17
 
 ### Added

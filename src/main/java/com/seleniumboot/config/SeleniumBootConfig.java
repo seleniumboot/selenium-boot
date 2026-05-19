@@ -597,6 +597,29 @@ public final class SeleniumBootConfig {
         public void setMaxPerTest(int v)   { this.maxPerTest = v; }
     }
 
+    private Performance performance;
+    public Performance getPerformance() { return performance; }
+    public void setPerformance(Performance performance) { this.performance = performance; }
+
+    public static final class Performance {
+        private boolean captureOnEveryTest = false;
+        private double  lcpWarnMs          = 0;   // 0 = disabled
+        private double  fcpWarnMs          = 0;
+        private double  ttfbWarnMs         = 0;
+        private double  clsWarn            = 0;
+
+        public boolean isCaptureOnEveryTest()                { return captureOnEveryTest; }
+        public void    setCaptureOnEveryTest(boolean v)      { this.captureOnEveryTest = v; }
+        public double  getLcpWarnMs()                        { return lcpWarnMs; }
+        public void    setLcpWarnMs(double v)                { this.lcpWarnMs = v; }
+        public double  getFcpWarnMs()                        { return fcpWarnMs; }
+        public void    setFcpWarnMs(double v)                { this.fcpWarnMs = v; }
+        public double  getTtfbWarnMs()                       { return ttfbWarnMs; }
+        public void    setTtfbWarnMs(double v)               { this.ttfbWarnMs = v; }
+        public double  getClsWarn()                          { return clsWarn; }
+        public void    setClsWarn(double v)                  { this.clsWarn = v; }
+    }
+
     private Quarantine quarantine;
     public Quarantine getQuarantine() { return quarantine; }
     public void setQuarantine(Quarantine quarantine) { this.quarantine = quarantine; }
