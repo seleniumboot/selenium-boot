@@ -42,6 +42,7 @@ It eliminates repetitive boilerplate by providing sensible defaults, a standardi
 - `DownloadManager` — poll download directory, handle partial files
 - `StepLogger` — named test steps with timestamps and per-step screenshots
 - **API testing** — `BaseApiTest` for pure API tests; fluent `ApiClient` with auth, schema validation, JSONPath; hybrid UI + API tests in the same suite
+- **Accessibility assertions** — `accessibility().withTags("wcag2a","wcag21aa").withLevel(Impact.SERIOUS).run()` — axe-core bundled in JAR, no extra dependency; scoped scans, exclude selectors, fluent `Impact` level filter
 - Plugin system — custom browser providers, report adapters, lifecycle hooks via Java SPI
 - CI-ready — auto-detects GitHub Actions, Jenkins, CircleCI; forces headless, emits JUnit XML
 
@@ -67,7 +68,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>2.4.0</version>
+    <version>2.6.0</version>
 </dependency>
 ```
 
@@ -632,6 +633,14 @@ ci:
 ---
 
 ## Project Status
+
+### v2.6.0 — 2026-06-20
+
+- **Gradle Build Support** — `testImplementation 'io.github.seleniumboot:selenium-boot:2.6.0'` in `build.gradle`; `test { useTestNG() }` is all that's needed; full docs with Groovy + Kotlin DSL samples, parallel config, JUnit 5 setup, and optional-dep table; `JUnitXmlReporter` auto-detects Maven vs Gradle by directory layout and writes to `build/test-results/test/` (Gradle) or `target/surefire-reports/` (Maven); override with `-Dseleniumboot.reports.dir=`; `FrameworkVersion` now reads `Implementation-Version` from MANIFEST.MF (set by `maven-jar-plugin` and Gradle `jar` task) so `FrameworkVersion.get()` returns the correct version in both build tools
+
+### v2.5.0 — 2026-06-20
+
+- **Accessibility Assertions (axe-core)** — `accessibility().withTags("wcag2a","wcag21aa").withLevel(Impact.SERIOUS).excluding("#cookie-banner").run()` runs an axe-core WCAG scan on the active page; axe-core 4.10.2 bundled in the JAR — no CDN, no extra Maven dependency; `withContext("#main-form")` scopes the scan to a subtree; `collect()` returns raw `AccessibilityResult` for custom inspection; detailed `AssertionError` message shows rule ID, severity, fix guidance, element selector, and docs URL for every failing node; available in `BaseTest` and `BaseJUnit5Test`
 
 ### v2.4.0 — 2026-05-19
 

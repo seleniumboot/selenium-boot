@@ -1,5 +1,6 @@
 package com.seleniumboot.test;
 
+import com.seleniumboot.accessibility.AccessibilityAssert;
 import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.clock.TestClock;
 import com.seleniumboot.performance.PerformanceAssert;
@@ -368,6 +369,38 @@ public abstract class BaseTest {
      */
     protected TestClock clock() {
         return TestClock.create();
+    }
+
+    // ----------------------------------------------------------
+    // Phase 24 — Accessibility Assertions (axe-core)
+    // ----------------------------------------------------------
+
+    /**
+     * Returns a fluent accessibility assertion builder backed by axe-core.
+     * Call after {@link #open()} so the page is fully loaded before scanning.
+     *
+     * <pre>
+     * open("/checkout");
+     *
+     * // Assert zero WCAG 2.1 AA violations
+     * accessibility()
+     *     .withTags("wcag2a", "wcag21aa")
+     *     .withLevel(Impact.SERIOUS)
+     *     .excluding("#cookie-banner")
+     *     .run();
+     *
+     * // Scope scan to a specific section
+     * accessibility().withContext("#main-form").run();
+     *
+     * // Collect results without asserting
+     * AccessibilityResult result = accessibility().collect();
+     * </pre>
+     *
+     * <p>axe-core is bundled in the JAR — no internet connection or extra dependency required.
+     * The library is injected once per page load and reused for subsequent calls.
+     */
+    protected AccessibilityAssert accessibility() {
+        return AccessibilityAssert.create();
     }
 
     private static final class ScenarioContextHolder {

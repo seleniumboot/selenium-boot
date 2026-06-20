@@ -10,6 +10,27 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [2.6.0] — 2026-06-20
+
+### Added
+- **Gradle Build Support** — `testImplementation 'io.github.seleniumboot:selenium-boot:2.6.0'` + `test { useTestNG() }` is the complete Gradle setup; full docs cover Groovy DSL, Kotlin DSL, JUnit 5 bridge, parallel execution, optional dependencies, and `./gradlew test` equivalents for all `mvn` commands
+- **JUnit XML auto-detection** — `JUnitXmlReporter` now detects the active build tool at runtime: writes to `build/test-results/test/` (Gradle) when only a `build/` directory exists, or `target/surefire-reports/` (Maven) otherwise; override with `-Dseleniumboot.reports.dir=` system property
+- **Cross-build-tool version reporting** — `FrameworkVersion.get()` now reads `Implementation-Version` from the JAR's `MANIFEST.MF` as the primary source (works with both Maven and Gradle); falls back to `META-INF/maven/.../pom.properties` (Maven-only) and then `"0.0.0"`; `maven-jar-plugin` configured with `addDefaultImplementationEntries: true` to populate the manifest on every Maven build
+
+---
+
+## [2.5.0] — 2026-06-20
+
+### Added
+- **Accessibility Assertions (axe-core)** — `accessibility()` in `BaseTest` and `BaseJUnit5Test` runs a full axe-core WCAG scan on the active page; axe-core 4.10.2 bundled in the JAR — no CDN, no extra Maven dependency required
+- Fluent builder: `.withTags("wcag2a", "wcag21aa")` restricts rules to WCAG 2.1 AA; `.withLevel(Impact.SERIOUS)` filters violations by minimum severity; `.excluding("#cookie-banner")` skips known third-party elements; `.withContext("#main-form")` scopes the scan to a subtree
+- `.run()` — asserts zero violations and throws a detailed `AssertionError` on failure, showing rule ID, severity (`CRITICAL`/`SERIOUS`/`MODERATE`/`MINOR`), fix guidance, element CSS selector path, and link to the axe-core docs for each failing node
+- `.collect()` — returns raw `AccessibilityResult` for custom inspection without asserting; `result.violations()`, `result.violationsAtLevel(Impact.SERIOUS)`, `result.passCount()`
+- `Impact` enum with ordering: `CRITICAL > SERIOUS > MODERATE > MINOR`; `Impact.fromString(str)` parses axe-core impact strings
+- `AccessibilityResult`, `AccessibilityViolation`, `AccessibilityViolation.NodeDetail` all available via `accessibility().collect()` for custom reporting or soft assertions
+
+---
+
 ## [2.4.0] — 2026-05-19
 
 ### Added

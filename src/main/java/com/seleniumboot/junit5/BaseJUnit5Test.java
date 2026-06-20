@@ -1,5 +1,6 @@
 package com.seleniumboot.junit5;
 
+import com.seleniumboot.accessibility.AccessibilityAssert;
 import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.assertion.LocatorAssert;
 import com.seleniumboot.assertion.SeleniumAssert;
@@ -159,5 +160,26 @@ public abstract class BaseJUnit5Test {
     /** Shorthand for {@link EmailCriteria#to(String)} — use inside {@code mailbox().waitForEmail(...)}. */
     protected EmailCriteria to(String address) {
         return EmailCriteria.to(address);
+    }
+
+    // ----------------------------------------------------------
+    // Phase 24 — Accessibility Assertions (axe-core)
+    // ----------------------------------------------------------
+
+    /**
+     * Returns a fluent accessibility assertion builder backed by axe-core.
+     * Call after {@link #open()} so the page is fully loaded before scanning.
+     *
+     * <pre>
+     * open("/checkout");
+     * accessibility()
+     *     .withTags("wcag2a", "wcag21aa")
+     *     .withLevel(Impact.SERIOUS)
+     *     .excluding("#cookie-banner")
+     *     .run();
+     * </pre>
+     */
+    protected AccessibilityAssert accessibility() {
+        return AccessibilityAssert.create();
     }
 }

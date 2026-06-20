@@ -15,19 +15,37 @@ import java.util.Map;
 /**
  * Generates a JUnit-compatible XML report (surefire format) from execution metrics.
  *
- * The output is written to {@code target/surefire-reports/TEST-SeleniumBoot.xml}
- * so CI systems (Jenkins, GitHub Actions, GitLab CI) can parse test results
- * natively without additional plugins.
+ * <p>The output directory is resolved in the following order:
+ * <ol>
+ *   <li>System property {@code seleniumboot.reports.dir} — override for any build tool</li>
+ *   <li>Gradle layout — {@code build/test-results/test/} when {@code build/} exists and
+ *       {@code target/} does not</li>
+ *   <li>Maven layout — {@code target/surefire-reports/} (default)</li>
+ * </ol>
+ *
+ * <p>CI systems (Jenkins, GitHub Actions, GitLab CI) can parse results natively without
+ * additional plugins.
  */
 public final class JUnitXmlReporter {
 
-    private static final String OUTPUT_PATH =
-            "target/surefire-reports/TEST-SeleniumBoot.xml";
+    static String resolveOutputDir() {
+        String override = System.getProperty("seleniumboot.reports.dir");
+        if (override != null && !override.isBlank()) return override.trim();
+        if (new File("build").exists() && !new File("target").exists()) {
+            return "build/test-results/test";
+        }
+        return "target/surefire-reports";
+    }
+
+    private static String outputPath() {
+        return resolveOutputDir() + "/TEST-SeleniumBoot.xml";
+    }
 
     private JUnitXmlReporter() {}
 
     public static void export(Collection<TestTiming> timings, long totalDurationMs) {
-        File outputDir = new File("target/surefire-reports");
+        String dir = resolveOutputDir();
+        File outputDir = new File(dir);
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
@@ -47,13 +65,13 @@ public final class JUnitXmlReporter {
                 List<TestTiming> browserTimings = entry.getValue();
                 long browserDuration = browserTimings.stream()
                         .mapToLong(TestTiming::getTotalTime).sum();
-                String path = "target/surefire-reports/TEST-selenium-boot-" + browser + ".xml";
+                String path = dir + "/TEST-selenium-boot-" + browser + ".xml";
                 writeXml(browserTimings, browserDuration, "SeleniumBoot-" + capitalize(browser), path);
             }
         }
 
         // Always write the combined report so CI tools that look for the default file still work
-        writeXml(timings, totalDurationMs, "SeleniumBoot", OUTPUT_PATH);
+        writeXml(timings, totalDurationMs, "SeleniumBoot", outputPath());
     }
 
     private static void writeXml(Collection<TestTiming> timings, long totalDurationMs,

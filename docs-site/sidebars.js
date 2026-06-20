@@ -3,6 +3,7 @@ const sidebars = {
   docsSidebar: [
     'intro',
     'getting-started',
+    'gradle',
     'configuration',
     {
       type: 'category',
@@ -68,6 +69,7 @@ const sidebars = {
     'clock-mocking',
     'quarantine',
     'performance',
+    'accessibility',
     'changelog',
   ],
 };
