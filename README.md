@@ -68,7 +68,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>2.6.0</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
@@ -633,6 +633,15 @@ ci:
 ---
 
 ## Project Status
+
+### v3.0.0 — 2026-06-21
+
+- **TestRail + Xray Integration** — annotate any test method with `@TestRailCase("C1234")` or `@XrayTest("PROJ-123")` (both support arrays for multiple IDs); results are pushed automatically after each test completes — no extra code in `@Test` methods; TestRail results are pushed per-test immediately; Xray results are batch-imported at suite end for efficiency
+- **TestRail** — creates a named run automatically (`testmanagement.testrail.autoCreateRun: true`); configurable `projectId`, `suiteId`, `runName`; maps PASSED→1, FAILED→5, SKIPPED→Retest(4); failure message is sent as the TestRail result comment
+- **Xray Cloud** — authenticates via OAuth2 client credentials (`clientId` + `clientSecret`); uses `https://xray.cloud.getxpecto.com/api/v2` endpoints; supports `testPlanKey` linking
+- **Xray Server/DC** — HTTP Basic auth (`jiraUrl` + `username` + `password`); posts to `/rest/raven/1.0/import/execution`; both modes use the same `@XrayTest` annotation
+- **Zero extra dependencies** — clients use `java.net.http.HttpClient` (Java 17 built-in); no OkHttp, Apache HttpClient, or Jackson required for this feature
+- **Works with TestNG and JUnit 5** — `SuiteExecutionListener` + `TestExecutionListener` handle TestNG; `SeleniumBootExtension` + `SeleniumBootLauncherListener` handle JUnit 5
 
 ### v2.6.0 — 2026-06-20
 

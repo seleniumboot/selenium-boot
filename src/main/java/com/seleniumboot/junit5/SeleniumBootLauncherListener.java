@@ -10,6 +10,7 @@ import com.seleniumboot.metrics.ExecutionMetrics;
 import com.seleniumboot.reporting.JUnitXmlReporter;
 import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.reporting.ReportAdapterRegistry;
+import com.seleniumboot.testmanagement.TestManagementReporter;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestPlan;
 
@@ -39,6 +40,7 @@ public class SeleniumBootLauncherListener implements TestExecutionListener {
             ReportAdapterRegistry.generateAll();
             PreConditionRunner.clearAll();
             HookRegistry.onSuiteEnd();
+            TestManagementReporter.getInstance().onSuiteEnd();
 
             SeleniumBootConfig config = SeleniumBootContext.getConfig();
             if (config != null) {

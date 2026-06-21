@@ -27,6 +27,7 @@ import com.seleniumboot.listeners.Retryable;
 import com.seleniumboot.email.MailboxClient;
 import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.test.NoBrowser;
+import com.seleniumboot.testmanagement.TestManagementReporter;
 import com.seleniumboot.tracing.TraceRecorder;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -81,6 +82,7 @@ public class SeleniumBootExtension
     @Override
     public void beforeAll(ExtensionContext context) {
         FrameworkBootstrap.initialize();
+        TestManagementReporter.getInstance().onSuiteStart();
     }
 
     @Override
@@ -146,6 +148,9 @@ public class SeleniumBootExtension
                 }
                 runAiAnalysisIfEnabled(testId);
                 HookRegistry.onTestFailure(testId, cause);
+                TestManagementReporter.getInstance().onTestResult(
+                        context.getRequiredTestMethod(), "FAILED",
+                        cause.getMessage());
 
             } else {
                 if (!noBrowser && ConsoleErrorCollector.isEnabled()) {
@@ -172,6 +177,8 @@ public class SeleniumBootExtension
                     RecordingManager.stop();
                 }
                 HookRegistry.onTestEnd(testId, "PASSED");
+                TestManagementReporter.getInstance().onTestResult(
+                        context.getRequiredTestMethod(), "PASSED", null);
             }
         } finally {
             MultiSessionManager.clearAll();

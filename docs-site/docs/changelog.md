@@ -10,6 +10,43 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [3.0.0] — 2026-06-21
+
+### Added
+- **TestRail Integration** — `@TestRailCase("C1234")` on any test method (or class) pushes results to TestRail automatically; supports multiple IDs (`@TestRailCase({"C1234", "C5678"})`); creates a named run on suite start (`autoCreateRun: true`); maps PASSED→1, FAILED→5, SKIPPED→Retest(4); failure exception message is sent as the result comment
+- **Xray Integration** — `@XrayTest("PROJ-123")` pushes results to Xray Cloud or Xray Server/DC; Cloud uses OAuth2 client credentials; Server uses HTTP Basic auth against Jira; results are batch-imported at suite end
+- **Zero extra dependencies** — both clients use `java.net.http.HttpClient` (built into Java 17)
+- **TestNG + JUnit 5** — same annotations work in both test frameworks; framework automatically detects and routes to the correct listener
+
+### Config
+```yaml
+testmanagement:
+  testrail:
+    enabled: true
+    url: https://yourcompany.testrail.io
+    username: user@example.com
+    apiKey: YOUR_API_KEY
+    projectId: 1
+    suiteId: 2            # optional — omit for single-suite projects
+    runName: "Selenium Boot – CI run"
+    autoCreateRun: true   # set false and provide runId to use an existing run
+
+  xray:
+    enabled: true
+    mode: cloud           # "cloud" (Jira Cloud) or "server" (Server / Data Center)
+    # Cloud fields:
+    clientId: YOUR_CLIENT_ID
+    clientSecret: YOUR_CLIENT_SECRET
+    # Server/DC fields:
+    # jiraUrl: https://jira.example.com
+    # username: admin
+    # password: secret
+    projectKey: PROJ
+    testPlanKey: PROJ-1   # optional — links the execution to a Test Plan
+```
+
+---
+
 ## [2.6.0] — 2026-06-20
 
 ### Added

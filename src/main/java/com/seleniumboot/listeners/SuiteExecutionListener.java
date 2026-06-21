@@ -15,6 +15,7 @@ import com.seleniumboot.precondition.PreConditionRegistry;
 import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.reporting.JUnitXmlReporter;
 import com.seleniumboot.reporting.ReportAdapterRegistry;
+import com.seleniumboot.testmanagement.TestManagementReporter;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
 import org.testng.xml.XmlSuite;
@@ -65,6 +66,7 @@ public final class SuiteExecutionListener implements ISuiteListener {
             ApiHealthChecker.clearCache(); // reset per-suite health check cache
             PreConditionRegistry.loadAll();
             HookRegistry.onSuiteStart();
+            TestManagementReporter.getInstance().onSuiteStart();
 
         } catch (Exception e) {
             // Abort entire suite on bootstrap failure
@@ -91,6 +93,7 @@ public final class SuiteExecutionListener implements ISuiteListener {
         DriverManager.quitAllSuiteDrivers(); // per-suite lifecycle — quits all kept-alive drivers
         DriverManager.quitDriver();          // per-test safety net — no-op if already quit
         HookRegistry.onSuiteEnd();
+        TestManagementReporter.getInstance().onSuiteEnd();
         PluginRegistry.unloadAll();
 
         // Build quality gates — must run last so all metrics are recorded

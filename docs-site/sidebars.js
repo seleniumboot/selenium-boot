@@ -70,6 +70,7 @@ const sidebars = {
     'quarantine',
     'performance',
     'accessibility',
+    'test-management',
     'changelog',
   ],
 };

@@ -31,6 +31,7 @@ import com.seleniumboot.steps.StepLogger;
 import com.seleniumboot.steps.StepStatus;
 import com.seleniumboot.test.BaseApiTest;
 import com.seleniumboot.test.NoBrowser;
+import com.seleniumboot.testmanagement.TestManagementReporter;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
@@ -148,6 +149,8 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.markEnd(testId);
         saveTraceIfEnabled(testId, result.getMethod().getMethodName(), true);
         HookRegistry.onTestEnd(testId, "PASSED");
+        TestManagementReporter.getInstance().onTestResult(
+                result.getMethod().getConstructorOrMethod().getMethod(), "PASSED", null);
         TestClock.autoReset();
         if (!skipBrowser(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         MultiSessionManager.clearAll();
@@ -182,6 +185,9 @@ public final class TestExecutionListener implements ITestListener {
         saveTraceIfEnabled(testId, result.getMethod().getMethodName(), false);
         runAiAnalysisIfEnabled(testId);
         HookRegistry.onTestFailure(testId, result.getThrowable());
+        String failureComment = result.getThrowable() != null ? result.getThrowable().getMessage() : null;
+        TestManagementReporter.getInstance().onTestResult(
+                result.getMethod().getConstructorOrMethod().getMethod(), "FAILED", failureComment);
         String screenshotPath = skipBrowser(result) ? null : ScreenshotManager.capture(testName);
         ExecutionMetrics.recordScreenshot(testId, screenshotPath);
         TestClock.autoReset();
@@ -204,6 +210,8 @@ public final class TestExecutionListener implements ITestListener {
         ExecutionMetrics.recordStatus(testId, "SKIPPED");
         ExecutionMetrics.markEnd(testId);
         HookRegistry.onTestEnd(testId, "SKIPPED");
+        TestManagementReporter.getInstance().onTestResult(
+                result.getMethod().getConstructorOrMethod().getMethod(), "SKIPPED", null);
         TestClock.autoReset();
         if (!skipBrowser(result) && DriverManager.shouldQuitAfterTest()) DriverManager.quitDriver();
         MultiSessionManager.clearAll();

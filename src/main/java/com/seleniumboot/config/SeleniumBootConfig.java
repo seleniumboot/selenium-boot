@@ -56,6 +56,10 @@ public final class SeleniumBootConfig {
     public Network getNetwork() { return network; }
     public void setNetwork(Network network) { this.network = network; }
 
+    private TestManagement testManagement;
+    public TestManagement getTestManagement() { return testManagement; }
+    public void setTestManagement(TestManagement testManagement) { this.testManagement = testManagement; }
+
     public static final class Network {
         private boolean interceptEnabled = false;
         public boolean isInterceptEnabled() { return interceptEnabled; }
@@ -744,6 +748,101 @@ public final class SeleniumBootConfig {
 
             public String getClientSecret()        { return clientSecret; }
             public void   setClientSecret(String v){ this.clientSecret = v; }
+        }
+    }
+
+    // ── Test Management ──────────────────────────────────────────────────────
+
+    public static final class TestManagement {
+        private TestRail testrail = new TestRail();
+        private Xray     xray     = new Xray();
+
+        public TestRail getTestrail() { return testrail; }
+        public void     setTestrail(TestRail v) { this.testrail = v; }
+
+        public Xray  getXray()     { return xray; }
+        public void  setXray(Xray v) { this.xray = v; }
+
+        public static final class TestRail {
+            private boolean enabled     = false;
+            private String  url;
+            private String  username;
+            private String  apiKey;
+            private int     projectId;
+            private int     suiteId;
+            private String  runName     = "Selenium Boot Run";
+            private boolean autoCreateRun = true;
+            private int     runId;     // populated at runtime; may be set explicitly to skip creation
+
+            public boolean isEnabled()                { return enabled; }
+            public void    setEnabled(boolean v)      { this.enabled = v; }
+
+            public String  getUrl()                   { return url; }
+            public void    setUrl(String v)           { this.url = v; }
+
+            public String  getUsername()              { return username; }
+            public void    setUsername(String v)      { this.username = v; }
+
+            public String  getApiKey()                { return apiKey; }
+            public void    setApiKey(String v)        { this.apiKey = v; }
+
+            public int     getProjectId()             { return projectId; }
+            public void    setProjectId(int v)        { this.projectId = v; }
+
+            public int     getSuiteId()               { return suiteId; }
+            public void    setSuiteId(int v)          { this.suiteId = v; }
+
+            public String  getRunName()               { return runName; }
+            public void    setRunName(String v)       { this.runName = v; }
+
+            public boolean isAutoCreateRun()          { return autoCreateRun; }
+            public void    setAutoCreateRun(boolean v){ this.autoCreateRun = v; }
+
+            public int     getRunId()                 { return runId; }
+            public void    setRunId(int v)            { this.runId = v; }
+        }
+
+        public static final class Xray {
+            private boolean enabled      = false;
+            /** "cloud" (Xray Cloud / Jira Cloud) or "server" (Xray Server / Data Center). */
+            private String  mode         = "cloud";
+            // Cloud-only fields
+            private String  clientId;
+            private String  clientSecret;
+            // Server/DC fields
+            private String  jiraUrl;
+            private String  username;
+            private String  password;
+            // Shared
+            private String  projectKey;
+            private String  testPlanKey;
+
+            public boolean isEnabled()                  { return enabled; }
+            public void    setEnabled(boolean v)        { this.enabled = v; }
+
+            public String  getMode()                    { return mode; }
+            public void    setMode(String v)            { this.mode = v; }
+
+            public String  getClientId()                { return clientId; }
+            public void    setClientId(String v)        { this.clientId = v; }
+
+            public String  getClientSecret()            { return clientSecret; }
+            public void    setClientSecret(String v)    { this.clientSecret = v; }
+
+            public String  getJiraUrl()                 { return jiraUrl; }
+            public void    setJiraUrl(String v)         { this.jiraUrl = v; }
+
+            public String  getUsername()                { return username; }
+            public void    setUsername(String v)        { this.username = v; }
+
+            public String  getPassword()                { return password; }
+            public void    setPassword(String v)        { this.password = v; }
+
+            public String  getProjectKey()              { return projectKey; }
+            public void    setProjectKey(String v)      { this.projectKey = v; }
+
+            public String  getTestPlanKey()             { return testPlanKey; }
+            public void    setTestPlanKey(String v)     { this.testPlanKey = v; }
         }
     }
 
