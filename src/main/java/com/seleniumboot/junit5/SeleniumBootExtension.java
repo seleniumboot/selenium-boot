@@ -25,6 +25,7 @@ import com.seleniumboot.steps.StepStatus;
 import com.seleniumboot.testdata.TestDataStore;
 import com.seleniumboot.listeners.Retryable;
 import com.seleniumboot.email.MailboxClient;
+import com.seleniumboot.precondition.PreConditionRegistry;
 import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.test.NoBrowser;
 import com.seleniumboot.testmanagement.TestManagementReporter;
@@ -82,6 +83,7 @@ public class SeleniumBootExtension
     @Override
     public void beforeAll(ExtensionContext context) {
         FrameworkBootstrap.initialize();
+        PreConditionRegistry.loadAll();
         TestManagementReporter.getInstance().onSuiteStart();
     }
 
