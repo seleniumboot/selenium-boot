@@ -133,6 +133,21 @@ When upgrading the project version, **always update all places the version is re
 
 Also add a new changelog entry in `CHANGELOG.md` and `docs-site/docs/changelog.md` describing what changed. The full version history lives in `CHANGELOG.md` (extracted from the README); the README only keeps a one-line "Current release" pointer.
 
+### Release checklist (every version bump)
+
+1. Update all version references in the table above.
+2. Add the `CHANGELOG.md` + `docs-site/docs/changelog.md` entries.
+3. Commit and push.
+4. **Tag the release commit and push the tag** — lightweight tag named `vX.Y.Z`
+   on the commit that was published (not later CI/housekeeping commits):
+   ```bash
+   git tag v3.1.0 <release-commit>
+   git push origin v3.1.0
+   ```
+   Verify afterwards with `git describe --tags` (HEAD should resolve to the new tag).
+5. Publish to Maven Central (`mvn deploy`) and finish the manual publish in the
+   Central Portal (see Publishing below).
+
 ## Publishing
 
 Maven Central publishing is handled by `central-publishing-maven-plugin` with GPG signing. The CI workflow (`.github/workflows/selenium-boot.yml`) runs `mvn test`. Publishing is a manual step.
