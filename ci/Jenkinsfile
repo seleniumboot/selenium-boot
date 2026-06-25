@@ -17,6 +17,11 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '10'))
     }
 
+    triggers {
+        // Build on every push (webhook gives instant builds; pollSCM is the fallback).
+        pollSCM('H/5 * * * *')
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -61,6 +66,16 @@ pipeline {
         }
         success {
             echo "All tests passed."
+            // Validate this framework build against the consumer test suite,
+            // building selenium-boot from source so unpublished changes are
+            // exercised end-to-end before release.
+            // Replace 'selenium-boot-test' with the consumer job's name in Jenkins.
+            build job: 'selenium-boot-test',
+                  parameters: [
+                      booleanParam(name: 'BUILD_FRAMEWORK_FROM_SOURCE', value: true),
+                      string(name: 'FRAMEWORK_BRANCH', value: env.BRANCH_NAME ?: 'master')
+                  ],
+                  wait: false
         }
     }
 }
