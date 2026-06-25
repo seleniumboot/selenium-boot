@@ -42,6 +42,7 @@ build/
 .claude/*
 PLAN.md
 YOUTUBE_PLAN.md
+PLAYWRIGHT_PARITY_PLAN.md
 presentations/
 
 ### Docusaurus ###

@@ -37,6 +37,11 @@ public final class FrameworkBootstrap {
 
         SeleniumBootContext.initialize(config);
 
+        // Honor a custom test-id attribute for the accessibility-first locators
+        if (config.getLocators() != null && config.getLocators().getTestIdAttribute() != null) {
+            com.seleniumboot.locator.Locator.setTestIdAttribute(config.getLocators().getTestIdAttribute());
+        }
+
         // Load all SPI-registered extension points
         DriverProviderRegistry.loadAll();
         HookRegistry.loadAll();

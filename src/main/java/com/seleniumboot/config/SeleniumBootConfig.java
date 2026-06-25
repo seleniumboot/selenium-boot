@@ -423,9 +423,13 @@ public final class SeleniumBootConfig {
 
     public static final class Locators {
         private boolean selfHealing = false;
+        private String  testIdAttribute = "data-testid";
 
         public boolean isSelfHealing()           { return selfHealing; }
         public void    setSelfHealing(boolean v) { this.selfHealing = v; }
+
+        public String  getTestIdAttribute()             { return testIdAttribute; }
+        public void    setTestIdAttribute(String value) { this.testIdAttribute = value; }
     }
 
     private Ai ai;

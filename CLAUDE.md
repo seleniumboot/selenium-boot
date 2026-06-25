@@ -123,14 +123,15 @@ When upgrading the project version, **always update all places the version is re
 | File | Location |
 |---|---|
 | `pom.xml` | `<version>` tag |
-| `README.md` | Maven dependency snippet + changelog entry |
+| `README.md` | Maven dependency snippet + "Current release" line under `## Project Status` |
+| `CHANGELOG.md` | New release entry at top |
 | `docs-site/docs/getting-started.md` | Maven dependency snippet |
 | `docs-site/docs/junit5.md` | Maven dependency snippet |
 | `docs-site/docs/changelog.md` | New release entry at top |
 | `docs-site/src/pages/index.js` | Maven dependency snippet in hero section |
 | `PLAN.md` | Released versions table |
 
-Also add a new changelog entry in `README.md` and `docs-site/docs/changelog.md` describing what changed.
+Also add a new changelog entry in `CHANGELOG.md` and `docs-site/docs/changelog.md` describing what changed. The full version history lives in `CHANGELOG.md` (extracted from the README); the README only keeps a one-line "Current release" pointer.
 
 ## Publishing
 

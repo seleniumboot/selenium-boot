@@ -10,6 +10,17 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [3.1.0] — 2026-06-25
+
+### Added
+- **Accessibility-first locators** — Playwright-style semantic locators available on `BaseTest` and `BasePage`: `getByRole`, `getByText`, `getByLabel`, `getByPlaceholder`, `getByTestId`, `getByAltText`, `getByTitle`. They target the accessibility tree the user perceives rather than brittle CSS/DOM structure, so tests survive redesigns.
+- **`getByRole(Role)`** — 38 WAI-ARIA roles, each matching implicit HTML elements (`<button>`, `<a href>`, `<h1>`…) and explicit `role="…"` attributes. Refine with `.withName("Submit")` (accessible-name match, following ARIA precedence: `aria-label` → `aria-labelledby` → associated `<label>` → text → `value`/`alt`/`title`) and `.withLevel(1)` (heading level).
+- **Case-insensitive substring matching by default**, with `.exact()` opt-in. All locators flow through the existing auto-wait `Locator` chain — no `Thread.sleep`, no explicit waits.
+- **`toBy()` escape hatch** — every semantic locator can return its synthesized Selenium `By` for interop with raw Selenium or `SmartLocator`.
+- **Configurable test-id attribute** — `locators.testIdAttribute` in `selenium-boot.yml` (default `data-testid`).
+
+---
+
 ## [3.0.0] — 2026-06-21
 
 ### Added

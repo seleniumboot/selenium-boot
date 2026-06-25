@@ -13,6 +13,7 @@ import com.seleniumboot.visual.VisualAssert;
 import com.seleniumboot.visual.VisualTolerance;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.locator.Locator;
+import com.seleniumboot.locator.Role;
 import com.seleniumboot.network.NetworkMock;
 import com.seleniumboot.shadow.ShadowDom;
 import com.seleniumboot.wait.WaitEngine;
@@ -558,6 +559,58 @@ public abstract class BasePage {
      */
     protected Locator $(By by) {
         return Locator.of(by);
+    }
+
+    // ----------------------------------------------------------
+    // Accessibility-first locators  (getBy*)
+    // ----------------------------------------------------------
+
+    /**
+     * Locates elements by their ARIA role — the most resilient strategy, since it
+     * targets the accessibility tree the user perceives rather than DOM structure.
+     *
+     * <pre>
+     * getByRole(Role.BUTTON).withName("Submit").click();
+     * getByRole(Role.HEADING).withLevel(1).getText();
+     * </pre>
+     */
+    protected Locator getByRole(Role role) {
+        return Locator.byRole(role);
+    }
+
+    /** Locates an element by its ARIA role and accessible name in one call. */
+    protected Locator getByRole(Role role, String name) {
+        return Locator.byRole(role).withName(name);
+    }
+
+    /** Locates an element by visible text — case-insensitive substring by default. */
+    protected Locator getByText(String text) {
+        return Locator.byText(text);
+    }
+
+    /** Locates a form control by its associated label text. */
+    protected Locator getByLabel(String label) {
+        return Locator.byLabel(label);
+    }
+
+    /** Locates an element by its {@code placeholder} attribute. */
+    protected Locator getByPlaceholder(String placeholder) {
+        return Locator.byPlaceholder(placeholder);
+    }
+
+    /** Locates an element by its test-id attribute (default {@code data-testid}). */
+    protected Locator getByTestId(String testId) {
+        return Locator.byTestId(testId);
+    }
+
+    /** Locates an element (typically {@code <img>}) by its {@code alt} text. */
+    protected Locator getByAltText(String altText) {
+        return Locator.byAltText(altText);
+    }
+
+    /** Locates an element by its {@code title} attribute. */
+    protected Locator getByTitle(String title) {
+        return Locator.byTitle(title);
     }
 
     // ----------------------------------------------------------

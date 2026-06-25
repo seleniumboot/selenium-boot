@@ -34,7 +34,7 @@ No WebDriver binaries required — Selenium Manager handles browser driver downl
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>2.6.0</version>
+    <version>3.1.0</version>
 </dependency>
 ```
 
@@ -43,7 +43,7 @@ No WebDriver binaries required — Selenium Manager handles browser driver downl
 
 ```groovy title="build.gradle"
 dependencies {
-    testImplementation 'io.github.seleniumboot:selenium-boot:3.0.0'
+    testImplementation 'io.github.seleniumboot:selenium-boot:3.1.0'
 }
 
 test {
@@ -57,7 +57,7 @@ test {
 
 ```kotlin title="build.gradle.kts"
 dependencies {
-    testImplementation("io.github.seleniumboot:selenium-boot:3.0.0")
+    testImplementation("io.github.seleniumboot:selenium-boot:3.1.0")
 }
 
 tasks.test {
