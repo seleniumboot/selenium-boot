@@ -91,7 +91,10 @@ jobs:
       - name: Run API integration tests (no browser)
         run: |
           cd selenium-boot-test
-          mvn test -Dtest="ApiDemoTest,ApiSchemaDemoTest" --no-transfer-progress
+          # -DskipITs skips the JUnit 5 (Failsafe) tests, which open a real browser.
+          # Without it, -Dtest only filters Surefire, so the browser-based JUnit 5
+          # tests still run and flake on the CI renderer ("Timed out … renderer").
+          mvn test -Dtest="ApiDemoTest,ApiSchemaDemoTest" -DskipITs --no-transfer-progress
         env:
           CI: true
 
