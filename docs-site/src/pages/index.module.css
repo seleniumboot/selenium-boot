@@ -452,7 +452,7 @@
 /* Features grid */
 .featuresGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
 }
 
@@ -600,6 +600,236 @@
   flex: 1;
   min-width: 280px;
   max-width: 500px;
+}
+
+/* Entrance animation for features revealed by "Show all" */
+.featureCardReveal {
+  animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+/* ── Show all / Show fewer toggle ────────────────────────────────────────── */
+.featuresToggleWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.btnExpand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: rgba(99,102,241,0.08);
+  color: var(--ifm-heading-color);
+  border: 1px solid rgba(99,102,241,0.28);
+  border-radius: 100px;
+  padding: 0.7rem 1.7rem;
+  font-weight: 650;
+  font-size: 0.93rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.btnExpand:hover {
+  transform: translateY(-2px);
+  background: rgba(99,102,241,0.16);
+  border-color: rgba(99,102,241,0.5);
+  box-shadow: 0 8px 26px rgba(99,102,241,0.28);
+}
+
+.expandChevron {
+  display: inline-block;
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.expandChevron[data-open] {
+  transform: rotate(180deg);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FAQ
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.faqSection {
+  padding: 5.5rem 0;
+  background: var(--ifm-background-color);
+}
+
+:global([data-theme='dark']) .faqSection { background: #0d0d18; }
+:global([data-theme='light']) .faqSection { background: #f7f7ff; }
+
+.faqList {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.faqItem {
+  border: 1px solid var(--card-border, rgba(255,255,255,0.08));
+  background: var(--card-bg, rgba(255,255,255,0.04));
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+}
+
+:global([data-theme='light']) .faqItem {
+  --card-bg: rgba(255,255,255,0.95);
+  --card-border: rgba(0,0,0,0.07);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.faqItem:hover {
+  border-color: rgba(99,102,241,0.32);
+}
+
+.faqItem[data-open] {
+  border-color: rgba(99,102,241,0.45);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.18), 0 0 0 1px rgba(99,102,241,0.12);
+}
+
+:global([data-theme='light']) .faqItem[data-open] {
+  box-shadow: 0 12px 36px rgba(99,102,241,0.12), 0 0 0 1px rgba(99,102,241,0.2);
+}
+
+.faqQuestion {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  text-align: left;
+  padding: 1.15rem 1.4rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--ifm-heading-color);
+  transition: color 0.18s ease;
+}
+
+.faqQuestion:hover {
+  color: #818cf8;
+}
+
+.faqChevron {
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #818cf8;
+  transform: rotate(90deg);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.faqItem[data-open] .faqChevron {
+  transform: rotate(270deg);
+}
+
+/* Smooth auto-height via grid-template-rows 0fr → 1fr */
+.faqAnswerWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.faqItem[data-open] .faqAnswerWrap {
+  grid-template-rows: 1fr;
+}
+
+.faqAnswer {
+  overflow: hidden;
+}
+
+.faqAnswer p {
+  margin: 0;
+  padding: 0 1.4rem 1.25rem;
+  font-size: 0.94rem;
+  line-height: 1.7;
+  color: var(--ifm-color-emphasis-700);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CLOSING CTA
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ctaSection {
+  padding: 1rem 0 6rem;
+  background: var(--ifm-background-color);
+}
+
+.ctaCard {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 3.5rem 2rem;
+  border-radius: 24px;
+  border: 1px solid rgba(99,102,241,0.25);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.18), transparent 60%),
+    linear-gradient(160deg, rgba(99,102,241,0.12), rgba(168,85,247,0.06));
+  box-shadow: 0 30px 80px rgba(0,0,0,0.28);
+}
+
+.ctaBlob {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 65%);
+  top: -160px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: glowPulse 6s ease infinite;
+}
+
+.ctaTitle {
+  position: relative;
+  font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin: 0 0 0.85rem;
+  color: var(--ifm-heading-color);
+}
+
+.ctaSubtitle {
+  position: relative;
+  font-size: 1.08rem;
+  line-height: 1.65;
+  color: var(--ifm-color-emphasis-700);
+  margin: 0 0 2rem;
+}
+
+.ctaActions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.875rem;
+  flex-wrap: wrap;
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .featureCardReveal,
+  .ctaBlob {
+    animation: none;
+  }
+  .faqAnswerWrap,
+  .expandChevron,
+  .faqChevron {
+    transition: none;
+  }
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
