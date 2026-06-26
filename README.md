@@ -14,7 +14,7 @@
 > ```
 > pip install seleniumboot-mcp
 > ```
-> [PyPI](https://pypi.org/project/seleniumboot-mcp/) · [GitHub](https://github.com/seleniumboot/selenium-mcp) · 76 tools · self-healing locators · codegen for Java / Python / C# / Playwright
+> [PyPI](https://pypi.org/project/seleniumboot-mcp/) · [GitHub](https://github.com/seleniumboot/selenium-mcp) · 84 tools · self-healing locators · codegen for Java / Python / C# / Playwright
 
 ---
 
