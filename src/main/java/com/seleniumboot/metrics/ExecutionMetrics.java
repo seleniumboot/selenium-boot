@@ -385,19 +385,20 @@ public final class ExecutionMetrics {
 
         try {
 
-            File outputDir = new File("target");
-            if (!outputDir.exists()) {
+            // Primary output — always overwritten; used by HtmlReportGenerator.
+            // Honors -Dseleniumboot.reports.dir so engines that run in the same
+            // build (e.g. Surefire/TestNG + Failsafe/JUnit5) can avoid clobbering.
+            File primary = com.seleniumboot.reporting.ReportPaths.metricsJson();
+            File outputDir = primary.getParentFile();
+            if (outputDir != null && !outputDir.exists()) {
                 outputDir.mkdirs();
             }
-
-            // Primary output — always overwritten; used by HtmlReportGenerator
-            File primary = new File("target/selenium-boot-metrics.json");
             mapper.writeValue(primary, report);
 
             // Timestamped copy for historical retention across CI runs
             String timestamp = java.time.LocalDateTime.now()
                     .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
-            File historyDir = new File("target/metrics-history");
+            File historyDir = com.seleniumboot.reporting.ReportPaths.metricsHistoryDir();
             if (!historyDir.exists()) {
                 historyDir.mkdirs();
             }
@@ -407,7 +408,8 @@ public final class ExecutionMetrics {
             );
 
             System.out.println("[Selenium Boot] Metrics exported → " + primary.getPath());
-            System.out.println("[Selenium Boot] History copy     → target/metrics-history/selenium-boot-metrics-" + timestamp + ".json");
+            System.out.println("[Selenium Boot] History copy     → "
+                    + new File(historyDir, "selenium-boot-metrics-" + timestamp + ".json").getPath());
 
         } catch (IOException e) {
             throw new RuntimeException(

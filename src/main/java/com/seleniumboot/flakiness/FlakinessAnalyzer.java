@@ -127,7 +127,7 @@ public final class FlakinessAnalyzer {
     // ------------------------------------------------------------------
 
     static List<File> loadHistoryFiles(int maxRuns) {
-        File dir = new File("target/metrics-history");
+        File dir = com.seleniumboot.reporting.ReportPaths.metricsHistoryDir();
         if (!dir.exists() || !dir.isDirectory()) return Collections.emptyList();
         File[] files = dir.listFiles((d, name) -> name.endsWith(".json"));
         if (files == null || files.length == 0) return Collections.emptyList();

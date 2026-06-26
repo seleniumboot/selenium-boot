@@ -10,6 +10,11 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [3.1.1] — 2026-06-26
+
+### Fixed
+- **Report overwrite with multiple test engines** — the metrics JSON, HTML report, and metrics history now honor the `seleniumboot.reports.dir` system property (default `target`). When a TestNG suite (Surefire) and JUnit 5 tests (Failsafe) run in the same build, point each engine's run at its own directory (e.g. `-Dseleniumboot.reports.dir=target/junit5`) so they no longer overwrite each other's HTML report. New `ReportPaths` helper centralizes path resolution.
+
 ## [3.1.0] — 2026-06-25
 
 ### Added

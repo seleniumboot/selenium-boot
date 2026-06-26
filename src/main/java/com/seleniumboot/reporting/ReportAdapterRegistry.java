@@ -47,7 +47,7 @@ public final class ReportAdapterRegistry {
      * Failures in one adapter are logged and do not prevent others from running.
      */
     public static void generateAll() {
-        File metricsJson = new File("target/selenium-boot-metrics.json");
+        File metricsJson = ReportPaths.metricsJson();
         for (ReportAdapter adapter : adapters) {
             try {
                 adapter.generate(metricsJson);

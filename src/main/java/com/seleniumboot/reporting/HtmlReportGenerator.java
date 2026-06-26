@@ -20,8 +20,7 @@ public final class HtmlReportGenerator {
 
         try {
 
-            File jsonFile =
-                    new File("target/selenium-boot-metrics.json");
+            File jsonFile = ReportPaths.metricsJson();
 
             if (!jsonFile.exists()) {
                 System.err.println(
@@ -35,15 +34,18 @@ public final class HtmlReportGenerator {
 
             String html = buildHtml(root);
 
-            File reportFile =
-                    new File("target/selenium-boot-report.html");
+            File reportFile = ReportPaths.htmlReport();
+            File reportDir = reportFile.getParentFile();
+            if (reportDir != null && !reportDir.exists()) {
+                reportDir.mkdirs();
+            }
 
             try (FileWriter writer = new FileWriter(reportFile)) {
                 writer.write(html);
             }
 
             System.out.println(
-                    "[Selenium Boot] HTML report generated at target/selenium-boot-report.html"
+                    "[Selenium Boot] HTML report generated at " + reportFile.getPath()
             );
 
         } catch (Exception e) {

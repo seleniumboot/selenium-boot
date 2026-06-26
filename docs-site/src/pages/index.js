@@ -187,7 +187,7 @@ export default function Home() {
                 code={`<dependency>
   <groupId>io.github.seleniumboot</groupId>
   <artifactId>selenium-boot</artifactId>
-  <version>3.1.0</version>
+  <version>3.1.1</version>
 </dependency>`}
               />
             </div>

@@ -69,7 +69,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>3.1.0</version>
+    <version>3.1.1</version>
 </dependency>
 ```
 
@@ -635,7 +635,7 @@ ci:
 
 ## Project Status
 
-**Current release: v3.1.0** — accessibility-first locators (`getByRole`, `getByText`, `getByLabel`, …).
+**Current release: v3.1.1** — per-engine report output dir (`seleniumboot.reports.dir`), fixing report overwrites when TestNG + JUnit 5 run in one build.
 
 See the full version history in **[CHANGELOG.md](CHANGELOG.md)**.
 
