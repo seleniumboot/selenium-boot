@@ -33,6 +33,11 @@ const features = [
     description: '$(".row").filter(".active").nth(0).click() — Playwright-style chainable locators. assertThat(By.id("title")).hasText("Welcome") auto-retries until the condition is met.',
   },
   {
+    icon: '🎯',
+    title: 'Accessibility-First Locators',
+    description: 'getByRole(Role.BUTTON).withName("Submit").click() — getByRole/getByText/getByLabel/getByPlaceholder/getByTestId target the accessibility tree, so tests survive CSS/DOM refactors. Auto-waiting; case-insensitive by default with .exact() and a toBy() escape hatch.',
+  },
+  {
     icon: '🌐',
     title: 'Network & Storage Mocking',
     description: 'Stub API responses via CDP: networkMock().stub("**/api/users").returnJson(...). Read/write localStorage, sessionStorage, cookies, geolocation, and clipboard in tests.',

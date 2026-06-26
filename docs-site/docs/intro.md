@@ -70,6 +70,7 @@ pip install seleniumboot-mcp
 | **BDD / Cucumber** | `BaseCucumberSteps`, `CucumberHooks`, per-scenario steps in HTML report |
 | **API testing** | `BaseApiTest`, fluent `ApiClient`, JSONPath, schema validation, hybrid UI+API |
 | **Fluent locators** | `$("selector").filter().nth().withText()` — Playwright-style chainable locators |
+| **Accessibility-first locators** | `getByRole(Role.BUTTON).withName("Submit")`, `getByText`, `getByLabel`, `getByPlaceholder`, `getByTestId` — target the accessibility tree, survive CSS/DOM refactors |
 | **Web-first assertions** | `assertThat(By.id("x")).isVisible()` — auto-retrying until timeout |
 | **Multi-session testing** | `withSession("admin", () -> { ... })` — two browsers in one test |
 | **Database assertions** | `db().assertRowExists()`, `db().query().assertValue()` — plain JDBC, no ORM |
