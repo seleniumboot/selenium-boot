@@ -45,9 +45,9 @@ const config = {
     ({
       image: 'img/selenium-boot-social.png',
       colorMode: {
-        defaultMode: 'light',
+        defaultMode: 'dark',
         disableSwitch: false,
-        respectPrefersColorScheme: true,
+        respectPrefersColorScheme: false,
       },
       navbar: {
         title: 'Selenium Boot',
