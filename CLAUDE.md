@@ -145,7 +145,13 @@ Also add a new changelog entry in `CHANGELOG.md` and `docs-site/docs/changelog.m
    git push origin v3.1.0
    ```
    Verify afterwards with `git describe --tags` (HEAD should resolve to the new tag).
-5. Publish to Maven Central (`mvn deploy`) and finish the manual publish in the
+5. **Create the GitHub Release** from the tag — a pushed tag does **not** create a
+   Release, so the repo's "Releases" page keeps showing the old version until you do:
+   ```bash
+   gh release create v3.1.0 --title "v3.1.0 — <summary>" --latest --notes "<changelog>"
+   ```
+   Verify with `gh release list` (newest version should show "Latest").
+6. Publish to Maven Central (`mvn deploy`) and finish the manual publish in the
    Central Portal (see Publishing below).
 
 ## Publishing
