@@ -7,103 +7,68 @@ import styles from './index.module.css';
 // ─── Feature data ─────────────────────────────────────────────────────────────
 // `highlight: true` features are shown by default; the rest reveal on "Show all".
 
-const features = [
+// Flagship features — shown large in the bento grid. `span: 2` cards get a
+// signature visual (a code snippet or the mini report widget).
+const flagshipFeatures = [
   {
     icon: '⚡',
     title: 'Zero Boilerplate',
-    highlight: true,
-    description: 'Extend BaseTest. Write @Test methods. Driver lifecycle, waits, retry, reports, and screenshots are handled automatically — no setup code required.',
+    span: 2,
+    description: 'Extend BaseTest, write @Test methods, and go. Driver lifecycle, waits, retries, reports, and screenshots are all handled — no setup code required.',
+    code: `class LoginTest
+    extends BaseTest {
+
+  @Test void login() {
+    open();                 // driver ready
+    getByRole(BUTTON)       // auto-waits
+      .withName("Sign in")
+      .click();
+  }
+}`,
   },
   {
     icon: '🎯',
     title: 'Accessibility-First Locators',
-    highlight: true,
-    description: 'getByRole(Role.BUTTON).withName("Submit").click() — getByRole/getByText/getByLabel/getByPlaceholder/getByTestId target the accessibility tree, so tests survive CSS/DOM refactors. Playwright-style, auto-waiting.',
+    description: 'getByRole / getByText / getByLabel target the accessibility tree — Playwright-style, auto-waiting, and resilient to CSS or DOM refactors.',
   },
   {
     icon: '🩺',
     title: 'Self-Healing Locators',
-    highlight: true,
-    description: 'When a locator times out, the framework automatically tries fallback strategies — id, name, text, class, data-testid — and continues. Every healed locator is flagged in the report.',
-  },
-  {
-    icon: '🧠',
-    title: 'AI Failure Analysis',
-    highlight: true,
-    description: 'On every failure, Claude analyses the error, steps, URL, and title — and embeds a plain-English root-cause and suggested fix right inside the HTML report.',
+    description: 'When a locator breaks, the framework falls back through id, name, text, and data-testid automatically — and flags every heal in the report.',
   },
   {
     icon: '📊',
     title: 'Advanced HTML Report',
-    highlight: true,
-    description: 'Tabbed dashboard: pass-rate gauge, donut chart, retry badges, expandable error rows, AI analysis panel, Flakiness Radar, "View Trace" links, filter bar, search, and dark mode.',
+    span: 2,
+    visual: 'report',
+    description: 'A tabbed dashboard with a pass-rate gauge, retry badges, expandable errors, a Flakiness Radar, trace links, search, and dark mode.',
+  },
+  {
+    icon: '🧠',
+    title: 'AI Failure Analysis',
+    description: 'On every failure, Claude reads the error, steps, and URL, then embeds a plain-English root cause and suggested fix right in the report.',
   },
   {
     icon: '🤖',
     title: 'AI Test Authoring (MCP)',
-    highlight: true,
-    description: 'seleniumboot-mcp lets Claude or GitHub Copilot drive a real browser, record the session, and generate ready-to-run Selenium Boot test code in one prompt.',
+    description: 'seleniumboot-mcp lets Claude or Copilot drive a real browser and generate ready-to-run Selenium Boot tests from a single prompt.',
   },
-  {
-    icon: '📄',
-    title: 'YAML Configuration',
-    description: 'One selenium-boot.yml controls browser, parallel threads, timeouts, retry, CI thresholds, tracing, AI analysis, and more. Switch environments with a profile flag.',
-  },
-  {
-    icon: '🔁',
-    title: 'Smart Retry + Flakiness Radar',
-    description: 'Auto-retry flaky tests with @Retryable or globally. After each run, Flakiness Prediction ranks HIGH / WATCH / STABLE tests in the report dashboard.',
-  },
-  {
-    icon: '📋',
-    title: 'Page Object Toolkit',
-    description: 'BasePage covers click, type, getText, dropdowns, alerts, hover, scroll, iFrame helpers, Shadow DOM, and file upload — all wait-backed. SmartLocator tries multiple strategies.',
-  },
-  {
-    icon: '🔗',
-    title: 'Fluent Locator API',
-    description: '$(".row").filter(".active").nth(0).click() — Playwright-style chainable locators. assertThat(By.id("title")).hasText("Welcome") auto-retries until the condition is met.',
-  },
-  {
-    icon: '🌐',
-    title: 'Network & Storage Mocking',
-    description: 'Stub API responses via CDP: networkMock().stub("**/api/users").returnJson(...). Read/write localStorage, sessionStorage, cookies, geolocation, and clipboard in tests.',
-  },
-  {
-    icon: '📸',
-    title: 'Visual Regression + Mobile',
-    description: 'assertScreenshot("homepage") compares pixel-by-pixel against a baseline. emulateDevice("iPhone 14") applies full CDP viewport + UA emulation. 6 built-in device profiles.',
-  },
-  {
-    icon: '🪜',
-    title: 'Step Logging + Trace Viewer',
-    description: 'StepLogger.step() captures named steps with screenshots. On failure a self-contained dark-themed trace HTML is generated — step timeline, final screenshot, and stack trace.',
-  },
-  {
-    icon: '🔐',
-    title: '@PreCondition',
-    description: 'Eliminate @BeforeMethod login boilerplate. Declare @PreCondition("loginAsAdmin") — the framework runs setup once, caches cookies + localStorage, and restores the session for every test.',
-  },
-  {
-    icon: '📧',
-    title: 'Email Verification',
-    description: 'mailbox().waitForEmail(to("user@test.com")) polls until a matching email arrives. Supports Mailhog, Mailtrap, Outlook (Graph API), and IMAP. extractLink() finds anchors by text.',
-  },
-  {
-    icon: '🕐',
-    title: 'Clock Mocking',
-    description: 'clock().set("2030-01-01T00:00:00Z") freezes the browser Date object. Test subscription expiry banners, trial periods, and countdown timers without touching the database.',
-  },
-  {
-    icon: '☁️',
-    title: 'Cloud Execution',
-    description: 'Switch to BrowserStack or Sauce Labs by changing one line. execution.mode: browserstack — no test-code changes. Session video and logs linked in the HTML report.',
-  },
-  {
-    icon: '🔌',
-    title: 'Extensible via SPI',
-    description: 'Java ServiceLoader plugin system. Register custom driver providers, report adapters (Allure, Slack, Teams), and lifecycle hooks — zero framework code changes needed.',
-  },
+];
+
+// The rest of the toolkit — shown compact, one line each.
+const moreFeatures = [
+  { icon: '📄', title: 'YAML Configuration',        short: 'One selenium-boot.yml controls browsers, threads, timeouts, retry, and CI gates.' },
+  { icon: '🔁', title: 'Smart Retry + Flakiness',   short: 'Auto-retry flaky tests and rank them HIGH / WATCH / STABLE in the report.' },
+  { icon: '📋', title: 'Page Object Toolkit',       short: 'BasePage wraps clicks, waits, dropdowns, iframes, Shadow DOM, and uploads.' },
+  { icon: '🔗', title: 'Fluent Locator API',        short: 'Playwright-style chainable locators with auto-retrying assertThat().' },
+  { icon: '🌐', title: 'Network & Storage Mocking', short: 'Stub API responses over CDP; read and write storage, cookies, and geo.' },
+  { icon: '📸', title: 'Visual + Mobile',           short: 'Pixel-diff screenshots and one-line device emulation for 6 profiles.' },
+  { icon: '🪜', title: 'Step Logging + Trace',      short: 'Named steps with screenshots and a self-contained failure trace.' },
+  { icon: '🔐', title: '@PreCondition',             short: 'Run login once, cache the session, and restore it for every test.' },
+  { icon: '📧', title: 'Email Verification',        short: 'Wait for real emails via Mailhog, Mailtrap, Graph API, or IMAP.' },
+  { icon: '🕐', title: 'Clock Mocking',             short: 'Freeze the browser clock to test expiry, trials, and countdowns.' },
+  { icon: '☁️', title: 'Cloud Execution',           short: 'Run on BrowserStack or Sauce Labs by changing one config line.' },
+  { icon: '🔌', title: 'Extensible via SPI',        short: 'Register custom drivers, report adapters, and hooks via ServiceLoader.' },
 ];
 
 // ─── FAQ data ─────────────────────────────────────────────────────────────────
@@ -162,6 +127,28 @@ function CodeWindow({ filename, code, className }) {
   );
 }
 
+// Mini HTML-report visual for the flagship "Advanced HTML Report" card.
+function ReportPreview() {
+  return (
+    <div className={styles.reportPreview} aria-hidden>
+      <div className={styles.reportRing}>
+        <span className={styles.reportRingValue}>96%</span>
+      </div>
+      <div className={styles.reportMeta}>
+        <div className={styles.reportChips}>
+          <span className={styles.chipPass}>48 passed</span>
+          <span className={styles.chipFlaky}>2 flaky</span>
+          <span className={styles.chipFail}>0 failed</span>
+        </div>
+        <div className={styles.reportBar}>
+          <span className={styles.reportBarFill} />
+        </div>
+        <span className={styles.reportCaption}>LoginSuite · 3.2s · chrome 126</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function FaqItem({ item, isOpen, onToggle }) {
@@ -187,11 +174,7 @@ function FaqItem({ item, isOpen, onToggle }) {
 export default function Home() {
   const { siteConfig } = useDocusaurusContext();
 
-  const [showAllFeatures, setShowAllFeatures] = useState(true);
   const [openFaq, setOpenFaq] = useState(0);
-
-  const visibleFeatures = showAllFeatures ? features : features.slice(0, 8);
-  const showcaseFeatures = [...features, ...features];
 
   // Scroll-reveal: add data-visible attribute when element enters the viewport
   useEffect(() => {
@@ -321,63 +304,50 @@ export default function Home() {
               </p>
             </div>
 
-            <div className={styles.featureShowcase} data-reveal>
-              <div className={styles.showcaseHeader}>
-                <span className={styles.sectionTag}>Live feature showcase</span>
-                <p className={styles.showcaseText}>
-                  A wider toolkit appears at a glance, with a looping display that highlights the breadth of Selenium Boot in motion.
-                </p>
-              </div>
-
-              <div className={styles.marqueeViewport}>
-                <div className={styles.marqueeTrack}>
-                  {showcaseFeatures.map((f, i) => (
-                    <div key={`${f.title}-${i}`} className={styles.showcaseCard}>
-                      <div className={styles.showcaseIconWrap}>
-                        <span className={styles.featureIcon}>{f.icon}</span>
-                      </div>
-                      <h3 className={styles.showcaseTitle}>{f.title}</h3>
-                      <p className={styles.showcaseDesc}>{f.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.featuresGrid}>
-              {visibleFeatures.map((f, i) => (
+            {/* Flagship bento — the six headline capabilities */}
+            <div className={styles.bentoGrid}>
+              {flagshipFeatures.map((f, i) => (
                 <div
                   key={f.title}
-                  className={styles.featureCard}
+                  className={styles.bentoCard}
+                  data-span={f.span === 2 ? '2' : undefined}
                   data-reveal
-                  style={{ '--i': i % 6 }}
+                  style={{ '--i': i % 3 }}
                 >
                   <div className={styles.featureIconWrap}>
                     <span className={styles.featureIcon}>{f.icon}</span>
                   </div>
-                  <h3 className={styles.featureTitle}>{f.title}</h3>
-                  <p className={styles.featureDesc}>{f.description}</p>
+                  <h3 className={styles.bentoTitle}>{f.title}</h3>
+                  <p className={styles.bentoDesc}>{f.description}</p>
+                  {f.code && <pre className={styles.bentoCode}>{f.code}</pre>}
+                  {f.visual === 'report' && <ReportPreview />}
                 </div>
               ))}
             </div>
 
-            <div className={styles.featuresToggleWrap} data-reveal>
-              <button
-                className={styles.btnExpand}
-                onClick={() => setShowAllFeatures((v) => !v)}
-                aria-expanded={showAllFeatures}
-              >
-                {showAllFeatures
-                  ? 'Show fewer'
-                  : `Show all ${features.length} features`}
-                <span
-                  className={styles.expandChevron}
-                  data-open={showAllFeatures ? '' : undefined}
-                  aria-hidden
+            {/* Compact toolkit — everything else, one line each */}
+            <div className={styles.moreHeader} data-reveal>
+              <h3 className={styles.moreTitle}>The complete toolkit</h3>
+              <p className={styles.moreSubtitle}>
+                Twelve more capabilities, all built in — no plugins, no extra setup.
+              </p>
+            </div>
+
+            <div className={styles.miniGrid}>
+              {moreFeatures.map((f, i) => (
+                <div
+                  key={f.title}
+                  className={styles.miniCard}
+                  data-reveal
+                  style={{ '--i': i % 4 }}
                 >
-                  ↓
-                </span>
-              </button>
+                  <span className={styles.miniIcon}>{f.icon}</span>
+                  <div className={styles.miniText}>
+                    <h4 className={styles.miniTitle}>{f.title}</h4>
+                    <p className={styles.miniDesc}>{f.short}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
