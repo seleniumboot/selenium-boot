@@ -187,11 +187,11 @@ function FaqItem({ item, isOpen, onToggle }) {
 export default function Home() {
   const { siteConfig } = useDocusaurusContext();
 
-  const [showAllFeatures, setShowAllFeatures] = useState(false);
+  const [showAllFeatures, setShowAllFeatures] = useState(true);
   const [openFaq, setOpenFaq] = useState(0);
 
-  const highlightFeatures = features.filter((f) => f.highlight);
-  const extraFeatures = features.filter((f) => !f.highlight);
+  const visibleFeatures = showAllFeatures ? features : features.slice(0, 8);
+  const showcaseFeatures = [...features, ...features];
 
   // Scroll-reveal: add data-visible attribute when element enters the viewport
   useEffect(() => {
@@ -321,8 +321,31 @@ export default function Home() {
               </p>
             </div>
 
+            <div className={styles.featureShowcase} data-reveal>
+              <div className={styles.showcaseHeader}>
+                <span className={styles.sectionTag}>Live feature showcase</span>
+                <p className={styles.showcaseText}>
+                  A wider toolkit appears at a glance, with a looping display that highlights the breadth of Selenium Boot in motion.
+                </p>
+              </div>
+
+              <div className={styles.marqueeViewport}>
+                <div className={styles.marqueeTrack}>
+                  {showcaseFeatures.map((f, i) => (
+                    <div key={`${f.title}-${i}`} className={styles.showcaseCard}>
+                      <div className={styles.showcaseIconWrap}>
+                        <span className={styles.featureIcon}>{f.icon}</span>
+                      </div>
+                      <h3 className={styles.showcaseTitle}>{f.title}</h3>
+                      <p className={styles.showcaseDesc}>{f.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className={styles.featuresGrid}>
-              {highlightFeatures.map((f, i) => (
+              {visibleFeatures.map((f, i) => (
                 <div
                   key={f.title}
                   className={styles.featureCard}
@@ -336,21 +359,6 @@ export default function Home() {
                   <p className={styles.featureDesc}>{f.description}</p>
                 </div>
               ))}
-
-              {showAllFeatures &&
-                extraFeatures.map((f, i) => (
-                  <div
-                    key={f.title}
-                    className={`${styles.featureCard} ${styles.featureCardReveal}`}
-                    style={{ '--i': i % 6 }}
-                  >
-                    <div className={styles.featureIconWrap}>
-                      <span className={styles.featureIcon}>{f.icon}</span>
-                    </div>
-                    <h3 className={styles.featureTitle}>{f.title}</h3>
-                    <p className={styles.featureDesc}>{f.description}</p>
-                  </div>
-                ))}
             </div>
 
             <div className={styles.featuresToggleWrap} data-reveal>
