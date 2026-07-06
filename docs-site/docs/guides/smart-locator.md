@@ -79,3 +79,13 @@ When `SmartLocator` resolves an element, it logs which strategy succeeded:
 ```
 
 This makes it easy to identify which locator is actually being used in CI logs.
+
+---
+
+## Related: Self-Healing Locators
+
+`SmartLocator` acts **up front** — you list the candidate locators yourself.
+[Self-Healing Locators](./self-healing) act **after** a locator fails, deriving
+fallbacks automatically from the original selector and logging every heal. Use
+`SmartLocator` where you anticipate variation, and leave self-healing on as a
+safety net for drift you didn't.

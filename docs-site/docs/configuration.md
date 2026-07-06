@@ -72,6 +72,11 @@ execution:
     capabilities:                   # raw sauce:options overrides
       recordVideo: true
 
+# ── Locators ─────────────────────────────────────────────────────────────────
+locators:
+  selfHealing: false        # auto-retry failed locators with derived fallbacks
+  testIdAttribute: data-testid  # attribute used by getByTestId()
+
 # ── Retry ───────────────────────────────────────────────────────────────────
 retry:
   enabled: true             # applies to all tests globally
@@ -201,6 +206,23 @@ Use `@Retryable` on a method to override the global setting for that specific te
 @Retryable(maxAttempts = 3)
 public void flakyTest() { ... }
 ```
+
+---
+
+## Locators
+
+### `selfHealing`
+When `true`, a locator that fails inside `waitForVisible` / `waitForClickable` is
+automatically retried with fallback strategies derived from the original `By`
+descriptor (extract `id`, `name`, text, class, `data-testid`, or `placeholder`).
+Healed tests get a `⚠ healed` badge in the HTML report, and every heal is written
+to `target/healed-locators.json`. Off by default. See
+[Self-Healing Locators](./guides/self-healing).
+
+### `testIdAttribute`
+The HTML attribute resolved by `getByTestId()`. Defaults to `data-testid`; set it
+to `data-qa`, `data-test`, etc. to match your app. See
+[Semantic Locators](./guides/semantic-locators).
 
 ---
 
