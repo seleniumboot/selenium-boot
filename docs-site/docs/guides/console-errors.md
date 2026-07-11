@@ -1,4 +1,5 @@
 ---
+description: "Catch JavaScript errors in Selenium tests: ConsoleErrorCollector captures browser console errors so silent JS failures fail the test."
 id: console-errors
 title: Console Error Collector
 sidebar_position: 11

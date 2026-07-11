@@ -1,4 +1,5 @@
 ---
+description: "API testing in Selenium Boot: write pure API tests or hybrid UI plus API tests in the same suite, config, and HTML report."
 sidebar_position: 13
 ---
 

@@ -1,4 +1,5 @@
 ---
+description: "BDD Selenium testing with Cucumber 7: driver lifecycle, screenshots on failure, and a step timeline in the HTML report, wired up out of the box."
 id: cucumber
 title: BDD / Cucumber
 sidebar_position: 11

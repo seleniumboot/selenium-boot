@@ -1,4 +1,5 @@
 ---
+description: "Selenium Boot emits JUnit-compatible XML that Jenkins, GitHub Actions, and GitLab CI parse natively for standard test result reporting."
 id: junit-xml
 title: JUnit XML
 sidebar_position: 2

@@ -1,4 +1,5 @@
 ---
+description: "Mock the browser clock in Selenium tests: freeze or advance JavaScript Date to test countdowns, trials, and time-sensitive UI deterministically."
 id: clock-mocking
 title: Clock Mocking
 sidebar_position: 14

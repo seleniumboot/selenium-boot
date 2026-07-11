@@ -1,4 +1,5 @@
 ---
+description: "Test file downloads in Selenium: DownloadManager polls the download directory, waits for the file to appear, and handles partial downloads."
 id: download-manager
 title: DownloadManager
 sidebar_position: 10

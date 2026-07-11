@@ -1,4 +1,5 @@
 ---
+description: "Parallel Selenium test execution: set the thread count in selenium-boot.yml and get thread-safe, isolated WebDriver instances automatically."
 id: parallel
 title: Parallel Execution
 sidebar_position: 5

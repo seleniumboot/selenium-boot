@@ -1,4 +1,5 @@
 ---
+description: "Automatic retry for flaky Selenium tests: Selenium Boot re-runs failures with no IRetryAnalyzer wiring, enabled in a single config line."
 id: retry
 title: Retry
 sidebar_position: 4

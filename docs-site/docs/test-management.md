@@ -1,4 +1,5 @@
 ---
+description: "Push Selenium test results to TestRail and Xray automatically: one annotation, no extra reporting code in your test methods."
 id: test-management
 title: TestRail & Xray Integration
 sidebar_position: 16

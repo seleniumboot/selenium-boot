@@ -1,4 +1,5 @@
 ---
+description: "Explicit waits in Selenium without Thread.sleep(): WaitEngine gives fluent, auto-configured waits driven by your selenium-boot.yml timeout."
 id: wait-engine
 title: WaitEngine
 sidebar_position: 3

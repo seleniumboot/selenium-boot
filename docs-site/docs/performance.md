@@ -1,4 +1,5 @@
 ---
+description: "Assert Core Web Vitals in Selenium tests: check LCP, CLS, and other Google performance metrics inline, with no proxy or external service."
 id: performance
 title: Performance Assertions
 sidebar_position: 16

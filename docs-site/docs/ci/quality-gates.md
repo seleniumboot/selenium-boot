@@ -1,4 +1,5 @@
 ---
+description: "Fail your CI build on a low pass rate or too many flaky tests. Configure Selenium test quality gates so a green pipeline never hides real failures."
 id: quality-gates
 title: Quality Gates
 sidebar_position: 3

@@ -1,4 +1,5 @@
 ---
+description: "Selenium Boot release notes and version history: new features, fixes, and breaking changes across every release."
 id: changelog
 title: Changelog
 sidebar_position: 99

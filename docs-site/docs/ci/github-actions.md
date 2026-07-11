@@ -1,4 +1,5 @@
 ---
+description: "Run Selenium tests in GitHub Actions: a copy-paste workflow that installs Chrome, runs the suite headless, and uploads the HTML report on every push."
 id: github-actions
 title: GitHub Actions
 sidebar_position: 1

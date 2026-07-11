@@ -1,4 +1,5 @@
 ---
+description: "Selenium Boot HTML report: a self-contained dashboard with pass-rate gauge, retries, screenshots, flakiness radar, and dark mode, no server needed."
 id: html-report
 title: HTML Report
 sidebar_position: 1

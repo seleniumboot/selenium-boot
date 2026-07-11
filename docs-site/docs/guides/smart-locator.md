@@ -1,4 +1,5 @@
 ---
+description: "SmartLocator tries multiple Selenium locator strategies in order and returns the first visible match: resilient locators for brittle selectors."
 id: smart-locator
 title: SmartLocator
 sidebar_position: 9

@@ -1,4 +1,5 @@
 ---
+description: "Use Selenium Boot with Gradle: the recommended build.gradle setup for running TestNG or JUnit 5 Selenium tests with the Maven Central JAR."
 id: gradle
 title: Gradle Build Support
 sidebar_position: 3

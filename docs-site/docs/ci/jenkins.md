@@ -1,4 +1,5 @@
 ---
+description: "Run Selenium tests on Jenkins: a ready Jenkinsfile pipeline that runs the suite, publishes JUnit results, and archives the Selenium Boot HTML report."
 id: jenkins
 title: Jenkins
 sidebar_position: 2
