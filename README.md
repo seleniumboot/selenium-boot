@@ -32,7 +32,9 @@ Selenium Boot is **the Spring Boot of Java test automation** — and that positi
 2. **Never hides Selenium (the constraint).** Unlike heavier abstractions, Selenium Boot never takes the raw `WebDriver` away from you. When the conventions don't fit, drop straight down to `WebDriver` / `By` / `WebElement`. Opinionated without being a cage.
 3. **Extensible toolkit (the escape hatch).** An SPI/registry plugin system (`DriverProviderRegistry`, `PluginRegistry`, `ReportAdapterRegistry`) makes it modular for the power users who need it — serving the opinionated core, not replacing it. Most users never touch it.
 
-**Why Selenium Boot instead of switching to Playwright?** Our real competitor isn't another Selenium framework — it's the pressure to leave Selenium entirely. Selenium Boot answers "why stay?" by bringing Playwright's best ideas to the Selenium ecosystem: **accessibility-first locators** (`getByRole` / `getByLabel` / `getByText`), **auto-waiting** so `Thread.sleep()` disappears, **web-first assertions**, and **convention over configuration** — all without hiding raw Selenium, and while keeping your existing Selenium/Java/TestNG stack, skills, and grid.
+**Already invested in Selenium?** Selenium Boot gives you the productivity features people love in Playwright — **accessibility-first locators** (`getByRole` / `getByLabel` / `getByText`), **auto-waiting** so `Thread.sleep()` disappears, and **web-first assertions** — while keeping your existing Selenium / Java / TestNG stack, team skills, and Selenium Grid. You get the modern ergonomics without leaving the ecosystem you've already built on, and without ever hiding raw Selenium.
+
+**Why not just build your own framework?** Most teams already have a home-grown `BaseTest` + `DriverFactory` + wait-utils they've rewritten a dozen times. Selenium Boot *is* that framework — maintained, tested, parallel-safe, and documented — so the driver lifecycle, retries, reporting, and CI wiring stop being unpaid infrastructure you own forever. You keep your test code; you delete the plumbing.
 
 > Selenium Boot is the Spring Boot of Selenium — zero setup, smarter defaults, Playwright-inspired APIs, and enterprise features, without hiding Selenium.
 
@@ -40,24 +42,25 @@ Selenium Boot is **the Spring Boot of Java test automation** — and that positi
 
 ## What You Get Out of the Box
 
-- Automatic WebDriver lifecycle management (no setup/teardown boilerplate)
-- YAML-based configuration with environment profile switching
-- Parallel execution with thread-safe driver isolation
-- Smart explicit waits via `WaitEngine` — no more `Thread.sleep()`
-- Automatic retry for flaky tests via `@Retryable`
-- Screenshot capture on failure, embedded in report
-- Advanced HTML report — pass rate gauge, donut chart, slowest tests, step timeline, dark mode
-- `BasePage` — wait-backed `click`, `type`, `getText`, `isDisplayed`, iFrame helpers, file upload
-- `SmartLocator` — tries multiple `By` strategies in order, returns first visible element
-- **Accessibility-first locators** — `getByRole`, `getByText`, `getByLabel`, `getByPlaceholder`, `getByTestId`, `getByAltText`, `getByTitle`; target the accessibility tree the user perceives, so tests survive CSS/DOM refactors (Playwright-style, auto-waiting)
-- `@PreCondition` — session-aware pre-conditions with automatic cookie + localStorage caching
-- `ConsoleErrorCollector` — capture JS console errors (Chrome via logs, Firefox via shim)
-- `DownloadManager` — poll download directory, handle partial files
-- `StepLogger` — named test steps with timestamps and per-step screenshots
-- **API testing** — `BaseApiTest` for pure API tests; fluent `ApiClient` with auth, schema validation, JSONPath; hybrid UI + API tests in the same suite
-- **Accessibility assertions** — `accessibility().withTags("wcag2a","wcag21aa").withLevel(Impact.SERIOUS).run()` — axe-core bundled in JAR, no extra dependency; scoped scans, exclude selectors, fluent `Impact` level filter
-- Plugin system — custom browser providers, report adapters, lifecycle hooks via Java SPI
-- CI-ready — auto-detects GitHub Actions, Jenkins, CircleCI; forces headless, emits JUnit XML
+Outcomes first — the API that delivers each one is named so you can find it in the docs.
+
+- **Never write driver setup or teardown again** — automatic WebDriver lifecycle, thread-safe per test
+- **Never write `Thread.sleep()` again** — auto-waiting `WaitEngine` with 10+ built-in conditions
+- **Tests survive CSS and DOM refactors** — accessibility-first locators (`getByRole`, `getByText`, `getByLabel`, `getByPlaceholder`, `getByTestId`, `getByAltText`, `getByTitle`) plus a `SmartLocator` fallback that tries multiple strategies
+- **Flaky tests stop failing your build** — automatic retry via `@Retryable`
+- **Run your whole suite in parallel, safely** — thread-isolated drivers, `parallel` in one YAML line
+- **Switch environments without touching code** — YAML config with environment profile switching
+- **See exactly why a test failed** — screenshot auto-captured on failure and embedded in the report
+- **Hand stakeholders a report they'll actually read** — HTML dashboard with pass-rate gauge, donut chart, slowest tests, step timeline, dark mode
+- **Write pages, not plumbing** — `BasePage` with wait-backed `click`, `type`, `getText`, `isDisplayed`, iFrame helpers, file upload
+- **Log in once, reuse the session** — `@PreCondition` with automatic cookie + localStorage caching
+- **Catch JavaScript errors your users would hit** — `ConsoleErrorCollector` (Chrome via logs, Firefox via shim)
+- **File download testing that just works** — `DownloadManager` polls the download dir and handles partial files
+- **Read the test like a spec** — `StepLogger` named steps with timestamps and per-step screenshots
+- **Test UI and API in the same suite** — `BaseApiTest` + fluent `ApiClient` with auth, schema validation, JSONPath; hybrid UI + API tests
+- **Accessibility testing in one line** — `accessibility().withTags("wcag2a","wcag21aa").run()`; axe-core bundled in the JAR, no extra dependency
+- **Extend it without forking it** — Java SPI plugins for custom browser providers, report adapters, lifecycle hooks
+- **CI that configures itself** — auto-detects GitHub Actions, Jenkins, CircleCI; forces headless, emits JUnit XML
 
 ---
 
