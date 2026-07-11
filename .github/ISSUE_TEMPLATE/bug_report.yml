@@ -1,0 +1,59 @@
+name: "🐛 Bug report"
+description: Report a defect in Selenium Boot so we can reproduce and fix it.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug! A minimal reproduction is the single most
+        helpful thing you can provide — it usually turns a multi-day investigation into a quick fix.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected instead.
+      placeholder: "When I run tests with `parallel: methods`, the driver from thread A is reused in thread B…"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps (ideally a tiny test class + the relevant `selenium-boot.yml`).
+      placeholder: |
+        1. selenium-boot.yml with `execution.parallel: methods`, `threadCount: 4`
+        2. Two test classes extending BaseTest that call `getDriver()`
+        3. Run `mvn test`
+        4. See NPE / wrong session in the report
+    validations:
+      required: true
+  - type: input
+    id: sb-version
+    attributes:
+      label: Selenium Boot version
+      placeholder: "3.1.1"
+    validations:
+      required: true
+  - type: input
+    id: java-version
+    attributes:
+      label: Java version
+      placeholder: "17.0.10 (Temurin)"
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser + driver version
+      placeholder: "Chrome 126 / chromedriver via Selenium Manager"
+    validations:
+      required: true
+  - type: textarea
+    id: stacktrace
+    attributes:
+      label: Stack trace / logs
+      description: Paste the full stack trace if applicable. This will be rendered as code, no backticks needed.
+      render: shell
+    validations:
+      required: false

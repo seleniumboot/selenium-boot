@@ -4,6 +4,44 @@ This document outlines the planned evolution of Selenium Boot from MVP to a stab
 
 The roadmap is intentionally opinionated and incremental. Each phase focuses on delivering production value before expanding scope.
 
+> **Contributors, start here.** Phases 0–5 below are complete (the framework is past v1.0). The list
+> immediately below is where active work and **open contribution opportunities** live today. The
+> [issue tracker](https://github.com/seleniumboot/selenium-boot/issues) is the source of truth for what's
+> actionable right now — this document is the higher-level picture.
+
+---
+
+## Post-1.0 — current focus & where help is welcome
+
+Items tagged **`good first issue`** or **`help wanted`** are open for contribution. Read
+[CONTRIBUTING.md](CONTRIBUTING.md), comment on the issue to claim it, then open a PR against `master`.
+
+### Documentation & discoverability (current priority)
+
+Most users find a framework by searching, not by browsing GitHub.
+
+- **Per-page SEO descriptions** across all docs pages — *in progress*.
+- **"Why" pages** — Why Selenium Boot? · Why not plain Selenium? · Why not Playwright? · Why accessibility-first locators? · Why WaitEngine? `good first issue`
+- **Recipes section** — task-titled, search-matched guides: upload a file, download a PDF, iframes, Shadow DOM, tables, infinite scroll, OAuth/SSO, alerts, drag & drop, REST + UI. `good first issue`
+- **Migration guides** — from Selenium + TestNG, from WebDriverManager, from Selenide, from Serenity; plus a "coming from Playwright" bridge (familiar vs. different, **not** a replacement claim). `help wanted`
+- **Homepage before/after** — a visual `wait.until(...)` → `click("#login")` comparison component. `enhancement`
+- **SEO hygiene** — verify `sitemap.xml` generation, tighten generic page `<title>`s. `good first issue`
+
+### Framework & ecosystem
+
+- More built-in `WaitEngine` conditions requested by users. `help wanted`
+- Additional first-class browser providers (Edge, Safari) via the existing SPI. `help wanted`
+- **seleniumboot-mcp** — keep MCP codegen output framework-native and accessibility-first as the API evolves. (See the [MCP repo](https://github.com/seleniumboot/selenium-mcp).)
+
+### Ongoing quality
+
+- Grow unit-test coverage for untested code paths. `good first issue`
+- Keep the consumer sample project (`selenium-boot-test`) in step with new features.
+
+> Don't see what you want to work on? Open a
+> [Discussion](https://github.com/seleniumboot/selenium-boot/discussions) — ideas that fit the
+> philosophy are welcome, and we'll turn agreed ones into issues.
+
 ---
 
 ## Guiding Roadmap Principles

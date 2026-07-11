@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Questions & feature discussions
+    url: https://github.com/seleniumboot/selenium-boot/discussions
+    about: Ask how-to questions or float an idea before opening a feature request.
+  - name: 📖 Documentation
+    url: https://seleniumboot.github.io/selenium-boot
+    about: Guides, configuration reference, and recipes.
+  - name: 🙌 Good first issues
+    url: https://github.com/seleniumboot/selenium-boot/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22
+    about: New here? These are scoped, self-contained tasks to get started.

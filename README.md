@@ -4,6 +4,8 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.seleniumboot/selenium-boot)](https://central.sonatype.com/artifact/io.github.seleniumboot/selenium-boot)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Good first issues](https://img.shields.io/github/issues/seleniumboot/selenium-boot/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/seleniumboot/selenium-boot/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 **[Documentation](https://seleniumboot.github.io/selenium-boot) · [Sample Project](https://github.com/seleniumboot/selenium-boot-test) · [Changelog](#project-status)**
 
@@ -677,7 +679,16 @@ Licensed under the [Apache License, Version 2.0](LICENSE).
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are warmly welcome — Selenium Boot is opinionated, and contributions that align with its philosophy (zero boilerplate, convention over configuration, never hide Selenium) help the whole community.
+
+**New here?** The best place to start:
+
+- 🙌 [**Good first issues**](https://github.com/seleniumboot/selenium-boot/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) — scoped, self-contained tasks
+- 🤝 [**Help wanted**](https://github.com/seleniumboot/selenium-boot/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) — larger pieces we'd love a hand with
+- 🗺️ [**Roadmap**](ROADMAP.md) — where the project is heading and where help fits
+- 💬 [**Discussions**](https://github.com/seleniumboot/selenium-boot/discussions) — questions and feature ideas
+
+Then read [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, the PR checklist, and the backward-compatibility policy. Bug reports and feature requests both have [issue templates](https://github.com/seleniumboot/selenium-boot/issues/new/choose) to guide you.
 
 ---
 
