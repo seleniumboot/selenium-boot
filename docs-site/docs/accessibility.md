@@ -1,4 +1,5 @@
 ---
+description: "Accessibility testing in Selenium: assert WCAG compliance with bundled axe-core in one line, inside your existing Selenium tests, no extra tools."
 id: accessibility
 title: Accessibility Assertions
 sidebar_position: 17

@@ -1,4 +1,5 @@
 ---
+description: "BaseTest is the one superclass every Selenium Boot test extends, the only setup required. Driver lifecycle, waits, and reporting come for free."
 id: base-test
 title: BaseTest
 sidebar_position: 1

@@ -1,4 +1,5 @@
 ---
+description: "Complete selenium-boot.yml configuration reference: browser, parallel threads, timeouts, retry, and CI quality gates, every option in one place."
 id: configuration
 title: Configuration Reference
 sidebar_position: 3

@@ -1,4 +1,5 @@
 ---
+description: "Log in once for all Selenium tests: @PreCondition runs setup once per thread and caches the session (cookies and localStorage) for every test."
 id: precondition
 title: "@PreCondition"
 sidebar_position: 12

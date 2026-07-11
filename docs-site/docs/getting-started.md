@@ -1,4 +1,5 @@
 ---
+description: "Get your first Selenium test running in under 5 minutes: add one dependency, extend BaseTest, and run, with no WebDriver setup or boilerplate."
 id: getting-started
 title: Getting Started
 sidebar_position: 2

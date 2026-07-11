@@ -1,4 +1,5 @@
 ---
+description: "Selenium Boot is the Spring Boot of Selenium: zero setup, Playwright-inspired locators and auto-waiting, and enterprise features, without hiding Selenium."
 id: intro
 title: Introduction
 sidebar_position: 1

@@ -1,4 +1,5 @@
 ---
+description: "Automatic screenshots on Selenium test failure, embedded as Base64 in the HTML report, with no external image files or storage to manage."
 id: screenshots
 title: Screenshots
 sidebar_position: 8

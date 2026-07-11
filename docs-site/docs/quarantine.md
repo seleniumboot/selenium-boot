@@ -1,4 +1,5 @@
 ---
+description: "Quarantine flaky Selenium tests: mark known-broken tests so the framework skips them automatically, without deleting or commenting out code."
 id: quarantine
 title: Test Quarantine
 sidebar_position: 15

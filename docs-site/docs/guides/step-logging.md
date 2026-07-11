@@ -1,4 +1,5 @@
 ---
+description: "Log named test steps in Selenium: StepLogger renders a timeline with screenshots inside each test's detail panel in the HTML report."
 id: step-logging
 title: Step Logging
 sidebar_position: 6

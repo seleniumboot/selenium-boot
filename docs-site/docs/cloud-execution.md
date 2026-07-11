@@ -1,4 +1,5 @@
 ---
+description: "Run Selenium tests on BrowserStack and Sauce Labs with zero code changes. Switch from local Chrome to cloud browsers by editing one config line."
 id: cloud-execution
 title: Cloud Execution
 sidebar_position: 12

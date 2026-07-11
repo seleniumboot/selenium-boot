@@ -1,4 +1,5 @@
 ---
+description: "Accessibility-first Selenium locators: Playwright-style getByRole, getByText, and getByLabel target the accessibility tree and survive CSS refactors."
 id: semantic-locators
 title: Accessibility-First Locators
 sidebar_position: 10

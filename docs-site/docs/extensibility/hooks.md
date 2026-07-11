@@ -1,4 +1,5 @@
 ---
+description: "Run code at suite and test lifecycle points in Selenium with ExecutionHook: inject setup, teardown, and failure handling without subclassing."
 id: hooks
 title: Execution Hooks
 sidebar_position: 2

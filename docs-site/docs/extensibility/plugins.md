@@ -1,4 +1,5 @@
 ---
+description: "Extend Selenium Boot with plugins: SeleniumBootPlugin adds behaviour alongside the framework, auto-discovered via Java SPI and ServiceLoader."
 id: plugins
 title: Plugins
 sidebar_position: 1

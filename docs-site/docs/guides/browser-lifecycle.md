@@ -1,4 +1,5 @@
 ---
+description: "Control the Selenium browser lifecycle: choose per-test or per-suite WebDriver sessions to balance execution speed against test isolation."
 id: browser-lifecycle
 title: Browser Lifecycle
 sidebar_position: 7

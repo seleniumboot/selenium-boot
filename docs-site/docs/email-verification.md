@@ -1,4 +1,5 @@
 ---
+description: "Verify emails in Selenium tests: assert confirmation links, password resets, and OTPs via Mailhog, Mailtrap, Graph API, or IMAP with the mailbox() API."
 id: email-verification
 title: Email Verification
 sidebar_position: 11

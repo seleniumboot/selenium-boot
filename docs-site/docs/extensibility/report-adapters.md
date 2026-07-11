@@ -1,4 +1,5 @@
 ---
+description: "Turn Selenium test results into any format with ReportAdapter: Slack messages, Allure, email summaries, or custom dashboards from the metrics JSON."
 id: report-adapters
 title: Report Adapters
 sidebar_position: 4

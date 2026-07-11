@@ -1,4 +1,5 @@
 ---
+description: "Add a custom WebDriver to Selenium Boot: plug in Edge, Safari, Appium, or a cloud driver via NamedDriverProvider without touching the framework."
 id: custom-drivers
 title: Custom Drivers
 sidebar_position: 3

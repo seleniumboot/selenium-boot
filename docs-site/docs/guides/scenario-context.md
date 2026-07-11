@@ -1,4 +1,5 @@
 ---
+description: "Share state between Selenium test steps safely: built-in scenario and suite context stores replace static fields and thread-unsafe globals."
 sidebar_position: 15
 ---
 

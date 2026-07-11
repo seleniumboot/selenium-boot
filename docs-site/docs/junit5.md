@@ -1,4 +1,5 @@
 ---
+description: "Run Selenium Boot with JUnit 5: opt in via @ExtendWith(SeleniumBootExtension) or BaseJUnit5Test for the same lifecycle, waits, and reporting as TestNG."
 id: junit5
 title: JUnit 5 Support
 sidebar_position: 10

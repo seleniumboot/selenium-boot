@@ -1,4 +1,5 @@
 ---
+description: "API authentication for Selenium API tests: Bearer token, Basic auth, and OAuth2 client credentials supported out of the box."
 sidebar_position: 14
 ---
 

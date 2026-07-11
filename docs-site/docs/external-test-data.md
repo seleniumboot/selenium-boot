@@ -1,4 +1,5 @@
 ---
+description: "Data-driven Selenium tests: load @TestData rows from CSV files, Excel workbooks, and live database queries with no extra boilerplate."
 id: external-test-data
 title: External Test Data Sources
 sidebar_position: 13

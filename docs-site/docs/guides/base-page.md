@@ -1,4 +1,5 @@
 ---
+description: "BasePage in Selenium Boot: wait-backed click, type, getText, dropdown, iframe, and upload helpers so you never write raw Selenium in page objects."
 id: base-page
 title: BasePage
 sidebar_position: 2
