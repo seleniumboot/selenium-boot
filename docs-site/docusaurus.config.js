@@ -4,7 +4,7 @@ const { themes } = require('prism-react-renderer');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Selenium Boot',
-  tagline: 'Zero-boilerplate Java test automation — inspired by Spring Boot',
+  tagline: 'The Spring Boot of Selenium — Playwright-inspired APIs, zero setup, without hiding Selenium',
   favicon: 'img/logo.svg',
 
   url: 'https://seleniumboot.github.io',

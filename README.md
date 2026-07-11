@@ -1,6 +1,6 @@
 # Selenium Boot
 
-**A Zero-Boilerplate, Production-Ready Framework for Java QA Automation**
+**The Spring Boot of Selenium — Playwright-inspired APIs, zero setup, and enterprise features, without hiding Selenium**
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.seleniumboot/selenium-boot)](https://central.sonatype.com/artifact/io.github.seleniumboot/selenium-boot)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
@@ -23,6 +23,18 @@
 Selenium Boot is a zero-boilerplate, production-ready automation framework for Java Selenium, inspired by the philosophy of Spring Boot.
 
 It eliminates repetitive boilerplate by providing sensible defaults, a standardized project structure, and a convention-over-configuration approach — while keeping Selenium fully visible and accessible.
+
+### Design Philosophy
+
+Selenium Boot is **the Spring Boot of Java test automation** — and that positioning is deliberately layered:
+
+1. **Opinionated core (primary).** Convention over configuration, zero boilerplate by default. Add one dependency, extend `BaseTest` / `BasePage`, and the framework has already made the sensible decisions — driver lifecycle, waits, retries, reporting, CI wiring. `selenium-boot.yml` is optional; `SeleniumBootDefaults` covers you if you never write it.
+2. **Never hides Selenium (the constraint).** Unlike heavier abstractions, Selenium Boot never takes the raw `WebDriver` away from you. When the conventions don't fit, drop straight down to `WebDriver` / `By` / `WebElement`. Opinionated without being a cage.
+3. **Extensible toolkit (the escape hatch).** An SPI/registry plugin system (`DriverProviderRegistry`, `PluginRegistry`, `ReportAdapterRegistry`) makes it modular for the power users who need it — serving the opinionated core, not replacing it. Most users never touch it.
+
+**Why Selenium Boot instead of switching to Playwright?** Our real competitor isn't another Selenium framework — it's the pressure to leave Selenium entirely. Selenium Boot answers "why stay?" by bringing Playwright's best ideas to the Selenium ecosystem: **accessibility-first locators** (`getByRole` / `getByLabel` / `getByText`), **auto-waiting** so `Thread.sleep()` disappears, **web-first assertions**, and **convention over configuration** — all without hiding raw Selenium, and while keeping your existing Selenium/Java/TestNG stack, skills, and grid.
+
+> Selenium Boot is the Spring Boot of Selenium — zero setup, smarter defaults, Playwright-inspired APIs, and enterprise features, without hiding Selenium.
 
 ---
 

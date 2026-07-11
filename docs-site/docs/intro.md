@@ -37,6 +37,31 @@ No `WebDriver` setup. No `@AfterMethod` teardown. No wait helpers. No retry conf
 
 ---
 
+## Design philosophy
+
+People often ask whether Selenium Boot is meant to be an opinionated framework, an extensible toolkit, or a thin productivity layer over Selenium. It's **the Spring Boot of Java test automation** — and the answer is layered, not equal parts of all three:
+
+1. **Opinionated core (primary).** Convention over configuration, zero boilerplate by default. Add one dependency, extend `BaseTest` / `BasePage`, and the framework has already made the sensible decisions for you. `selenium-boot.yml` is optional — `SeleniumBootDefaults` covers you if you never write it.
+2. **Never hides Selenium (the constraint).** Unlike heavier abstractions, Selenium Boot never takes the raw `WebDriver` away from you. When the conventions don't fit, drop straight down to `WebDriver` / `By` / `WebElement`. Opinionated without being a cage.
+3. **Extensible toolkit (the escape hatch).** An SPI/registry plugin system (`DriverProviderRegistry`, `PluginRegistry`, `ReportAdapterRegistry`) makes it modular for the power users who need it — serving the opinionated core, not replacing it. Most users never touch it.
+
+### Why not just switch to Playwright?
+
+Selenium Boot's real competitor isn't another Selenium framework — it's the pull to abandon Selenium altogether. Selenium Boot answers "why stay?" by bringing Playwright's best ideas to the Selenium ecosystem:
+
+| Playwright idea | In Selenium Boot |
+|---|---|
+| Accessibility-first locators | `getByRole`, `getByLabel`, `getByText`, `getByPlaceholder`, `getByTestId` — target the accessibility tree, survive CSS/DOM refactors |
+| Auto-waiting | `WaitEngine`-backed actions — `Thread.sleep()` disappears |
+| Web-first assertions | `assertThat(...)` that auto-retries until true |
+| Convention over configuration | Zero-boilerplate defaults, optional `selenium-boot.yml` |
+
+…all **without hiding raw Selenium**, and while keeping your existing Selenium / Java / TestNG stack, team skills, and Selenium Grid.
+
+> Selenium Boot is the Spring Boot of Selenium — zero setup, smarter defaults, Playwright-inspired APIs, and enterprise features, without hiding Selenium.
+
+---
+
 :::tip AI-powered test authoring
 **seleniumboot-mcp** lets Claude or GitHub Copilot control a real browser, record your session, and
 generate Selenium Boot test code — TestNG, JUnit 5, Page Object, Gherkin, C# NUnit — in one prompt.
