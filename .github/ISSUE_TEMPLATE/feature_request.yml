@@ -1,0 +1,47 @@
+name: "✨ Feature request"
+description: Suggest a feature or improvement that fits the framework's philosophy.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Selenium Boot is deliberately opinionated — **simplicity is its main feature.** Features that
+        add significant complexity without clear user value may be declined. For open-ended ideas,
+        please start a [Discussion](https://github.com/seleniumboot/selenium-boot/discussions) first.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: Describe the problem you're solving — not just the solution. What can't you do today?
+      placeholder: "There's no built-in way to assert on a downloaded PDF's contents, only that a file appeared."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would the API / behaviour look like? A code sketch of the ideal usage helps a lot.
+      placeholder: |
+        downloads().waitForFile("*.pdf").assertTextContains("Invoice #123");
+    validations:
+      required: true
+  - type: dropdown
+    id: philosophy
+    attributes:
+      label: Philosophy fit
+      description: How does this fit "zero boilerplate, convention over configuration, single dependency"?
+      options:
+        - "Works with zero config (a sensible default)"
+        - "Opt-in via selenium-boot.yml, off by default"
+        - "Opt-in via annotation / method call"
+        - "Not sure — happy to discuss"
+    validations:
+      required: true
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints
+      options:
+        - label: This can be added without a new external dependency (or I've noted why one is needed)
+        - label: This does not break existing `@SeleniumBootApi` public APIs
