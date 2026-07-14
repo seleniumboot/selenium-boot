@@ -36,7 +36,22 @@ getWait().waitForText(By.cssSelector("h1"), "Welcome back");
 ### Attribute value
 
 ```java
-getWait().waitForAttributeContains(By.id("status"), "class", "active");
+getWait().waitForAttributeContains(By.id("status"), "class", "active");  // substring
+getWait().waitForAttribute(By.id("status"), "aria-expanded", "true");    // exact match
+```
+
+### Text matches (regex)
+
+```java
+// Wait until the element's visible text matches a regular expression
+getWait().waitForTextMatches(By.cssSelector(".total"), "\\$\\d+\\.\\d{2}");
+```
+
+### URL matches (regex)
+
+```java
+getWait().waitForUrlContains("/orders");            // substring
+getWait().waitForUrlMatches(".*/orders/\\d+");      // regular expression
 ```
 
 ### DOM staleness
