@@ -7,6 +7,13 @@ const sidebars = {
     'configuration',
     {
       type: 'category',
+      label: 'Migration',
+      items: [
+        'migration/from-selenium-testng',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Core Guides',
       collapsed: false,
       items: [
