@@ -1,6 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
-  <rect width="40" height="40" rx="8" fill="#303f9f"/>
-  <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle"
-        font-family="'Segoe UI', Arial, sans-serif" font-weight="700"
-        font-size="16" fill="#ffffff" letter-spacing="0.5">SB</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Selenium Boot">
+  <defs>
+    <linearGradient id="sbGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4CC15A"/>
+      <stop offset="1" stop-color="#1E5B7B"/>
+    </linearGradient>
+  </defs>
+  <!-- Hexagon container -->
+  <path d="M32 6 L54.5 19 L54.5 45 L32 58 L9.5 45 L9.5 19 Z"
+        fill="none" stroke="url(#sbGrad)" stroke-width="5"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Stylized S -->
+  <path d="M31 23 C31 19, 20 19, 20 25 C20 30, 31 30, 31 36 C31 42, 20 42, 20 38"
+        fill="none" stroke="url(#sbGrad)" stroke-width="5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Check mark -->
+  <path d="M34 33 L39 39 L47 26"
+        fill="none" stroke="url(#sbGrad)" stroke-width="5"
+        stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
