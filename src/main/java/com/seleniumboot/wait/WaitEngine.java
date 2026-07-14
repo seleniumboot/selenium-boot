@@ -17,6 +17,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.regex.Pattern;
 
 /**
  * Centralized explicit wait handler.
@@ -90,6 +91,31 @@ public final class WaitEngine {
         return DriverManager.getDriver().findElement(locator);
     }
 
+    /**
+     * Waits until the element's attribute equals {@code value} exactly.
+     * Use {@link #waitForAttributeContains(By, String, String)} for a substring match.
+     *
+     * <pre>
+     * WaitEngine.waitForAttribute(By.id("status"), "aria-expanded", "true");
+     * </pre>
+     */
+    public static WebElement waitForAttribute(By locator, String attribute, String value) {
+        createWait().until(ExpectedConditions.attributeToBe(locator, attribute, value));
+        return DriverManager.getDriver().findElement(locator);
+    }
+
+    /**
+     * Waits until the element's visible text matches the given regular expression.
+     *
+     * <pre>
+     * WaitEngine.waitForTextMatches(By.cssSelector(".total"), "\\$\\d+\\.\\d{2}");
+     * </pre>
+     */
+    public static WebElement waitForTextMatches(By locator, String textRegex) {
+        createWait().until(ExpectedConditions.textMatches(locator, Pattern.compile(textRegex)));
+        return DriverManager.getDriver().findElement(locator);
+    }
+
     // ----------------------------------------------------------
     // Navigation
     // ----------------------------------------------------------
@@ -102,6 +128,19 @@ public final class WaitEngine {
     public static boolean waitForUrlContains(String partialUrl) {
         return createWait()
                 .until(ExpectedConditions.urlContains(partialUrl));
+    }
+
+    /**
+     * Waits until the current URL matches the given regular expression.
+     * Use {@link #waitForUrlContains(String)} for a simple substring match.
+     *
+     * <pre>
+     * WaitEngine.waitForUrlMatches(".*&#47;orders&#47;\\d+");
+     * </pre>
+     */
+    public static boolean waitForUrlMatches(String urlRegex) {
+        return createWait()
+                .until(ExpectedConditions.urlMatches(urlRegex));
     }
 
     public static void waitForPageLoad() {
