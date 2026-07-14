@@ -11,6 +11,7 @@ const sidebars = {
       items: [
         'migration/from-selenium-testng',
         'migration/from-webdrivermanager',
+        'migration/coming-from-playwright',
       ],
     },
     {
