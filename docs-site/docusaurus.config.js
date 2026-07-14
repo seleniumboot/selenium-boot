@@ -5,7 +5,7 @@ const { themes } = require('prism-react-renderer');
 const config = {
   title: 'Selenium Boot',
   tagline: 'The Spring Boot of Selenium — Playwright-inspired APIs, zero setup, without hiding Selenium',
-  favicon: 'img/logo.svg',
+  favicon: 'img/favicon.svg',
 
   url: 'https://seleniumboot.github.io',
   baseUrl: '/selenium-boot/',
