@@ -1,7 +1,8 @@
 ---
 description: "Self-healing Selenium locators: when a selector breaks, the framework falls back through id, name, text, and data-testid and flags every heal."
 id: self-healing
-title: Self-Healing Locators
+title: Selenium Self-Healing Locators
+sidebar_label: Self-Healing Locators
 sidebar_position: 10
 ---
 

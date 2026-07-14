@@ -36,6 +36,13 @@ const config = {
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
+        // Explicit so sitemap generation can't be silently disabled.
+        // Ships with preset-classic; emits build/sitemap.xml listing all pages.
+        sitemap: {
+          changefreq: 'weekly',
+          priority: 0.5,
+          filename: 'sitemap.xml',
+        },
       }),
     ],
   ],
