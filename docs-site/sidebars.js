@@ -2,6 +2,15 @@
 const sidebars = {
   docsSidebar: [
     'intro',
+    {
+      type: 'category',
+      label: 'Why Selenium Boot',
+      items: [
+        'why/why-selenium-boot',
+        'why/why-not-plain-selenium',
+        'why/why-not-playwright',
+      ],
+    },
     'getting-started',
     'gradle',
     'configuration',
