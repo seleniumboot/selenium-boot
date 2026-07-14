@@ -56,6 +56,16 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Recipes',
+      items: [
+        'recipes/upload-a-file',
+        'recipes/download-and-verify-a-pdf',
+        'recipes/handle-iframes',
+        'recipes/handle-shadow-dom',
+      ],
+    },
+    {
+      type: 'category',
       label: 'CI / CD',
       items: [
         'ci/github-actions',
