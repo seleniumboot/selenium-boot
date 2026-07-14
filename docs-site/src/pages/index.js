@@ -292,6 +292,55 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ── Before / After ───────────────────────────────────────────────── */}
+        <section className={styles.compareSection}>
+          <div className="container">
+            <div className={styles.sectionHeader} data-reveal>
+              <span className={styles.sectionTag}>Before / After</span>
+              <h2 className={styles.sectionTitle}>Same test.<br />None of the plumbing.</h2>
+              <p className={styles.sectionSubtitle}>
+                Selenium Boot lets your team focus on testing, not framework engineering.
+                The waits, the driver setup, the boilerplate — handled.
+              </p>
+            </div>
+
+            <div className={styles.compareGrid} data-reveal>
+              <div className={styles.compareCol}>
+                <span className={styles.compareLabel} data-kind="before">Plain Selenium</span>
+                <CodeWindow
+                  filename="LoginTest.java"
+                  className={styles.compareWindow}
+                  code={`WebDriverWait wait = new WebDriverWait(
+    driver, Duration.ofSeconds(10));
+
+wait.until(ExpectedConditions
+    .elementToBeClickable(By.id("login")))
+    .click();
+
+wait.until(ExpectedConditions.textToBe(
+    By.cssSelector("h1"), "Welcome"));`}
+                />
+              </div>
+
+              <div className={styles.compareArrow} aria-hidden>
+                <span className={styles.compareArrowIcon}>→</span>
+                <span className={styles.compareArrowLabel}>Selenium Boot</span>
+              </div>
+
+              <div className={styles.compareCol}>
+                <span className={styles.compareLabel} data-kind="after">Selenium Boot</span>
+                <CodeWindow
+                  filename="LoginTest.java"
+                  className={styles.compareWindow}
+                  code={`$("#login").click();   // auto-waits
+
+assertThat($("h1")).hasText("Welcome");`}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── Features ─────────────────────────────────────────────────────── */}
         <section className={styles.featuresSection}>
           <div className="container">

@@ -400,6 +400,85 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   BEFORE / AFTER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.compareSection {
+  padding: 5.5rem 0;
+  background: var(--ifm-background-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.compareGrid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.compareCol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;               /* let code windows scroll instead of overflow */
+}
+
+.compareLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.compareLabel::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.compareLabel[data-kind="before"] { color: #f87171; }
+.compareLabel[data-kind="after"]  { color: #34d399; }
+
+/* Solid dark code surface so it reads in both light and dark themes */
+.compareWindow {
+  align-self: start;
+  width: 100%;
+  background: #0b0b14;
+  border-color: rgba(255,255,255,0.09);
+}
+
+.compareArrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #818cf8;
+  padding-top: 1.6rem;        /* nudge down to align with code, past the label row */
+}
+
+.compareArrowIcon {
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.compareArrowLabel {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    FEATURES
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -1032,6 +1111,22 @@
 
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .compareGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .compareArrow {
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 0;
+  }
+
+  .compareArrowIcon {
+    transform: rotate(90deg);   /* point down when stacked */
   }
 
   .bentoGrid {
