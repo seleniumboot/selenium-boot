@@ -83,7 +83,7 @@ public class LoginTest extends BaseTest {
 }
 ```
 
-- **No `WebDriverManager`.** Modern Selenium (4.6+) bundles **Selenium Manager**, which downloads the right driver binary automatically. Selenium Boot uses it — delete the `.setup()` calls and the dependency.
+- **No `WebDriverManager`.** Modern Selenium (4.6+) bundles **Selenium Manager**, which downloads the right driver binary automatically. Selenium Boot uses it — delete the `.setup()` calls and the dependency. See [Migrate from WebDriverManager](/docs/migration/from-webdrivermanager) for the details.
 - **No `ThreadLocal`.** `DriverManager` isolates the driver per thread, so [parallel runs](/docs/guides/parallel) are safe out of the box.
 - Need the raw driver? It's still there: `getDriver()`.
 

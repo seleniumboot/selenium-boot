@@ -10,6 +10,7 @@ const sidebars = {
       label: 'Migration',
       items: [
         'migration/from-selenium-testng',
+        'migration/from-webdrivermanager',
       ],
     },
     {
