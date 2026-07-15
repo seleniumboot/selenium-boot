@@ -7,8 +7,8 @@ const config = {
   tagline: 'The Spring Boot of Selenium — Playwright-inspired APIs, zero setup, without hiding Selenium',
   favicon: 'img/favicon.svg',
 
-  url: 'https://seleniumboot.github.io',
-  baseUrl: '/selenium-boot/',
+  url: 'https://docs.seleniumboot.com',
+  baseUrl: '/',
 
   organizationName: 'seleniumboot',
   projectName: 'selenium-boot',
