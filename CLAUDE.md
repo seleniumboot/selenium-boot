@@ -131,11 +131,18 @@ When upgrading the project version, **always update all places the version is re
 | `docs-site/src/pages/index.js` | Maven dependency snippet in hero section |
 | `PLAN.md` | Released versions table |
 
+**Outside this repo** — the marketing site ships the version too, so a bump here without
+a bump there advertises a stale release on seleniumboot.com:
+
+| Repo / File | Location |
+|---|---|
+| `seleniumboot/website` → `src/data/content.ts` | `LATEST_VERSION` — feeds the copy-to-clipboard Maven snippet in the homepage CTA |
+
 Also add a new changelog entry in `CHANGELOG.md` and `docs-site/docs/changelog.md` describing what changed. The full version history lives in `CHANGELOG.md` (extracted from the README); the README only keeps a one-line "Current release" pointer.
 
 ### Release checklist (every version bump)
 
-1. Update all version references in the table above.
+1. Update all version references in the in-repo table above.
 2. Add the `CHANGELOG.md` + `docs-site/docs/changelog.md` entries.
 3. Commit and push.
 4. **Tag the release commit and push the tag** — lightweight tag named `vX.Y.Z`
@@ -153,6 +160,10 @@ Also add a new changelog entry in `CHANGELOG.md` and `docs-site/docs/changelog.m
    Verify with `gh release list` (newest version should show "Latest").
 6. Publish to Maven Central (`mvn deploy`) and finish the manual publish in the
    Central Portal (see Publishing below).
+7. **Last**, bump `LATEST_VERSION` in the `seleniumboot/website` repo and push to
+   `main` (Actions deploys it). Do this *after* the artifact is live on Central —
+   the homepage snippet is copy-to-clipboard, so bumping earlier hands visitors a
+   `pom.xml` that won't resolve yet.
 
 ## Publishing
 
