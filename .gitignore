@@ -52,3 +52,11 @@ docs-site/.docusaurus/
 docs-site/build/
 
 articles/*
+
+*.log
+*.env
+
+### Test-generated visual baselines ###
+# VisualAssert tests write throwaway timestamped baseline PNGs here during runs.
+# Guard against a failed cleanup dirtying the tree or committing throwaway images.
+src/test/resources/baselines/*.png
