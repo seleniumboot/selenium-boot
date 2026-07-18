@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * Rules:
  * <li>One WebDriver per thread</li>
  * <li>ThreadLocal ownership</li>
- * <li>Framework-managed creation & destruction only</li>
+ * <li>Framework-managed creation &amp; destruction only</li>
  * <li>Session limit is enforced with a blocking Semaphore — tests wait for a slot
  *     rather than failing fast, preventing spurious failures under parallel load</li>
  */

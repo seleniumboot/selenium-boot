@@ -85,7 +85,7 @@ Classes/methods annotated `@SeleniumBootApi` are the stable public surface. Avoi
 
 ## Tests
 
-Unit tests are in `src/test/java/com/seleniumboot/unit/` (12 test classes). They use **TestNG + Mockito**. Tests mock Selenium/browser interactions — no real browser is required to run the test suite.
+Unit tests are in `src/test/java/com/seleniumboot/unit/` (39 test classes, 480 tests). They use **TestNG + Mockito**. Tests mock Selenium/browser interactions — no real browser is required to run the test suite.
 
 ## Configuration Reference
 
