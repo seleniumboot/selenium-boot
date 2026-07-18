@@ -86,7 +86,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>3.1.1</version>
+    <version>3.2.0</version>
 </dependency>
 ```
 
@@ -652,7 +652,7 @@ ci:
 
 ## Project Status
 
-**Current release: v3.1.1** — per-engine report output dir (`seleniumboot.reports.dir`), fixing report overwrites when TestNG + JUnit 5 run in one build.
+**Current release: v3.2.0** — three new `WaitEngine` conditions: `waitForAttribute` (exact-match attribute), `waitForUrlMatches`, and `waitForTextMatches` (regex).
 
 See the full version history in **[CHANGELOG.md](CHANGELOG.md)**.
 

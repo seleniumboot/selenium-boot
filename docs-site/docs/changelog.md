@@ -11,6 +11,17 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [3.2.0] — 2026-07-18
+
+### Added
+- **Three new `WaitEngine` conditions**, consistent with the existing `waitFor*` naming:
+  - `waitForAttribute(By, attribute, value)` — waits for an exact attribute match (see `waitForAttributeContains` for a substring match).
+  - `waitForUrlMatches(String regex)` — waits for the current URL to match a regular expression (see `waitForUrlContains` for a substring match).
+  - `waitForTextMatches(By, String regex)` — waits for an element's visible text to match a regular expression.
+  - Purely additive to the `@SeleniumBootApi` surface — no breaking changes.
+
+---
+
 ## [3.1.1] — 2026-06-26
 
 ### Fixed
