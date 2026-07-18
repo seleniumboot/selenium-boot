@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+### v3.2.0 — 2026-07-18
+
+- **Three new `WaitEngine` conditions**, consistent with the existing `waitFor*` naming:
+  - `waitForAttribute(By, attribute, value)` — waits for an exact attribute match (use the existing `waitForAttributeContains` for a substring match)
+  - `waitForUrlMatches(String regex)` — waits for the current URL to match a regular expression (use the existing `waitForUrlContains` for a substring match)
+  - `waitForTextMatches(By, String regex)` — waits for an element's visible text to match a regular expression
+  - Purely additive to the `@SeleniumBootApi` surface — no breaking changes. (Closes #12)
+
 ### v3.1.1 — 2026-06-26
 
 - **Per-engine report output directory** — the metrics JSON, HTML report, and metrics history now honor the `seleniumboot.reports.dir` system property (the same switch already used for the JUnit XML report), defaulting to `target` as before. This fixes the HTML report being **overwritten** when two test engines run in one build — e.g. a TestNG suite (Surefire) and JUnit 5 tests (Failsafe): point each engine's run at its own directory (`-Dseleniumboot.reports.dir=target/junit5`) and each produces a self-contained report instead of the last one clobbering the first.

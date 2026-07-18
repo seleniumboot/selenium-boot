@@ -32,7 +32,7 @@ body:
     id: sb-version
     attributes:
       label: Selenium Boot version
-      placeholder: "3.1.1"
+      placeholder: "3.2.0"
     validations:
       required: true
   - type: input

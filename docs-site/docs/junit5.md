@@ -17,7 +17,7 @@ Selenium Boot supports both **TestNG** (built-in) and **JUnit 5** (opt-in). The 
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>3.1.1</version>
+    <version>3.2.0</version>
 </dependency>
 
 <dependency>
