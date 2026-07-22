@@ -18,6 +18,30 @@ const config = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
+  // GoatCounter — cookieless, no personal data, no consent banner (same account as
+  // seleniumboot.com, see the site's /privacy page).
+  //
+  // Docs and the marketing site report into ONE GoatCounter site, so raw paths would
+  // collide: the apex homepage and the docs homepage both count as "/". The first
+  // script namespaces every docs hit under "/docs-site/..." so the two hostnames stay
+  // separable in the dashboard. Order matters — settings must run before count.js.
+  headTags: [
+    {
+      tagName: 'script',
+      attributes: { type: 'text/javascript' },
+      innerHTML:
+        "window.goatcounter={path:function(p){return '/docs-site'+p;}};",
+    },
+    {
+      tagName: 'script',
+      attributes: {
+        async: 'true',
+        src: 'https://gc.zgo.at/count.js',
+        'data-goatcounter': 'https://seleniumboot.goatcounter.com/count',
+      },
+    },
+  ],
+
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
