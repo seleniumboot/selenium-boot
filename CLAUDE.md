@@ -77,7 +77,7 @@ All source lives under `src/main/java/com/seleniumboot/`. Key packages:
 - **Registry + SPI** — `DriverProviderRegistry`, `PluginRegistry`, `ReportAdapterRegistry` use `ServiceLoader` for extensibility.
 - **ThreadLocal driver isolation** — `DriverManager` stores `WebDriver` per thread; safe for parallel TestNG execution.
 - **Template Method** — `BaseTest` / `BasePage` define framework-managed lifecycle; users override hook methods.
-- **Convention over configuration** — `SeleniumBootDefaults` provides sensible defaults; `selenium-boot.yml` is optional.
+- **Convention over configuration** — `SeleniumBootDefaults` supplies fallbacks for optional fields, but `selenium-boot.yml` itself is **required**: `ConfigurationLoader` throws if the file is absent, and validates that `execution.mode`, `browser.name` (or `browser.matrix`), `timeouts.explicit` and `timeouts.pageLoad` are all present and positive.
 
 ### Public API Contract
 

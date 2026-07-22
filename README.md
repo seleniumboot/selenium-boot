@@ -7,7 +7,89 @@
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Good first issues](https://img.shields.io/github/issues/seleniumboot/selenium-boot/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/seleniumboot/selenium-boot/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
-**[Documentation](https://seleniumboot.github.io/selenium-boot) · [Sample Project](https://github.com/seleniumboot/selenium-boot-test) · [Changelog](#project-status)**
+**[Documentation](https://docs.seleniumboot.com) · [Sample Project](https://github.com/seleniumboot/selenium-boot-test) · [Changelog](#project-status)**
+
+---
+
+## Quickstart — a green test in 60 seconds
+
+Three files. Copy them as-is and `mvn test` goes green against a real Chrome.
+
+**Prerequisites:** Java 17+, Maven 3.8+, Chrome installed. No WebDriver binaries — Selenium Manager fetches them.
+
+**1. `pom.xml`**
+
+```xml
+<properties>
+    <maven.compiler.release>17</maven.compiler.release>
+</properties>
+
+<dependencies>
+    <dependency>
+        <groupId>io.github.seleniumboot</groupId>
+        <artifactId>selenium-boot</artifactId>
+        <version>3.2.0</version>
+    </dependency>
+</dependencies>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.11.0</version>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.2.5</version>
+        </plugin>
+    </plugins>
+</build>
+```
+
+**2. `selenium-boot.yml`** — project root, next to `pom.xml`. This is the complete minimum; every key below is required.
+
+```yaml
+execution:
+  mode: local
+  baseUrl: https://example.com
+
+browser:
+  name: chrome
+
+timeouts:
+  explicit: 10
+  pageLoad: 30
+```
+
+**3. `src/test/java/SmokeTest.java`**
+
+```java
+import com.seleniumboot.test.BaseTest;
+import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertTrue;
+
+public class SmokeTest extends BaseTest {
+
+    @Test
+    public void opensThePage() {
+        open();
+        assertTrue(getDriver().getTitle().contains("Example Domain"));
+    }
+}
+```
+
+Then:
+
+```bash
+mvn test
+```
+
+No driver setup, no teardown, no waits, no `WebDriver` to manage — `BaseTest` owns the lifecycle. The HTML report lands at `target/selenium-boot-report.html`.
+
+Next: [the full Getting Started walkthrough](#getting-started) adds page objects, parallel execution, and reporting.
 
 ---
 
@@ -30,7 +112,7 @@ It eliminates repetitive boilerplate by providing sensible defaults, a standardi
 
 Selenium Boot is **the Spring Boot of Java test automation** — and that positioning is deliberately layered:
 
-1. **Opinionated core (primary).** Convention over configuration, zero boilerplate by default. Add one dependency, extend `BaseTest` / `BasePage`, and the framework has already made the sensible decisions — driver lifecycle, waits, retries, reporting, CI wiring. `selenium-boot.yml` is optional; `SeleniumBootDefaults` covers you if you never write it.
+1. **Opinionated core (primary).** Convention over configuration, zero boilerplate by default. Add one dependency, extend `BaseTest` / `BasePage`, and the framework has already made the sensible decisions — driver lifecycle, waits, retries, reporting, CI wiring. `selenium-boot.yml` stays short — a handful of required keys, and `SeleniumBootDefaults` covers the rest.
 2. **Never hides Selenium (the constraint).** Unlike heavier abstractions, Selenium Boot never takes the raw `WebDriver` away from you. When the conventions don't fit, drop straight down to `WebDriver` / `By` / `WebElement`. Opinionated without being a cage.
 3. **Extensible toolkit (the escape hatch).** An SPI/registry plugin system (`DriverProviderRegistry`, `PluginRegistry`, `ReportAdapterRegistry`) makes it modular for the power users who need it — serving the opinionated core, not replacing it. Most users never touch it.
 
@@ -90,11 +172,20 @@ Add to your `pom.xml`:
 </dependency>
 ```
 
-Also add the Surefire plugin so `mvn test` discovers TestNG tests:
+Also pin the compiler plugin and add Surefire so `mvn test` discovers TestNG tests:
 
 ```xml
+<properties>
+    <maven.compiler.release>17</maven.compiler.release>
+</properties>
+
 <build>
     <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.11.0</version>
+        </plugin>
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
@@ -103,6 +194,8 @@ Also add the Surefire plugin so `mvn test` discovers TestNG tests:
     </plugins>
 </build>
 ```
+
+> Pinning `maven-compiler-plugin` matters: on Maven 3.8.x and earlier the default compiler level falls back to source/target 5, and the build fails with *"Source option 5 is no longer supported"* on any modern JDK.
 
 ---
 
@@ -136,7 +229,7 @@ timeouts:
   pageLoad: 30          # seconds
 ```
 
-That is the only configuration file needed. All fields have defaults — start with the minimum:
+That is the only configuration file needed, and it is **required** — Selenium Boot fails fast at startup if it is missing. Most fields are optional, but `execution.mode`, `browser.name` (or `browser.matrix`), and both `timeouts` values are validated and must be present:
 
 ```yaml
 execution:
@@ -145,6 +238,10 @@ execution:
 
 browser:
   name: chrome
+
+timeouts:
+  explicit: 10
+  pageLoad: 30
 ```
 
 ---
