@@ -9,6 +9,10 @@ sidebar_position: 12
 
 Selenium Boot supports running your test suite on **BrowserStack** and **Sauce Labs** with zero test-code changes. Switch from local Chrome to a cloud browser farm by changing one line in `selenium-boot.yml`.
 
+:::caution Requires Selenium Boot 3.2.1+
+Cloud execution (`execution.mode: browserstack` or `saucelabs`) requires **Selenium Boot 3.2.1 or later**. It does not work in any earlier release — config loading rejects any `execution.mode` other than `local` or `remote` at startup — regardless of what the examples on this page show.
+:::
+
 ---
 
 ## How it works
@@ -43,7 +47,16 @@ execution:
     osVersion:     "11"
     browser:       chrome
     browserVersion: latest
+
+browser:
+  name: chrome   # required by every selenium-boot.yml, distinct from browserstack.browser above
+
+timeouts:
+  explicit: 10
+  pageLoad: 30
 ```
+
+`browser` and `timeouts` are required top-level blocks for every `selenium-boot.yml` — see the [Configuration Reference](/docs/configuration).
 
 Set environment variables before running:
 
@@ -65,6 +78,13 @@ execution:
     osVersion:    "11"              # 11 | 10 | Sonoma | Ventura | …
     browser:      chrome            # chrome | firefox | edge | safari
     browserVersion: latest          # latest | 120.0 | 119.0 | …
+
+browser:
+  name: chrome
+
+timeouts:
+  explicit: 10
+  pageLoad: 30
 ```
 
 ### Mobile devices
@@ -78,6 +98,13 @@ execution:
     browser:      chrome
     device:       "Samsung Galaxy S23"
     realMobile:   true
+
+browser:
+  name: chrome
+
+timeouts:
+  explicit: 10
+  pageLoad: 30
 ```
 
 ### Raw capability overrides
@@ -98,6 +125,13 @@ execution:
       networkLogs: true
       consoleLogs: verbose
       video: true
+
+browser:
+  name: chrome
+
+timeouts:
+  explicit: 10
+  pageLoad: 30
 ```
 
 ### Session link in HTML report
@@ -125,6 +159,13 @@ execution:
     platformName:  "Windows 11"
     browser:       chrome
     browserVersion: latest
+
+browser:
+  name: chrome
+
+timeouts:
+  explicit: 10
+  pageLoad: 30
 ```
 
 ### Regions
@@ -153,6 +194,13 @@ execution:
       tags: ["regression", "nightly"]
       build: "v2.1.0"
       recordVideo: true
+
+browser:
+  name: chrome
+
+timeouts:
+  explicit: 10
+  pageLoad: 30
 ```
 
 ### Session link in HTML report
@@ -177,6 +225,13 @@ execution:
     osVersion: "11"
     browser:   chrome
     browserVersion: latest
+
+browser:
+  name: chrome
+
+timeouts:
+  explicit: 10
+  pageLoad: 30
 ```
 
 :::info Session limits
@@ -234,4 +289,11 @@ execution:
     browserVersion: latest
     capabilities:                   # raw sauce:options overrides
       recordVideo: true
+
+browser:
+  name: chrome
+
+timeouts:
+  explicit: 10
+  pageLoad: 30
 ```
