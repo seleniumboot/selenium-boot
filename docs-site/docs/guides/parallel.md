@@ -15,13 +15,21 @@ Selenium Boot supports parallel test execution out of the box. Configure the thr
 ## Configuration
 
 ```yaml title="selenium-boot.yml"
-parallel:
-  enabled: true
-  threadCount: 4     # number of concurrent browser sessions
+execution:
+  mode: local
+  parallel: methods       # none (default) | methods | classes | tests
+  threadCount: 4          # number of concurrent browser sessions
+  maxActiveSessions: 4    # semaphore cap — cannot exceed threadCount
 
 browser:
-  maxActiveSessions: 4   # semaphore cap — cannot exceed threadCount
+  name: chrome
+
+timeouts:
+  explicit: 10
+  pageLoad: 30
 ```
+
+`parallel`, `threadCount` and `maxActiveSessions` all live under `execution:` — see the [Configuration Reference](/docs/configuration#execution). `timeouts.explicit` and `timeouts.pageLoad` are required by every `selenium-boot.yml`, parallel or not.
 
 `maxActiveSessions` acts as a hard ceiling on concurrent browsers. If `threadCount` is 4 but `maxActiveSessions` is 2, at most 2 browsers will run at the same time.
 
@@ -137,8 +145,8 @@ TestNG creates a new instance of each test class per thread, so instance fields 
 ## Disabling parallel execution
 
 ```yaml
-parallel:
-  enabled: false
+execution:
+  parallel: none
 ```
 
-Or simply omit the `parallel` block — sequential execution is the default.
+Or simply omit `execution.parallel` — `none` (sequential execution) is the default.
