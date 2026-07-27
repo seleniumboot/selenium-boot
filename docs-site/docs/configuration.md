@@ -45,7 +45,7 @@ execution:
   baseUrl: https://your-app.com
   gridUrl: http://localhost:4444   # only for remote mode
 
-  parallel: none            # none | methods | classes | tests
+  parallel: none            # none | methods | classes
   threadCount: 1            # ignored when parallel: none
   maxActiveSessions: 5      # max concurrent browser instances (semaphore)
 
@@ -181,14 +181,13 @@ Use `per-suite` when your suite has many sequential tests and browser startup ti
 ## Execution
 
 ### `parallel`
-Maps directly to TestNG parallel execution mode. Thread count is set via `threadCount`.
+Maps directly to TestNG parallel execution mode. Thread count is set via `threadCount`. Selenium Boot validates this value at suite bootstrap and rejects anything outside the three below — TestNG's `tests` mode is not currently accepted.
 
 | Value | Behaviour |
 |---|---|
 | `none` | Sequential execution (default) |
 | `methods` | Each `@Test` method runs in its own thread |
 | `classes` | Each test class runs in its own thread |
-| `tests` | Each `<test>` block in testng.xml runs in its own thread |
 
 ### `maxActiveSessions`
 Maximum concurrent browser instances. Tests wait (up to 30s) for a slot rather than failing immediately. Prevents resource exhaustion in parallel runs.
