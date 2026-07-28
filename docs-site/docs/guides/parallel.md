@@ -17,9 +17,9 @@ Selenium Boot supports parallel test execution out of the box. Configure the thr
 ```yaml title="selenium-boot.yml"
 execution:
   mode: local
-  parallel: methods       # none (default) | methods | classes
+  parallel: methods       # none (default) | methods | classes | tests | instances
   threadCount: 4          # number of concurrent browser sessions
-  maxActiveSessions: 4    # semaphore cap — cannot exceed threadCount
+  maxActiveSessions: 4    # semaphore cap on concurrent browsers
 
 browser:
   name: chrome
@@ -85,12 +85,19 @@ You do not need to do anything special in your tests. `getDriver()` always retur
 
 ## Parallel modes
 
-TestNG supports several parallel modes. Selenium Boot currently validates `execution.parallel` against `none`, `methods`, and `classes` — any other value (including TestNG's `tests` mode) is rejected at suite bootstrap, before any test runs.
+`execution.parallel` is validated at suite bootstrap, before any test runs, against TestNG's own set of parallel modes. An unrecognised value fails immediately with a message naming both the rejected value and the accepted ones.
 
 | Mode | Description | Recommended |
 |---|---|---|
+| `none` | Sequential execution (default) | |
 | `methods` | Each test method runs in its own thread | Best general choice |
 | `classes` | Each test class runs in a thread | Use when tests within a class must be sequential |
+| `tests` | Each `<test>` in the suite XML runs in a thread | Use to isolate suite-level groupings |
+| `instances` | Each test class instance runs in a thread | Rarely needed — factory-driven suites |
+
+:::note Version
+`tests` and `instances` are accepted from the next release onwards. **v3.2.0, the current release on Maven Central, accepts only `none`, `methods` and `classes`** and rejects the other two at bootstrap.
+:::
 
 ---
 

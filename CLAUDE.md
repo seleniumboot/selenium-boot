@@ -95,7 +95,7 @@ Consumer projects configure via `selenium-boot.yml` at the project root:
 execution:
   mode: local | remote
   baseUrl: https://example.com
-  parallel: none | methods | classes
+  parallel: none | methods | classes | tests | instances
   threadCount: 4
 
 browser:

@@ -44,7 +44,7 @@ public final class SuiteExecutionListener implements ISuiteListener {
 
                 XmlSuite.ParallelMode mode =
                         XmlSuite.ParallelMode.valueOf(
-                                execution.getParallel().toUpperCase()
+                                execution.getParallel().toUpperCase(java.util.Locale.ROOT)
                         );
 
                 xmlSuite.setParallel(mode);
