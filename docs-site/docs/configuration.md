@@ -191,10 +191,6 @@ Maps directly to TestNG parallel execution mode. Thread count is set via `thread
 | `tests` | Each `<test>` in the suite XML runs in its own thread |
 | `instances` | Each test class instance runs in its own thread |
 
-:::note Version
-`tests` and `instances` are accepted from the next release onwards. **v3.2.0, the current release on Maven Central, accepts only `none`, `methods` and `classes`.**
-:::
-
 ### `maxActiveSessions`
 Maximum concurrent browser instances. Tests wait (up to 30s) for a slot rather than failing immediately. Prevents resource exhaustion in parallel runs.
 

@@ -11,6 +11,13 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [3.3.0] — 2026-08-15
+
+### Fixed
+- **`execution.parallel` validation now matches TestNG's own parallel modes** — `tests` and `instances` are legitimate TestNG modes that flow straight through to `XmlSuite.setParallel()` and behave exactly like `methods`/`classes` downstream, but Selenium Boot's bootstrap validator rejected both, reporting a misleading "Parallel execution configuration missing" for a value that was present but not on a hand-written allowlist. Validation now delegates to TestNG's `XmlSuite.ParallelMode` enum directly, so `none`, `methods`, `classes`, `tests`, and `instances` are all accepted, and an unrecognised value's error message names both the rejected value and the full valid set. (Fixes #35)
+
+---
+
 ## [3.2.0] — 2026-07-18
 
 ### Added
