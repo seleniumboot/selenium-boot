@@ -95,10 +95,6 @@ You do not need to do anything special in your tests. `getDriver()` always retur
 | `tests` | Each `<test>` in the suite XML runs in a thread | Use to isolate suite-level groupings |
 | `instances` | Each test class instance runs in a thread | Rarely needed — factory-driven suites |
 
-:::note Version
-`tests` and `instances` are accepted from the next release onwards. **v3.2.0, the current release on Maven Central, accepts only `none`, `methods` and `classes`** and rejects the other two at bootstrap.
-:::
-
 ---
 
 ## Parallel + per-suite lifecycle

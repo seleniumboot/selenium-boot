@@ -6,12 +6,12 @@
 
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>3.2.0</version>
+    <version>3.3.0</version>
     <packaging>jar</packaging>
 
     <name>Selenium Boot</name>
     <description>Opinionated Selenium framework inspired by Spring Boot</description>
-    <url>https://github.com/seleniumboot/selenium-boot</url>
+    <url>https://seleniumboot.com</url>
 
     <licenses>
         <license>

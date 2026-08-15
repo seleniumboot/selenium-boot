@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+### v3.3.0 — 2026-08-15
+
+- **`execution.parallel` now validates against TestNG's own parallel modes, not a hand-written allowlist that had drifted from them** — `tests` and `instances` are legitimate TestNG modes that flow straight through to `XmlSuite.setParallel()` and work exactly like `methods`/`classes` downstream, but Selenium Boot's bootstrap validator rejected them anyway, and did so with a "Parallel execution configuration missing" message — telling users their config was absent when it was present but simply not on the list. Validation now delegates to TestNG's `XmlSuite.ParallelMode` enum directly, so anything TestNG accepts, Selenium Boot accepts, and an unrecognised value's error message names both the rejected value and the full valid set instead of going stale again. (Fixes #35)
+
 ### v3.2.0 — 2026-07-18
 
 - **Three new `WaitEngine` conditions**, consistent with the existing `waitFor*` naming:
