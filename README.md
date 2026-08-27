@@ -66,17 +66,17 @@ timeouts:
 **3. `src/test/java/SmokeTest.java`**
 
 ```java
+import com.seleniumboot.locator.Role;
 import com.seleniumboot.test.BaseTest;
 import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertTrue;
 
 public class SmokeTest extends BaseTest {
 
     @Test
     public void opensThePage() {
         open();
-        assertTrue(getDriver().getTitle().contains("Example Domain"));
+        assertThat(getByRole(Role.HEADING, "Example Domain")).isVisible();
+        assertThat(getByRole(Role.LINK)).isVisible();
     }
 }
 ```
@@ -88,6 +88,43 @@ mvn test
 ```
 
 No driver setup, no teardown, no waits, no `WebDriver` to manage — `BaseTest` owns the lifecycle. The HTML report lands at `target/selenium-boot-report.html`.
+
+Note what the test *doesn't* contain: no CSS selector, no XPath, no `WebDriverWait`. `getByRole`
+finds elements the way a screen reader does, and `assertThat(...).isVisible()` retries until the
+timeout instead of failing on the first miss. Both are available on every test and page object.
+
+### The same test, written the usual way
+
+Illustrative — a sign-in flow, raw Selenium on the left of the line, Selenium Boot below it.
+
+```java
+// Plain Selenium + TestNG
+WebDriver driver = new ChromeDriver();
+driver.get("https://app.example.com");
+WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#email")))
+    .sendKeys("ada@example.com");
+driver.findElement(By.cssSelector("#password")).sendKeys("hunter2");
+driver.findElement(By.cssSelector("button.btn-primary[type='submit']")).click();
+wait.until(ExpectedConditions.visibilityOfElementLocated(
+    By.xpath("//*[contains(text(),'Welcome back')]")));
+
+driver.quit();
+```
+
+```java
+// Selenium Boot — same flow
+open();
+getByLabel("Email").type("ada@example.com");
+getByLabel("Password").type("hunter2");
+getByRole(Role.BUTTON, "Sign in").click();
+assertThat(getByText("Welcome back")).isVisible();
+```
+
+The second version has no driver lifecycle, no explicit waits, and nothing coupled to the
+markup — rename a CSS class or reorder the DOM and it still passes. The raw `WebDriver` is
+still there via `getDriver()` whenever you need it.
 
 Next: [the full Getting Started walkthrough](#getting-started) adds page objects, parallel execution, and reporting.
 
