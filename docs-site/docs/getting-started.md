@@ -97,9 +97,8 @@ timeouts:
   pageLoad: 30
 ```
 
----
-
-## Step 3 — Write your first test
+:::warning Replace the example values
+`https://your-app.com` is a placeholder. Replace it with a URL your test environment can reach. In the test below, replace `"Dashboard"` with text that appears in the title of that page.\n:::\n\n---\n\n## Step 3 — Write your first test
 
 ```java title="src/test/java/com/example/LoginTest.java"
 import com.seleniumboot.test.BaseTest;
