@@ -69,7 +69,18 @@ public final class SuiteExecutionListener implements ISuiteListener {
             TestManagementReporter.getInstance().onSuiteStart();
 
         } catch (Exception e) {
-            // Abort entire suite on bootstrap failure
+            // Abort entire suite on bootstrap failure — log the full cause chain first
+            // so the root cause stays visible in normal Maven/TestNG/Surefire output,
+            // where only the wrapper message is otherwise shown.
+            System.err.println(
+                    "[Selenium Boot] Initialization failed: "
+                            + "Selenium Boot failed to initialize. Aborting test suite execution.");
+            System.err.println("[Selenium Boot] Cause: " + e);
+            Throwable cause = e.getCause();
+            while (cause != null) {
+                System.err.println("[Selenium Boot] Caused by: " + cause);
+                cause = cause.getCause();
+            }
             throw new IllegalStateException(
                 "Selenium Boot failed to initialize. Aborting test suite execution.", e);
         }
