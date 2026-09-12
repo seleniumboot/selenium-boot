@@ -78,15 +78,19 @@ See the full [Gradle Setup Guide](/docs/gradle) for parallel config, JUnit 5, op
 
 ## Step 2 — Create the configuration file
 
-Create `selenium-boot.yml` in your project root (next to `pom.xml` or `build.gradle`):
+Create `selenium-boot.yml` in your project root (next to `pom.xml` or `build.gradle`).
+This example uses `https://example.com` — a stable real site reserved for
+documentation — so you can copy the files as-is and `mvn test` goes green.
+Swap in your own URL once it passes.
 
 ```yaml title="selenium-boot.yml"
+execution:
+  mode: local
+  baseUrl: https://example.com
+
 browser:
   name: chrome
   headless: false
-
-execution:
-  baseUrl: https://your-app.com
 
 retry:
   enabled: true
@@ -101,21 +105,33 @@ timeouts:
 
 ## Step 3 — Write your first test
 
-```java title="src/test/java/com/example/LoginTest.java"
+Copy this as-is — it passes against the `baseUrl` from Step 2 with a real
+Chrome, no changes needed:
+
+```java title="src/test/java/SmokeTest.java"
+import com.seleniumboot.locator.Role;
 import com.seleniumboot.test.BaseTest;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class LoginTest extends BaseTest {
+public class SmokeTest extends BaseTest {
 
-    @Test(description = "Valid user can log in")
-    public void loginTest() {
+    @Test
+    public void opensThePage() {
         open();  // navigates to baseUrl
-        // your test steps here
-        Assert.assertTrue(getDriver().getTitle().contains("Dashboard"));
+        assertThat(getByRole(Role.HEADING, "Example Domain")).isVisible();
     }
 }
 ```
+
+`getByRole` finds elements the way a screen reader does, and
+`assertThat(...).isVisible()` retries until the timeout instead of failing on
+the first miss — so no `WebDriverWait`, no CSS selectors, no `Thread.sleep()`.
+
+:::tip Testing your own app?
+Once this passes, point `execution.baseUrl` at your app and replace the
+assertion with a locator for your page — e.g.
+`assertThat(getByRole(Role.BUTTON, "Sign in")).isVisible()`.
+:::
 
 ---
 
@@ -127,7 +143,7 @@ public class LoginTest extends BaseTest {
 <suite name="selenium-boot-suite" verbose="1">
     <test name="MyTests">
         <classes>
-            <class name="com.example.LoginTest"/>
+            <class name="SmokeTest"/>
         </classes>
     </test>
 </suite>
@@ -178,9 +194,8 @@ your-project/
 ├── pom.xml
 ├── selenium-boot.yml
 ├── testng.xml
-└── src/test/java/com/example/
-    ├── pages/LoginPage.java
-    └── tests/LoginTest.java
+└── src/test/java/
+    └── SmokeTest.java
 ```
 
 </TabItem>
@@ -191,9 +206,8 @@ your-project/
 ├── build.gradle (or build.gradle.kts)
 ├── selenium-boot.yml
 ├── testng.xml
-└── src/test/java/com/example/
-    ├── pages/LoginPage.java
-    └── tests/LoginTest.java
+└── src/test/java/
+    └── SmokeTest.java
 ```
 
 </TabItem>
