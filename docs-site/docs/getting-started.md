@@ -109,6 +109,7 @@ Copy this as-is — it passes against the `baseUrl` from Step 2 with a real
 Chrome, no changes needed:
 
 ```java title="src/test/java/SmokeTest.java"
+package com.example;
 import com.seleniumboot.locator.Role;
 import com.seleniumboot.test.BaseTest;
 import org.testng.annotations.Test;
