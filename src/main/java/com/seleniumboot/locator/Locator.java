@@ -14,7 +14,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.LinkedHashMap;
 
 /**
  * Chainable, auto-waiting element locator.
@@ -116,6 +118,98 @@ public final class Locator {
         if (attribute != null && !attribute.isBlank()) {
             testIdAttribute = attribute.trim();
         }
+    }
+
+    public List<Map<String, String>> rows() {
+        WebElement table = element();
+
+        List<WebElement> allRows = table.findElements(By.cssSelector("tr"));
+
+        // Empty table
+        if (allRows.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        WebElement headerRow = null;
+        List<WebElement> headerCells = new ArrayList<>();
+
+        // 1. Try to find header cells inside <thead>
+        List<WebElement> theadRows = table.findElements(By.cssSelector("thead tr"));
+
+        if (!theadRows.isEmpty()) {
+            List<WebElement> theadHeaders =
+                    theadRows.get(0).findElements(By.cssSelector("th"));
+
+            if (!theadHeaders.isEmpty()) {
+                headerRow = theadRows.get(0);
+                headerCells = theadHeaders;
+            }
+        }
+
+        // 2. No <thead> header -> find the first <tr> containing <th>
+        if (headerCells.isEmpty()) {
+            for (WebElement row : allRows) {
+                List<WebElement> thCells =
+                        row.findElements(By.cssSelector("th"));
+
+                if (!thCells.isEmpty()) {
+                    headerRow = row;
+                    headerCells = thCells;
+                    break;
+                }
+            }
+        }
+
+        // 3. No <th> at all -> use the first <tr> as the header
+        if (headerCells.isEmpty()) {
+            headerRow = allRows.get(0);
+            headerCells = headerRow.findElements(By.cssSelector("td"));
+        }
+
+        // Convert header WebElements into Strings
+        List<String> headers = headerCells.stream()
+                .map(WebElement::getText)
+                .map(String::trim)
+                .collect(Collectors.toList());
+
+        if (headers.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Map<String, String>> result = new ArrayList<>();
+
+        // Convert each data row into a Map
+        for (WebElement row : allRows) {
+
+            // Do not treat the header row as data
+            if (row.equals(headerRow)) {
+                continue;
+            }
+
+            List<WebElement> cells =
+                    row.findElements(By.cssSelector("td"));
+
+            if (cells.isEmpty()) {
+                continue;
+            }
+
+            Map<String, String> rowMap =
+                    new LinkedHashMap<>();
+
+            for (int i = 0; i < headers.size(); i++) {
+                String header = headers.get(i);
+
+                String cellText = i < cells.size()
+                        ? cells.get(i).getText().trim()
+                        : "";
+
+                rowMap.put(header, cellText);
+            }
+
+            result.add(rowMap);
+        }
+
+        return result;
     }
 
     private static Locator semantic(Kind kind, String value) {
