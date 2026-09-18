@@ -13,7 +13,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -302,6 +304,124 @@ public final class Locator {
         return resolveAll().stream()
                 .filter(WebElement::isDisplayed)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Resolves this locator to a {@code <table>} and returns its data rows as
+     * header-keyed maps — one map per row, keys in column order.
+     *
+     * <p>Headers are taken from the first {@code <thead>} row that has
+     * {@code <th>} cells; failing that, the first {@code <tr>} anywhere in the
+     * table that has {@code <th>} cells; failing that, the {@code <td>} cells of
+     * the first {@code <tr>}. Whichever row supplies the headers is never
+     * returned as data.
+     *
+     * <p>All text is trimmed. A row with fewer {@code <td>} cells than there are
+     * headers is padded with {@code ""}; cells beyond the last header are
+     * dropped. Rows with no {@code <td>} at all — {@code <th>}-only group
+     * headings, for instance — are skipped. The result is empty when the table
+     * has no rows, or when no headers could be derived.
+     *
+     * <p>Like every terminal action this waits for the table to be visible, and
+     * throws {@link LocatorException} if it never matches. Rows and cells are
+     * matched by descendant search, so a nested table's rows are read as part of
+     * the outer table.
+     *
+     * <pre>
+     * List&lt;Map&lt;String, String&gt;&gt; data = $("table#results").rows();
+     * assertEquals(data.get(0).get("Status"), "Active");
+     * </pre>
+     */
+    public List<Map<String, String>> rows() {
+        WebElement table = element();
+
+        List<WebElement> allRows = table.findElements(By.cssSelector("tr"));
+
+        // Empty table
+        if (allRows.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        WebElement headerRow = null;
+        List<WebElement> headerCells = new ArrayList<>();
+
+        // 1. Try to find header cells inside <thead>
+        List<WebElement> theadRows = table.findElements(By.cssSelector("thead tr"));
+
+        if (!theadRows.isEmpty()) {
+            List<WebElement> theadHeaders =
+                    theadRows.get(0).findElements(By.cssSelector("th"));
+
+            if (!theadHeaders.isEmpty()) {
+                headerRow = theadRows.get(0);
+                headerCells = theadHeaders;
+            }
+        }
+
+        // 2. No <thead> header -> find the first <tr> containing <th>
+        if (headerCells.isEmpty()) {
+            for (WebElement row : allRows) {
+                List<WebElement> thCells =
+                        row.findElements(By.cssSelector("th"));
+
+                if (!thCells.isEmpty()) {
+                    headerRow = row;
+                    headerCells = thCells;
+                    break;
+                }
+            }
+        }
+
+        // 3. No <th> at all -> use the first <tr> as the header
+        if (headerCells.isEmpty()) {
+            headerRow = allRows.get(0);
+            headerCells = headerRow.findElements(By.cssSelector("td"));
+        }
+
+        // Convert header WebElements into Strings
+        List<String> headers = headerCells.stream()
+                .map(WebElement::getText)
+                .map(String::trim)
+                .collect(Collectors.toList());
+
+        if (headers.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Map<String, String>> result = new ArrayList<>();
+
+        // Convert each data row into a Map
+        for (WebElement row : allRows) {
+
+            // Do not treat the header row as data
+            if (row.equals(headerRow)) {
+                continue;
+            }
+
+            List<WebElement> cells =
+                    row.findElements(By.cssSelector("td"));
+
+            if (cells.isEmpty()) {
+                continue;
+            }
+
+            Map<String, String> rowMap =
+                    new LinkedHashMap<>();
+
+            for (int i = 0; i < headers.size(); i++) {
+                String header = headers.get(i);
+
+                String cellText = i < cells.size()
+                        ? cells.get(i).getText().trim()
+                        : "";
+
+                rowMap.put(header, cellText);
+            }
+
+            result.add(rowMap);
+        }
+
+        return result;
     }
 
     // ------------------------------------------------------------------
