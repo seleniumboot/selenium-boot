@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+### v3.4.0 — 2026-09-19
+
+- **`Locator.rows()`** — resolves a locator to a `<table>` and returns its data rows as header-keyed maps (`List<Map<String, String>>`), one map per row, keyed by column header. Headers are taken from the first `<thead>` row with `<th>` cells, falling back to the first `<tr>` anywhere with `<th>` cells, then the first `<tr>`'s `<td>` cells; whichever row supplies headers is never returned as data. Short rows are padded with `""`, extra cells are dropped, and `<th>`-only rows (group headings) are skipped. Contributed by @timothytkim. (#54)
+- **Bootstrap failures now expose their root cause** — when framework initialization throws, `SuiteExecutionListener` now logs the full cause chain (`Caused by: ...`, walked to the root) to `System.err` before rethrowing, so the actual failure reason is visible in normal Maven/TestNG/Surefire output instead of being buried one level down in the wrapping `IllegalStateException`. (Fixes #45)
+- **Selenium Java bumped 4.40.0 → 4.49.0** (9 releases). This is a behavior-preserving internal upgrade: `NetworkMock` and `DeviceEmulator` are repointed from the now-removed CDP `devtools.v144` module to `devtools.v153` (the newer of the two bundled with 4.49.0), and two new trailing `Optional.empty()` arguments were added to `Emulation.setDeviceMetricsOverride()` calls to match v153's changed signature, preserving the existing defaults. Verified with the full 508-test suite.
+- **Docs** — the README and getting-started quickstarts now show the locator API (`$(...)`) instead of `getDriver()` for the first example, and the getting-started example is runnable as written. (#40, #44)
+
 ### v3.3.0 — 2026-08-15
 
 - **`execution.parallel` now validates against TestNG's own parallel modes, not a hand-written allowlist that had drifted from them** — `tests` and `instances` are legitimate TestNG modes that flow straight through to `XmlSuite.setParallel()` and work exactly like `methods`/`classes` downstream, but Selenium Boot's bootstrap validator rejected them anyway, and did so with a "Parallel execution configuration missing" message — telling users their config was absent when it was present but simply not on the list. Validation now delegates to TestNG's `XmlSuite.ParallelMode` enum directly, so anything TestNG accepts, Selenium Boot accepts, and an unrecognised value's error message names both the rejected value and the full valid set instead of going stale again. (Fixes #35)
