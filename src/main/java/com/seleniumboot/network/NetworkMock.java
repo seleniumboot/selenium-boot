@@ -5,11 +5,11 @@ import com.seleniumboot.driver.DriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chromium.ChromiumDriver;
 import org.openqa.selenium.devtools.DevTools;
-import org.openqa.selenium.devtools.v144.fetch.Fetch;
-import org.openqa.selenium.devtools.v144.fetch.model.HeaderEntry;
-import org.openqa.selenium.devtools.v144.fetch.model.RequestId;
-import org.openqa.selenium.devtools.v144.fetch.model.RequestPattern;
-import org.openqa.selenium.devtools.v144.fetch.model.RequestStage;
+import org.openqa.selenium.devtools.v153.fetch.Fetch;
+import org.openqa.selenium.devtools.v153.fetch.model.HeaderEntry;
+import org.openqa.selenium.devtools.v153.fetch.model.RequestId;
+import org.openqa.selenium.devtools.v153.fetch.model.RequestPattern;
+import org.openqa.selenium.devtools.v153.fetch.model.RequestStage;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
