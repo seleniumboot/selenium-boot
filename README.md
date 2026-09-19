@@ -28,7 +28,7 @@ Three files. Copy them as-is and `mvn test` goes green against a real Chrome.
     <dependency>
         <groupId>io.github.seleniumboot</groupId>
         <artifactId>selenium-boot</artifactId>
-        <version>3.3.0</version>
+        <version>3.4.0</version>
     </dependency>
 </dependencies>
 
@@ -205,7 +205,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>3.3.0</version>
+    <version>3.4.0</version>
 </dependency>
 ```
 
@@ -786,7 +786,7 @@ ci:
 
 ## Project Status
 
-**Current release: v3.3.0** — `execution.parallel` is now validated against TestNG's own parallel modes, so `tests` and `instances` are accepted alongside `none`, `methods`, and `classes`.
+**Current release: v3.4.0** — new header-keyed table extraction (`Locator.rows()`), bootstrap failures now log their full root-cause chain, and Selenium Java is bumped to 4.49.0.
 
 See the full version history in **[CHANGELOG.md](CHANGELOG.md)**.
 

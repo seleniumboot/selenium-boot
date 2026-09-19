@@ -11,6 +11,20 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [3.4.0] — 2026-09-19
+
+### Added
+- **`Locator.rows()`** — resolves a locator to a `<table>` and returns its data rows as header-keyed maps (`List<Map<String, String>>`), one map per row, keyed by column header. Headers come from the first `<thead>` row with `<th>` cells, falling back to the first `<tr>` anywhere with `<th>` cells, then the first `<tr>`'s `<td>` cells; whichever row supplies headers is never returned as data. Short rows are padded with `""`, extra cells are dropped, and `<th>`-only rows (group headings) are skipped. Contributed by [@timothytkim](https://github.com/timothytkim). (#54)
+
+### Fixed
+- **Bootstrap failures now expose their root cause** — when framework initialization throws, the full cause chain is now logged to `System.err` (walked down to the root) before the suite aborts, so the actual failure reason shows up in normal Maven/TestNG/Surefire output instead of being hidden behind the generic "failed to initialize" wrapper message. (Fixes #45)
+
+### Changed
+- **Selenium Java 4.40.0 → 4.49.0** (9 releases) — behavior-preserving upgrade. `NetworkMock` and `DeviceEmulator` are repointed from the removed CDP `devtools.v144` module to `devtools.v153`, and two new trailing `Optional.empty()` arguments were added to `Emulation.setDeviceMetricsOverride()` calls to match v153's changed signature, preserving existing defaults. Verified with the full 508-test suite.
+- **Docs** — quickstart examples in the README and getting-started guide now lead with the locator API (`$(...)`) instead of `getDriver()`, and the getting-started example runs as written.
+
+---
+
 ## [3.3.0] — 2026-08-15
 
 ### Fixed
