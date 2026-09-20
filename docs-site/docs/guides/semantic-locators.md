@@ -24,6 +24,12 @@ Every semantic locator returns the same chainable, **auto-waiting** `Locator`
 used by the `$()` API — no `Thread.sleep`, no explicit waits. They're available
 on both `BaseTest` and `BasePage`.
 
+Auto-waiting covers the element *existing* as well as being visible: an action such as `click()` or
+`type()` keeps looking for the element until `timeouts.explicit` elapses, and looks it up afresh each
+time, so a page that re-renders it mid-action doesn't cause a stale-element error. If it never
+appears you get a `LocatorException` after the timeout. `isVisible()`, `isHidden()`, `isEnabled()`
+and `count()` never wait.
+
 ---
 
 ## Why semantic locators?
