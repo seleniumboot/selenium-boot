@@ -7,9 +7,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -223,42 +226,39 @@ public final class Locator {
     // ------------------------------------------------------------------
 
     /**
-     * Waits for the element to be clickable, then clicks it. The element is re-resolved on every
-     * poll, so a page that re-renders it between lookup and click does not surface as a
-     * {@link StaleElementReferenceException}.
+     * Waits for the element to exist and be clickable, then clicks it.
+     *
+     * <p>Like every terminal action, the element is re-resolved on each poll: one that is not in
+     * the DOM yet is waited for, and one the page re-renders between lookup and action does not
+     * surface as a {@link StaleElementReferenceException}. Both are bounded by
+     * {@code timeouts.explicit}.
      */
     public void click() {
-        int timeout = SeleniumBootContext.getConfig().getTimeouts().getExplicit();
-        new WebDriverWait(driver(), Duration.ofSeconds(timeout))
-                .ignoring(StaleElementReferenceException.class)
-                .until(d -> {
-                    WebElement el = ExpectedConditions.elementToBeClickable(resolve()).apply(d);
-                    if (el == null) return null;
-                    el.click();
-                    return Boolean.TRUE;
-                });
+        whenReady(el -> el.isDisplayed() && el.isEnabled(), el -> { el.click(); return null; });
     }
 
     /** Waits for the element to be visible, clears it, then types the given text. */
     public void type(String text) {
-        WebElement el = waitForVisible(resolve());
-        el.clear();
-        el.sendKeys(text);
+        whenVisible(el -> {
+            el.clear();
+            el.sendKeys(text);
+            return null;
+        });
     }
 
     /** Appends text without clearing first. */
     public void append(String text) {
-        waitForVisible(resolve()).sendKeys(text);
+        whenVisible(el -> { el.sendKeys(text); return null; });
     }
 
     /** Waits for the element to be visible and returns its trimmed visible text. */
     public String getText() {
-        return waitForVisible(resolve()).getText().trim();
+        return whenVisible(el -> el.getText().trim());
     }
 
     /** Returns the value of the given attribute, waiting for visibility first. */
     public String getAttribute(String name) {
-        return waitForVisible(resolve()).getAttribute(name);
+        return whenVisible(el -> el.getAttribute(name));
     }
 
     /** Returns true if the element is present and displayed — does NOT wait. */
@@ -286,20 +286,23 @@ public final class Locator {
 
     /** Hovers over the element using Actions. */
     public void hover() {
-        WebElement el = waitForVisible(resolve());
-        new Actions(driver()).moveToElement(el).perform();
+        whenVisible(el -> { new Actions(driver()).moveToElement(el).perform(); return null; });
     }
 
     /** Scrolls the element into view using JavaScript. */
     public void scrollIntoView() {
-        WebElement el = waitForVisible(resolve());
-        ((JavascriptExecutor) driver()).executeScript("arguments[0].scrollIntoView(true);", el);
+        whenVisible(el -> {
+            ((JavascriptExecutor) driver()).executeScript("arguments[0].scrollIntoView(true);", el);
+            return null;
+        });
     }
 
     /** Clicks using JavaScript — useful when element is obscured. */
     public void jsClick() {
-        WebElement el = waitForVisible(resolve());
-        ((JavascriptExecutor) driver()).executeScript("arguments[0].click();", el);
+        whenVisible(el -> {
+            ((JavascriptExecutor) driver()).executeScript("arguments[0].click();", el);
+            return null;
+        });
     }
 
     /** Returns the number of elements currently matching the locator chain (no wait). */
@@ -309,7 +312,7 @@ public final class Locator {
 
     /** Returns the resolved {@link WebElement}, applying all chain filters. */
     public WebElement element() {
-        return waitForVisible(resolve());
+        return whenVisible(el -> el);
     }
 
     /** Returns all matched {@link WebElement}s, applying all chain filters. */
@@ -654,16 +657,40 @@ public final class Locator {
     // Wait helpers
     // ------------------------------------------------------------------
 
-    private WebElement waitForVisible(WebElement el) {
-        int timeout = SeleniumBootContext.getConfig().getTimeouts().getExplicit();
-        return new WebDriverWait(driver(), Duration.ofSeconds(timeout))
-                .until(ExpectedConditions.visibilityOf(el));
+    private <T> T whenVisible(Function<WebElement, T> action) {
+        return whenReady(WebElement::isDisplayed, action);
     }
 
-    private WebElement waitForClickable(WebElement el) {
+    /**
+     * Polls until an element resolves, satisfies {@code ready}, and {@code action} runs on it —
+     * re-resolving from scratch on every poll. A missing element ({@link LocatorException}) and a
+     * stale one ({@link StaleElementReferenceException}) are retried until
+     * {@code timeouts.explicit} elapses. A locator that never matched then throws
+     * {@link LocatorException} (cause: the {@code TimeoutException}); anything else throws the
+     * {@code TimeoutException}. The action's
+     * result may be {@code null}.
+     */
+    private <T> T whenReady(Predicate<WebElement> ready, Function<WebElement, T> action) {
         int timeout = SeleniumBootContext.getConfig().getTimeouts().getExplicit();
-        return new WebDriverWait(driver(), Duration.ofSeconds(timeout))
-                .until(ExpectedConditions.elementToBeClickable(el));
+        AtomicReference<T> result = new AtomicReference<>();
+        try {
+            new WebDriverWait(driver(), Duration.ofSeconds(timeout))
+                    .ignoring(StaleElementReferenceException.class, LocatorException.class)
+                    .until(d -> {
+                        WebElement el = resolve();
+                        if (!ready.test(el)) return null;
+                        result.set(action.apply(el));
+                        return Boolean.TRUE;
+                    });
+        } catch (TimeoutException e) {
+            // A locator that never matched still surfaces as LocatorException, as it did before
+            // the wait existed, so callers catching it keep working.
+            if (e.getCause() instanceof LocatorException le) {
+                throw new LocatorException(le.getMessage() + " (waited " + timeout + "s)", e);
+            }
+            throw e;
+        }
+        return result.get();
     }
 
     // ------------------------------------------------------------------
