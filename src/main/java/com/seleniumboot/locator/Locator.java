@@ -6,6 +6,7 @@ import com.seleniumboot.internal.SeleniumBootContext;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -221,9 +222,21 @@ public final class Locator {
     // Terminal actions — all auto-wait
     // ------------------------------------------------------------------
 
-    /** Waits for the element to be clickable, then clicks it. */
+    /**
+     * Waits for the element to be clickable, then clicks it. The element is re-resolved on every
+     * poll, so a page that re-renders it between lookup and click does not surface as a
+     * {@link StaleElementReferenceException}.
+     */
     public void click() {
-        waitForClickable(resolve()).click();
+        int timeout = SeleniumBootContext.getConfig().getTimeouts().getExplicit();
+        new WebDriverWait(driver(), Duration.ofSeconds(timeout))
+                .ignoring(StaleElementReferenceException.class)
+                .until(d -> {
+                    WebElement el = ExpectedConditions.elementToBeClickable(resolve()).apply(d);
+                    if (el == null) return null;
+                    el.click();
+                    return Boolean.TRUE;
+                });
     }
 
     /** Waits for the element to be visible, clears it, then types the given text. */
