@@ -18,6 +18,26 @@ The framework looks for the config file in this priority order:
 1. **System property** — `-Dselenium.boot.config=/path/to/custom.yml`
 2. **Working directory** — `./selenium-boot.yml` (next to `pom.xml`)
 3. **Classpath** — `src/test/resources/selenium-boot.yml`
+4. **Built-in defaults** — used only when none of the above exist *and* no profile or explicit
+   path was requested. The framework prints one line saying so.
+
+A requested profile (`-Dselenium.boot.profile=staging`) or explicit path that cannot be found is
+always an error, so a typo never silently runs against defaults.
+
+## Defaults for omitted fields
+
+A file only has to say what it wants to change. Anything it leaves out (or an empty file) falls
+back to:
+
+| Field | Default |
+|---|---|
+| `browser.name` | `chrome` (not applied when `browser.matrix` is set) |
+| `execution.mode` | `local` |
+| `timeouts.explicit` | `10` |
+| `timeouts.pageLoad` | `30` |
+
+Values that are present but invalid — an unknown `execution.mode`, a negative timeout — still fail
+at startup.
 
 ---
 

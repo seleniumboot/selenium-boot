@@ -101,6 +101,10 @@ timeouts:
   pageLoad: 30
 ```
 
+Every field here is optional — anything you leave out falls back to a default (Chrome, local
+execution, 10 s / 30 s timeouts), and with no file at all the framework runs on those defaults.
+See the [configuration reference](configuration.md) for the full list.
+
 ---
 
 ## Step 3 — Write your first test
