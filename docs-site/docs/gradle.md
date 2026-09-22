@@ -144,9 +144,11 @@ tasks.test {
 
 ---
 
-## Step 3 — Configuration file
+## Step 3 — Configuration file (optional)
 
-Create `selenium-boot.yml` at the **project root** (same level as `build.gradle`):
+`selenium-boot.yml` is optional — omit it entirely to run on built-in defaults (Chrome,
+local execution, 10 s / 30 s timeouts). Create it at the **project root** (same level as
+`build.gradle`) when you want to change anything:
 
 ```yaml title="selenium-boot.yml"
 execution:

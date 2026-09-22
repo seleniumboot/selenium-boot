@@ -29,7 +29,7 @@ timeouts:
   pageLoad: 30
 ```
 
-`parallel`, `threadCount` and `maxActiveSessions` all live under `execution:` — see the [Configuration Reference](/docs/configuration#execution). `timeouts.explicit` and `timeouts.pageLoad` are required by every `selenium-boot.yml`, parallel or not.
+`parallel`, `threadCount` and `maxActiveSessions` all live under `execution:` — see the [Configuration Reference](/docs/configuration#execution). `timeouts.explicit` and `timeouts.pageLoad` default to 10s/30s if omitted, parallel or not — set them explicitly here only if you want different values.
 
 `maxActiveSessions` acts as a hard ceiling on concurrent browsers. If `threadCount` is 4 but `maxActiveSessions` is 2, at most 2 browsers will run at the same time.
 

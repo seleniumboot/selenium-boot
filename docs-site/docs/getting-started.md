@@ -76,9 +76,12 @@ See the full [Gradle Setup Guide](/docs/gradle) for parallel config, JUnit 5, op
 
 ---
 
-## Step 2 — Create the configuration file
+## Step 2 — Configuration file (optional)
 
-Create `selenium-boot.yml` in your project root (next to `pom.xml` or `build.gradle`).
+`selenium-boot.yml` is optional — with no file at all the framework runs on built-in
+defaults (Chrome, local execution, 10 s / 30 s timeouts) and prints one notice line
+saying so. Create it in your project root (next to `pom.xml` or `build.gradle`) when
+you want to change anything, such as the `baseUrl` below.
 This example uses `https://example.com` — a stable real site reserved for
 documentation — so you can copy the files as-is and `mvn test` goes green.
 Swap in your own URL once it passes.
@@ -101,9 +104,8 @@ timeouts:
   pageLoad: 30
 ```
 
-Every field here is optional — anything you leave out falls back to a default (Chrome, local
-execution, 10 s / 30 s timeouts), and with no file at all the framework runs on those defaults.
-See the [configuration reference](configuration.md) for the full list.
+Every field here is optional — anything you leave out falls back to a default, same as an
+absent file. See the [configuration reference](configuration.md) for the full list.
 
 ---
 
@@ -178,7 +180,7 @@ mvn test
 
 ## What happens
 
-1. Framework loads `selenium-boot.yml`
+1. Framework loads `selenium-boot.yml` (or built-in defaults if it's absent)
 2. Chrome launches automatically
 3. Your test runs
 4. Screenshot captured on any failure
@@ -196,7 +198,7 @@ mvn test
 ```
 your-project/
 ├── pom.xml
-├── selenium-boot.yml
+├── selenium-boot.yml   # optional — omit to run on built-in defaults
 ├── testng.xml
 └── src/test/java/
     └── SmokeTest.java
@@ -208,7 +210,7 @@ your-project/
 ```
 your-project/
 ├── build.gradle (or build.gradle.kts)
-├── selenium-boot.yml
+├── selenium-boot.yml   # optional — omit to run on built-in defaults
 ├── testng.xml
 └── src/test/java/
     └── SmokeTest.java
