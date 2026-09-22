@@ -49,14 +49,16 @@ execution:
     browserVersion: latest
 
 browser:
-  name: chrome   # required by every selenium-boot.yml, distinct from browserstack.browser above
+  name: chrome   # distinct from browserstack.browser above — set explicitly to avoid confusion
 
 timeouts:
   explicit: 10
   pageLoad: 30
 ```
 
-`browser` and `timeouts` are required top-level blocks for every `selenium-boot.yml` — see the [Configuration Reference](/docs/configuration).
+`browser.name` and `timeouts` both default (`chrome`, 10s/30s) if omitted — see the
+[Configuration Reference](/docs/configuration) — but set them explicitly here anyway,
+since `browser.name` is easy to confuse with `browserstack.browser` above.
 
 Set environment variables before running:
 

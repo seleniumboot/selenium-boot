@@ -32,7 +32,9 @@ Remove your Selenium, WebDriverManager, and reporting dependencies and add one:
 
 Selenium Boot brings Selenium (and TestNG) transitively. You no longer declare `selenium-java`, `webdrivermanager`, or a reporting library yourself.
 
-Then create a small [`selenium-boot.yml`](/docs/configuration) — see [config mapping](#config-mapping) below.
+`selenium-boot.yml` is optional — omit it to run on built-in defaults — but since you're
+migrating existing settings, create a small [`selenium-boot.yml`](/docs/configuration) to
+carry them over; see [config mapping](#config-mapping) below.
 
 ---
 

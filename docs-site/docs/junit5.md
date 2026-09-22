@@ -36,6 +36,10 @@ Selenium Boot supports both **TestNG** (built-in) and **JUnit 5** (opt-in). The 
 
 No extra Surefire configuration needed — Maven Surefire 3.x auto-detects JUnit 5.
 
+:::info JUnit 6
+Also works on JUnit 6 — use `junit-jupiter:6.1.3` and `junit-platform-launcher:6.1.3` instead of the 5.10.2/1.10.2 versions above. Both pairings are verified against the consumer integration suite.
+:::
+
 ---
 
 ## Option A — Extend `BaseJUnit5Test`

@@ -48,7 +48,7 @@ Three files. Copy them as-is and `mvn test` goes green against a real Chrome.
 </build>
 ```
 
-**2. `selenium-boot.yml`** — project root, next to `pom.xml`. This is the complete minimum; every key below is required.
+**2. `selenium-boot.yml`** — optional; project root, next to `pom.xml`. Omit it entirely and the framework runs on built-in defaults (Chrome, local execution, 10s/30s timeouts). Shown below with every key set explicitly, but each one defaults if left out.
 
 ```yaml
 execution:
@@ -149,7 +149,7 @@ It eliminates repetitive boilerplate by providing sensible defaults, a standardi
 
 Selenium Boot is **the Spring Boot of Java test automation** — and that positioning is deliberately layered:
 
-1. **Opinionated core (primary).** Convention over configuration, zero boilerplate by default. Add one dependency, extend `BaseTest` / `BasePage`, and the framework has already made the sensible decisions — driver lifecycle, waits, retries, reporting, CI wiring. `selenium-boot.yml` stays short — a handful of required keys, and `SeleniumBootDefaults` covers the rest.
+1. **Opinionated core (primary).** Convention over configuration, zero boilerplate by default. Add one dependency, extend `BaseTest` / `BasePage`, and the framework has already made the sensible decisions — driver lifecycle, waits, retries, reporting, CI wiring. `selenium-boot.yml` is optional and every key in it defaults — `SeleniumBootDefaults` and the framework's own built-ins cover the rest.
 2. **Never hides Selenium (the constraint).** Unlike heavier abstractions, Selenium Boot never takes the raw `WebDriver` away from you. When the conventions don't fit, drop straight down to `WebDriver` / `By` / `WebElement`. Opinionated without being a cage.
 3. **Extensible toolkit (the escape hatch).** An SPI/registry plugin system (`DriverProviderRegistry`, `PluginRegistry`, `ReportAdapterRegistry`) makes it modular for the power users who need it — serving the opinionated core, not replacing it. Most users never touch it.
 
@@ -236,9 +236,10 @@ Also pin the compiler plugin and add Surefire so `mvn test` discovers TestNG tes
 
 ---
 
-### Step 2: Create the Configuration File
+### Step 2: Configuration File (optional)
 
-Create `selenium-boot.yml` at your **project root** (same level as `pom.xml`):
+`selenium-boot.yml` is optional — omit it to run on built-in defaults. Create it at your
+**project root** (same level as `pom.xml`) when you want to change anything:
 
 ```yaml
 execution:
