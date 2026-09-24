@@ -82,6 +82,13 @@ See the full [Gradle Setup Guide](/docs/gradle) for parallel config, JUnit 5, op
 defaults (Chrome, local execution, 10 s / 30 s timeouts) and prints one notice line
 saying so. Create it in your project root (next to `pom.xml` or `build.gradle`) when
 you want to change anything, such as the `baseUrl` below.
+
+:::note Step 3 needs this file
+There is no default `baseUrl`, so `open()` in Step 3 only works once
+`execution.baseUrl` is set. Create the file below to follow this walkthrough. Without it,
+navigate with `getDriver().get("https://example.com")` instead.
+:::
+
 This example uses `https://example.com` — a stable real site reserved for
 documentation — so you can copy the files as-is and `mvn test` goes green.
 Swap in your own URL once it passes.
@@ -111,7 +118,7 @@ absent file. See the [configuration reference](configuration.md) for the full li
 
 ## Step 3 — Write your first test
 
-Copy this as-is — it passes against the `baseUrl` from Step 2 with a real
+Copy this as-is — with the `selenium-boot.yml` from Step 2 in place, it passes against its `baseUrl` with a real
 Chrome, no changes needed:
 
 ```java title="src/test/java/SmokeTest.java"
