@@ -55,6 +55,10 @@ import java.util.Map;
 })
 public abstract class BaseTest {
 
+    private static final String MISSING_BASE_URL =
+            "execution.baseUrl is not set — add it to selenium-boot.yml, "
+            + "or navigate with getDriver().get(url)";
+
     protected WebDriver getDriver() {
         return DriverManager.getDriver();
     }
@@ -64,7 +68,7 @@ public abstract class BaseTest {
                 .getExecution().getBaseUrl();
 
         if (baseURL == null || baseURL.isEmpty()) {
-            throw new IllegalStateException("baseURL is null or empty");
+            throw new IllegalStateException(MISSING_BASE_URL);
         }
         getDriver().get(baseURL);
         if (ConsoleErrorCollector.isEnabled()) ConsoleErrorCollector.injectShim();
@@ -74,7 +78,7 @@ public abstract class BaseTest {
         String baseUrl = SeleniumBootContext.getConfig()
                 .getExecution().getBaseUrl();
         if (baseUrl == null || baseUrl.isEmpty()) {
-            throw new IllegalStateException("baseURL is null or empty");
+            throw new IllegalStateException(MISSING_BASE_URL);
         }
 
         String normalized = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
