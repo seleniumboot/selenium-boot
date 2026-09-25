@@ -24,6 +24,12 @@ import TabItem from '@theme/TabItem';
 No WebDriver binaries required — Selenium Manager handles browser driver downloads automatically.
 :::
 
+:::tip Skip the setup
+Prefer to start from a working project? Click **Use this template** on
+[selenium-boot-starter](https://github.com/seleniumboot/selenium-boot-starter) — Maven, TestNG,
+config, a page object and passing tests, ready for `mvn test`.
+:::
+
 ---
 
 ## Step 1 — Add the dependency
@@ -230,7 +236,8 @@ your-project/
 
 ## Working example project
 
-A complete working project is available at:
+The [starter template](https://github.com/seleniumboot/selenium-boot-starter) is the smallest
+project that runs. For a larger one, a complete working project is available at:
 **https://github.com/seleniumboot/selenium-boot-test**
 
 Clone it, run `mvn test` (or `./gradlew test`), and you'll have a full working suite with page objects, step logging, and retry configured.
