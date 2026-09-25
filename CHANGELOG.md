@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Unreleased
 
+- **`open()` names `execution.baseUrl` when the site can't be reached** — a DNS or connection failure now reads `Could not reach <url> (ERR_NAME_NOT_RESOLVED) — check execution.baseUrl in selenium-boot.yml …` (the driver's error stays as the cause) instead of a bare `net::ERR_NAME_NOT_RESOLVED`. Applies to `BaseTest`, `BaseJUnit5Test`, `BaseCucumberSteps` and `BaseConditions`. Also fixes `BaseJUnit5Test.open()` with no `execution.baseUrl` failing with a bare driver error instead of naming the missing key.
 - **Gradle projects now get their reports under `build/`** (#81) — the base directory is decided from `build.gradle` / `build.gradle.kts` (a `pom.xml` wins if both exist) instead of "does `target/` exist", which other components had already created. Flakiness report, healed locators, traces, recordings, Allure results, screenshots and JUnit XML all follow it; `-Dseleniumboot.reports.dir` still overrides.
 - **Docs: the Gradle `systemProperties System.properties` snippet is replaced** (#82) — copying every JVM property broke test runs when the test JVM differs from Gradle's. It now forwards only `browser` and `env`.
 

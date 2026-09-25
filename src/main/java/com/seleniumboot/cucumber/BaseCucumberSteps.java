@@ -5,6 +5,7 @@ import com.seleniumboot.assertion.LocatorAssert;
 import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.browser.ConsoleErrorCollector;
 import com.seleniumboot.driver.DriverManager;
+import com.seleniumboot.internal.BaseUrlNavigation;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.locator.Locator;
 import io.cucumber.java.Scenario;
@@ -55,7 +56,7 @@ public abstract class BaseCucumberSteps {
 
     /** Navigates to {@code execution.baseUrl} from {@code selenium-boot.yml}. */
     protected void open() {
-        getDriver().get(baseUrl());
+        BaseUrlNavigation.go(getDriver(), baseUrl());
         if (ConsoleErrorCollector.isEnabled()) ConsoleErrorCollector.injectShim();
     }
 
@@ -63,7 +64,7 @@ public abstract class BaseCucumberSteps {
     protected void open(String path) {
         String base = baseUrl();
         String normalized = base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
-        getDriver().get(normalized + path);
+        BaseUrlNavigation.go(getDriver(), normalized + path);
         if (ConsoleErrorCollector.isEnabled()) ConsoleErrorCollector.injectShim();
     }
 
@@ -102,11 +103,6 @@ public abstract class BaseCucumberSteps {
     }
 
     private String baseUrl() {
-        String url = SeleniumBootContext.getConfig().getExecution().getBaseUrl();
-        if (url == null || url.isEmpty()) {
-            throw new IllegalStateException(
-                "[BaseCucumberSteps] execution.baseUrl is not set in selenium-boot.yml");
-        }
-        return url;
+        return BaseUrlNavigation.require(SeleniumBootContext.getConfig().getExecution().getBaseUrl());
     }
 }

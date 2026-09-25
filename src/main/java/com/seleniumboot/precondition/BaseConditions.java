@@ -2,6 +2,7 @@ package com.seleniumboot.precondition;
 
 import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.driver.DriverManager;
+import com.seleniumboot.internal.BaseUrlNavigation;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.test.BasePage;
 import com.seleniumboot.wait.WaitEngine;
@@ -51,21 +52,15 @@ public abstract class BaseConditions {
 
     /** Navigates to the configured {@code baseUrl}. */
     protected void open() {
-        String baseUrl = SeleniumBootContext.getConfig().getExecution().getBaseUrl();
-        if (baseUrl == null || baseUrl.isEmpty()) {
-            throw new IllegalStateException("baseUrl is not configured in selenium-boot.yml");
-        }
-        getDriver().get(baseUrl);
+        String baseUrl = BaseUrlNavigation.require(SeleniumBootContext.getConfig().getExecution().getBaseUrl());
+        BaseUrlNavigation.go(getDriver(), baseUrl);
     }
 
     /** Navigates to {@code baseUrl + path}. */
     protected void open(String path) {
-        String baseUrl = SeleniumBootContext.getConfig().getExecution().getBaseUrl();
-        if (baseUrl == null || baseUrl.isEmpty()) {
-            throw new IllegalStateException("baseUrl is not configured in selenium-boot.yml");
-        }
+        String baseUrl = BaseUrlNavigation.require(SeleniumBootContext.getConfig().getExecution().getBaseUrl());
         String normalized = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
-        getDriver().get(normalized + path);
+        BaseUrlNavigation.go(getDriver(), normalized + path);
     }
 
     /** Waits for the element to be clickable and clicks it. */
