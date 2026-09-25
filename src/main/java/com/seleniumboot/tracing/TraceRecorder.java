@@ -219,7 +219,7 @@ public final class TraceRecorder {
     // ------------------------------------------------------------------
 
     private static File traceFile(String className, String testName) {
-        return new File("target/traces/" + className + "/" + sanitize(testName) + "-trace.html");
+        return com.seleniumboot.reporting.ReportPaths.resolve("traces/" + className + "/" + sanitize(testName) + "-trace.html");
     }
 
     static String captureFinalScreenshot(String testName) {

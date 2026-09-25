@@ -55,7 +55,7 @@ dependencies {
 
 test {
     useTestNG()
-    systemProperties System.properties
+    ['browser', 'env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
 }
 ```
 
@@ -69,7 +69,7 @@ dependencies {
 
 tasks.test {
     useTestNG()
-    systemProperties(System.getProperties().mapKeys { it.key.toString() })
+    listOf("browser", "env").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
 }
 ```
 
@@ -198,7 +198,7 @@ mvn test
 3. Your test runs
 4. Screenshot captured on any failure
 5. Browser closes
-6. HTML report generated at `target/selenium-boot-report.html` (Maven) or `build/selenium-boot-report/` (Gradle)
+6. HTML report generated at `target/selenium-boot-report.html` (Maven) or `build/selenium-boot-report.html` (Gradle)
 7. Metrics JSON at `target/selenium-boot-metrics.json`
 
 ---

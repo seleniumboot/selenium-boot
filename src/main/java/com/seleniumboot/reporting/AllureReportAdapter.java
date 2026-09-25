@@ -52,7 +52,7 @@ public class AllureReportAdapter implements ReportAdapter {
             JsonNode root  = MAPPER.readTree(metricsJson);
             JsonNode tests = root.path("tests");
 
-            File outputDir = new File("target/allure-results");
+            File outputDir = ReportPaths.resolve("allure-results");
             outputDir.mkdirs();
 
             // Use the metrics file's modification time as the approximate suite-end timestamp.
@@ -64,7 +64,7 @@ public class AllureReportAdapter implements ReportAdapter {
                 writeTestResult(test, outputDir, suiteEnd);
             }
 
-            System.out.println("[Selenium Boot] Allure results   → target/allure-results/ ("
+            System.out.println("[Selenium Boot] Allure results   → " + ReportPaths.resolve("allure-results") + "/ ("
                     + tests.size() + " tests)");
 
         } catch (Exception e) {

@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Base64;
 
 /**
@@ -22,7 +21,6 @@ import java.util.Base64;
  */
 public final class ScreenshotManager {
 
-    private static final String REPORT_DIR = "target/reports/screenshots";
 
     private ScreenshotManager() {
     }
@@ -45,7 +43,7 @@ public final class ScreenshotManager {
         try {
             File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
 
-            Path directory = Paths.get(REPORT_DIR);
+            Path directory = ReportPaths.resolve("reports/screenshots").toPath();
             Files.createDirectories(directory);
 
             Path destination = directory.resolve(

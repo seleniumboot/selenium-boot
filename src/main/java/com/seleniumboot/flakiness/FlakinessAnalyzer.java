@@ -144,7 +144,7 @@ public final class FlakinessAnalyzer {
     private static void export(List<FlakinessScore> scores) {
         if (scores.isEmpty()) return;
         try {
-            File out = new File("target/flakiness-report.json");
+            File out = com.seleniumboot.reporting.ReportPaths.resolve("flakiness-report.json");
             List<Map<String, Object>> entries = scores.stream().map(s -> {
                 Map<String, Object> m = new LinkedHashMap<>();
                 m.put("testId",       s.getTestId());

@@ -79,7 +79,7 @@ public final class RecordingManager {
         if (frames.isEmpty()) return null;
 
         String safeId = testId.replaceAll("[^a-zA-Z0-9._-]", "_");
-        File   dir    = new File("target/recordings");
+        File   dir    = com.seleniumboot.reporting.ReportPaths.resolve("recordings");
         dir.mkdirs();
         File output = new File(dir, safeId + ".gif");
 

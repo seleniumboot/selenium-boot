@@ -4,6 +4,9 @@ import com.seleniumboot.reporting.ReportPaths;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
+import java.io.File;
+import java.nio.file.Files;
+
 import static org.testng.Assert.*;
 
 /**
@@ -69,5 +72,50 @@ public class ReportPathsTest {
                 "target/selenium-boot-metrics.json".replace('/', java.io.File.separatorChar));
         assertEquals(ReportPaths.htmlReport().getPath(),
                 "target/selenium-boot-report.html".replace('/', java.io.File.separatorChar));
+    }
+
+    // --- build-tool detection (#81): must not depend on whether target/ already exists ---
+
+    private static File project(String... files) throws Exception {
+        File dir = Files.createTempDirectory("sb-layout").toFile();
+        for (String f : files) {
+            File file = new File(dir, f);
+            if (f.endsWith("/")) file.mkdirs(); else file.createNewFile();
+        }
+        return dir;
+    }
+
+    @Test
+    public void gradleProject_isGradleLayout_evenWhenTargetExists() throws Exception {
+        // the #81 case: a component created target/ before the path was resolved
+        assertTrue(ReportPaths.usesGradleLayout(project("build.gradle", "build/", "target/")));
+    }
+
+    @Test
+    public void gradleKotlinProject_isGradleLayout() throws Exception {
+        assertTrue(ReportPaths.usesGradleLayout(project("build.gradle.kts")));
+    }
+
+    @Test
+    public void mavenProject_isNotGradleLayout() throws Exception {
+        assertFalse(ReportPaths.usesGradleLayout(project("pom.xml", "target/")));
+    }
+
+    @Test
+    public void bothBuildFiles_mavenWins() throws Exception {
+        assertFalse(ReportPaths.usesGradleLayout(project("pom.xml", "build.gradle")));
+    }
+
+    @Test
+    public void noBuildFile_fallsBackToBuildDirHeuristic() throws Exception {
+        assertTrue(ReportPaths.usesGradleLayout(project("build/")));
+        assertFalse(ReportPaths.usesGradleLayout(project("build/", "target/")));
+        assertFalse(ReportPaths.usesGradleLayout(project()));
+    }
+
+    @Test
+    public void resolve_isUnderBaseDir() {
+        System.setProperty("seleniumboot.reports.dir", "out");
+        assertEquals(ReportPaths.resolve("recordings").getPath(), "out" + File.separator + "recordings");
     }
 }

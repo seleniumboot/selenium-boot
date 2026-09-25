@@ -34,10 +34,29 @@ public final class ReportPaths {
         if (override != null && !override.isBlank()) {
             return override.trim();
         }
-        if (new File("build").exists() && !new File("target").exists()) {
-            return "build";
-        }
-        return "target";
+        return usesGradleLayout() ? "build" : "target";
+    }
+
+    /**
+     * {@code true} for a Gradle project. Decided from the build files first — several components
+     * create {@code target/} themselves, so "does {@code target/} exist" cannot tell the two apart.
+     * A {@code pom.xml} wins when both build systems are present; with neither, falls back to
+     * "{@code build/} exists and {@code target/} does not".
+     */
+    public static boolean usesGradleLayout() {
+        return usesGradleLayout(new File("."));
+    }
+
+    public static boolean usesGradleLayout(File projectDir) {
+        if (new File(projectDir, "pom.xml").exists()) return false;
+        if (new File(projectDir, "build.gradle").exists()
+                || new File(projectDir, "build.gradle.kts").exists()) return true;
+        return new File(projectDir, "build").exists() && !new File(projectDir, "target").exists();
+    }
+
+    /** A file or directory under {@link #baseDir()}, e.g. {@code resolve("recordings")}. */
+    public static File resolve(String relativePath) {
+        return new File(baseDir(), relativePath);
     }
 
     /** {@code <baseDir>/selenium-boot-metrics.json} — the report's data source. */
