@@ -7,7 +7,7 @@
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Good first issues](https://img.shields.io/github/issues/seleniumboot/selenium-boot/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/seleniumboot/selenium-boot/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
-**[Documentation](https://docs.seleniumboot.com) · [Sample Project](https://github.com/seleniumboot/selenium-boot-test) · [Changelog](#project-status)**
+**[Documentation](https://docs.seleniumboot.com) · [Starter Template](https://github.com/seleniumboot/selenium-boot-starter) · [Sample Project](https://github.com/seleniumboot/selenium-boot-test) · [Changelog](#project-status)**
 
 ---
 
