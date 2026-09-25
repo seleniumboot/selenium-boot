@@ -9,6 +9,7 @@ import com.seleniumboot.db.DbClient;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.email.EmailCriteria;
 import com.seleniumboot.email.MailboxClient;
+import com.seleniumboot.internal.BaseUrlNavigation;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.locator.Locator;
 import com.seleniumboot.session.MultiSessionManager;
@@ -59,16 +60,16 @@ public abstract class BaseJUnit5Test {
 
     /** Navigates to {@code execution.baseUrl} from {@code selenium-boot.yml}. */
     protected void open() {
-        String url = SeleniumBootContext.getConfig().getExecution().getBaseUrl();
-        getDriver().get(url);
+        String url = BaseUrlNavigation.require(SeleniumBootContext.getConfig().getExecution().getBaseUrl());
+        BaseUrlNavigation.go(getDriver(), url);
         if (ConsoleErrorCollector.isEnabled()) ConsoleErrorCollector.injectShim();
     }
 
     /** Navigates to {@code baseUrl + path}. */
     protected void open(String path) {
-        String base = SeleniumBootContext.getConfig().getExecution().getBaseUrl();
+        String base = BaseUrlNavigation.require(SeleniumBootContext.getConfig().getExecution().getBaseUrl());
         String sep  = base.endsWith("/") || path.startsWith("/") ? "" : "/";
-        getDriver().get(base + sep + path);
+        BaseUrlNavigation.go(getDriver(), base + sep + path);
         if (ConsoleErrorCollector.isEnabled()) ConsoleErrorCollector.injectShim();
     }
 

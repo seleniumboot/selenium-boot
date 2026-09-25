@@ -24,6 +24,7 @@ import com.seleniumboot.db.DbClient;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.email.EmailCriteria;
 import com.seleniumboot.email.MailboxClient;
+import com.seleniumboot.internal.BaseUrlNavigation;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.listeners.SuiteExecutionListener;
 import com.seleniumboot.listeners.TestExecutionListener;
@@ -55,36 +56,25 @@ import java.util.Map;
 })
 public abstract class BaseTest {
 
-    private static final String MISSING_BASE_URL =
-            "execution.baseUrl is not set — add it to selenium-boot.yml, "
-            + "or navigate with getDriver().get(url)";
-
     protected WebDriver getDriver() {
         return DriverManager.getDriver();
     }
 
     protected void open() {
-        String baseURL = SeleniumBootContext.getConfig()
-                .getExecution().getBaseUrl();
-
-        if (baseURL == null || baseURL.isEmpty()) {
-            throw new IllegalStateException(MISSING_BASE_URL);
-        }
-        getDriver().get(baseURL);
+        String baseURL = BaseUrlNavigation.require(SeleniumBootContext.getConfig()
+                .getExecution().getBaseUrl());
+        BaseUrlNavigation.go(getDriver(), baseURL);
         if (ConsoleErrorCollector.isEnabled()) ConsoleErrorCollector.injectShim();
     }
 
     protected void open(String path) {
-        String baseUrl = SeleniumBootContext.getConfig()
-                .getExecution().getBaseUrl();
-        if (baseUrl == null || baseUrl.isEmpty()) {
-            throw new IllegalStateException(MISSING_BASE_URL);
-        }
+        String baseUrl = BaseUrlNavigation.require(SeleniumBootContext.getConfig()
+                .getExecution().getBaseUrl());
 
         String normalized = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
 
         String fullUrl = normalized + path;
-        getDriver().get(fullUrl);
+        BaseUrlNavigation.go(getDriver(), fullUrl);
         if (ConsoleErrorCollector.isEnabled()) ConsoleErrorCollector.injectShim();
     }
 
