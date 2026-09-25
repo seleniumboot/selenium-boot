@@ -31,7 +31,7 @@ public final class JUnitXmlReporter {
     static String resolveOutputDir() {
         String override = System.getProperty("seleniumboot.reports.dir");
         if (override != null && !override.isBlank()) return override.trim();
-        if (new File("build").exists() && !new File("target").exists()) {
+        if (ReportPaths.usesGradleLayout()) {
             return "build/test-results/test";
         }
         return "target/surefire-reports";

@@ -54,7 +54,7 @@ public final class FrameworkBootstrap {
         SeleniumBootConfig.Reporting reporting = config.getReporting();
         if (reporting != null && reporting.isAllureEnabled()) {
             ReportAdapterRegistry.register(new AllureReportAdapter());
-            System.out.println("[Selenium Boot] Allure adapter enabled → target/allure-results/");
+            System.out.println("[Selenium Boot] Allure adapter enabled → " + com.seleniumboot.reporting.ReportPaths.resolve("allure-results") + "/");
         }
 
         Notifications notifs = config.getNotifications();

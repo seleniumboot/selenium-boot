@@ -45,7 +45,7 @@ public final class HealLog {
     public static void export() {
         if (EVENTS.isEmpty()) return;
         try {
-            File dir = new File("target");
+            File dir = com.seleniumboot.reporting.ReportPaths.resolve("");
             dir.mkdirs();
             File out = new File(dir, "healed-locators.json");
 

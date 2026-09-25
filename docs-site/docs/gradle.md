@@ -69,8 +69,9 @@ test {
         // suites 'src/test/resources/testng.xml'
     }
 
-    // Forward system properties so -Denv=staging works from the CLI
-    systemProperties System.properties
+    // Forward -Denv=staging / -Dbrowser=firefox from the CLI. Forward only the keys you use:
+    // copying every JVM property (java.home, ...) breaks the run if the test JVM differs from Gradle's
+    ['browser', 'env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
 
     // Display test output in the console
     testLogging {
@@ -90,8 +91,9 @@ tasks.test {
         // suites("src/test/resources/testng.xml")
     }
 
-    // Forward system properties so -Denv=staging works from the CLI
-    systemProperties(System.getProperties().mapKeys { it.key.toString() })
+    // Forward -Denv=staging / -Dbrowser=firefox from the CLI. Forward only the keys you use:
+    // copying every JVM property (java.home, ...) breaks the run if the test JVM differs from Gradle's
+    listOf("browser", "env").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
 
     testLogging {
         events("passed", "skipped", "failed")
@@ -119,7 +121,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    systemProperties System.properties
+    ['browser', 'env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
 }
 ```
 
@@ -135,7 +137,7 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
-    systemProperties(System.getProperties().mapKeys { it.key.toString() })
+    listOf("browser", "env").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
 }
 ```
 
@@ -191,13 +193,13 @@ retry:
 
 | Report type | Gradle path |
 |---|---|
-| HTML report (Selenium Boot) | `build/selenium-boot-report/index.html` |
+| HTML report (Selenium Boot) | `build/selenium-boot-report.html` |
 | JUnit XML (Selenium Boot) | `build/test-results/test/TEST-SeleniumBoot.xml` |
 | Gradle's own HTML report | `build/reports/tests/test/index.html` |
 | Allure results (if enabled) | `build/allure-results/` |
 
 :::info JUnit XML auto-detection
-Selenium Boot automatically detects Gradle by checking whether a `build/` directory exists and `target/` does not, then writes XML to `build/test-results/test/`. Override with `-Dseleniumboot.reports.dir=path/to/dir` if needed.
+Selenium Boot detects a Gradle project by its `build.gradle` / `build.gradle.kts` (a `pom.xml` wins if both are present) and writes its reports, metrics and artifacts under `build/`, with JUnit XML in `build/test-results/test/`. Override with `-Dseleniumboot.reports.dir=path/to/dir` if needed.
 :::
 
 ---
@@ -213,7 +215,7 @@ For parallel runs with Gradle, configure the `test` task alongside `selenium-boo
 test {
     useTestNG()
     maxParallelForks = 4          // Gradle worker processes
-    systemProperties System.properties
+    ['browser', 'env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
 }
 ```
 
@@ -224,7 +226,7 @@ test {
 tasks.test {
     useTestNG()
     maxParallelForks = 4
-    systemProperties(System.getProperties().mapKeys { it.key.toString() })
+    listOf("browser", "env").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
 }
 ```
 
@@ -281,7 +283,7 @@ dependencies {
 
 test {
     useTestNG()
-    systemProperties System.properties
+    ['browser', 'env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
     testLogging { events 'passed', 'skipped', 'failed' }
 }
 ```
