@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
 @SeleniumBootApi(since = "0.4.0")
 public final class WaitEngine {
 
+    private static final Duration DEFAULT_NETWORK_QUIET_FOR = Duration.ofMillis(500);
+
     private WaitEngine() {
     }
 
@@ -246,6 +248,58 @@ public final class WaitEngine {
                 return true;
             }
         });
+    }
+
+    // ----------------------------------------------------------
+    // Network
+    // ----------------------------------------------------------
+
+    /**
+     * Waits until the browser has no in-flight network request for {@link #DEFAULT_NETWORK_QUIET_FOR}
+     * (500ms), bounded by the configured explicit timeout. Supported on Chrome/Edge (via CDP) and
+     * any BiDi-capable browser such as Firefox; throws {@link UnsupportedOperationException} on others.
+     *
+     * <pre>
+     * page.clickLoadMore();
+     * WaitEngine.waitForNetworkIdle();
+     * </pre>
+     */
+    public static void waitForNetworkIdle() {
+        waitForNetworkIdle(DEFAULT_NETWORK_QUIET_FOR);
+    }
+
+    /**
+     * Like {@link #waitForNetworkIdle()}, but with a custom quiet period instead of the 500ms default.
+     */
+    public static void waitForNetworkIdle(Duration quietFor) {
+        NetworkActivityTracker.awaitIdle(DriverManager.getDriver(), quietFor, explicitTimeout());
+    }
+
+    /**
+     * Waits until a response whose URL matches {@code urlPattern} is observed, and returns its
+     * HTTP status code. Bounded by the configured explicit timeout. Same glob syntax as
+     * {@link com.seleniumboot.network.NetworkMock#stub(String)} ({@code *} within a path segment,
+     * {@code **} across segments). Supported on Chrome/Edge (via CDP) and any BiDi-capable browser
+     * such as Firefox; throws {@link UnsupportedOperationException} on others.
+     *
+     * <pre>
+     * page.clickCheckout();
+     * int status = WaitEngine.waitForResponse("&#42;&#42;/api/checkout");
+     * </pre>
+     */
+    public static int waitForResponse(String urlPattern) {
+        return waitForResponse(urlPattern, explicitTimeout());
+    }
+
+    /**
+     * Like {@link #waitForResponse(String)}, but with a custom timeout instead of the configured one.
+     */
+    public static int waitForResponse(String urlPattern, Duration timeout) {
+        return NetworkActivityTracker.awaitResponse(DriverManager.getDriver(), urlPattern, timeout);
+    }
+
+    private static Duration explicitTimeout() {
+        return Duration.ofSeconds(SeleniumBootContext.getConfig().getTimeouts().getExplicit());
     }
 
     // ----------------------------------------------------------

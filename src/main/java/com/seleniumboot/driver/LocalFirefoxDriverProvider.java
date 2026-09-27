@@ -63,6 +63,14 @@ public class LocalFirefoxDriverProvider implements DriverProvider{
         // Keep alerts open until the test explicitly handles them.
         options.setCapability("unhandledPromptBehavior", "ignore");
 
+        // Enable BiDi so WaitEngine.waitForNetworkIdle()/waitForResponse() work out of the box —
+        // without this, HasBiDi.getBiDi() throws BiDiException instead of the clean
+        // UnsupportedOperationException NetworkActivityTracker reserves for truly unsupported
+        // drivers. An explicit "webSocketUrl" in the user's own capabilities still wins.
+        if (capabilities == null || !capabilities.containsKey("webSocketUrl")) {
+            options.setCapability("webSocketUrl", true);
+        }
+
         WebDriver driver = new FirefoxDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ZERO);
 
