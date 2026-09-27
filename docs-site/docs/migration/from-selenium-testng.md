@@ -119,8 +119,8 @@ WaitUtils.waitVisible(driver, By.id("login")).click();
 
 ```java
 $("#login").click();                          // auto-waits for clickable
-getWait().waitForInvisible(By.cssSelector(".spinner"));
-getWait().waitForText(By.cssSelector("h1"), "Welcome back");
+WaitEngine.waitForInvisible(By.cssSelector(".spinner"));
+WaitEngine.waitForText(By.cssSelector("h1"), "Welcome back");
 ```
 
 No `Thread.sleep()`, no per-page `WebDriverWait` construction, no passing `driver` around. See the [WaitEngine guide](/docs/guides/wait-engine).
