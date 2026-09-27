@@ -11,6 +11,15 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [3.6.0] — 2026-09-27
+
+- **`WaitEngine.waitForNetworkIdle()` / `waitForResponse(urlPattern)`** — waits until no network request has been in flight for a quiet period (default 500ms, or a custom `Duration`), or until a response whose URL matches a glob pattern (same syntax as `NetworkMock.stub`) is observed, returning its HTTP status code. Both are bounded by the configured explicit timeout. Works on Chrome/Edge (via CDP) and any BiDi-capable browser such as Firefox; throws `UnsupportedOperationException` on others. Firefox sessions now request a BiDi connection by default (`webSocketUrl` capability) so this works with no extra configuration — an explicit value in the user's own `browser.capabilities` still wins.
+- **`open()` names `execution.baseUrl` when the site can't be reached** — a DNS or connection failure now reads `Could not reach <url> (ERR_NAME_NOT_RESOLVED) — check execution.baseUrl in selenium-boot.yml …` (the driver's error stays as the cause) instead of a bare `net::ERR_NAME_NOT_RESOLVED`. Applies to `BaseTest`, `BaseJUnit5Test`, `BaseCucumberSteps` and `BaseConditions`. Also fixes `BaseJUnit5Test.open()` with no `execution.baseUrl` failing with a bare driver error instead of naming the missing key. (#84)
+- **Gradle projects now get their reports under `build/`** (#81) — the base directory is decided from `build.gradle` / `build.gradle.kts` (a `pom.xml` wins if both exist) instead of "does `target/` exist", which other components had already created. Flakiness report, healed locators, traces, recordings, Allure results, screenshots and JUnit XML all follow it; `-Dseleniumboot.reports.dir` still overrides.
+- **Docs: the Gradle `systemProperties System.properties` snippet is replaced** (#82) — copying every JVM property broke test runs when the test JVM differs from Gradle's. It now forwards only `browser` and `env`.
+
+---
+
 ## [3.5.0] — 2026-09-24
 
 - **Zero-config first run: `selenium-boot.yml` is now optional** — with no default `selenium-boot.yml` in the working directory or on the classpath, the framework runs on built-in defaults (`browser.name: chrome`, `execution.mode: local`, `timeouts.explicit: 10`, `timeouts.pageLoad: 30`) and prints one `[Selenium Boot] No selenium-boot.yml found — running with built-in defaults ...` notice line. Fields a file omits (and an empty file) fall back to the same defaults; `browser.name` is only defaulted when `browser.matrix` is not set, and `SeleniumBootDefaults` overrides still take precedence over the built-ins. Nothing that was an error before stops being one: a requested profile (`-Dselenium.boot.profile`) or explicit path (`-Dselenium.boot.config`) whose file is missing still throws, so a typo never silently runs on defaults, and present-but-invalid values (an unknown `execution.mode`, a negative timeout) still fail validation. Adds `ConfigurationLoader.load(File, ClassLoader)` (working directory and classpath supplied, for tests). (#66)
