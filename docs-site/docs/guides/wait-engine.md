@@ -8,7 +8,11 @@ sidebar_position: 3
 
 # WaitEngine
 
-`WaitEngine` provides fluent explicit waits. It is pre-configured with the timeout from `selenium-boot.yml` (`timeouts.explicit`) and is available in every `BasePage` via `getWait()`.
+`WaitEngine` provides explicit waits as static methods, pre-configured with the timeout from `selenium-boot.yml` (`timeouts.explicit`). Call them directly — `WaitEngine.waitForVisible(...)` — from anywhere in a `BasePage` or `BaseTest`.
+
+```java
+import com.seleniumboot.wait.WaitEngine;
+```
 
 ---
 
@@ -17,72 +21,83 @@ sidebar_position: 3
 ### Element visibility
 
 ```java
-getWait().waitForVisible(By.id("modal"));
-getWait().waitForInvisible(By.cssSelector(".spinner"));  // wait for loaders to disappear
+WaitEngine.waitForVisible(By.id("modal"));
+WaitEngine.waitForInvisible(By.cssSelector(".spinner"));  // wait for loaders to disappear
 ```
 
 ### Clickability
 
 ```java
-getWait().waitForClickable(By.id("submit"));
+WaitEngine.waitForClickable(By.id("submit"));
 ```
 
 ### Text content
 
 ```java
-getWait().waitForText(By.cssSelector("h1"), "Welcome back");
+WaitEngine.waitForText(By.cssSelector("h1"), "Welcome back");
 ```
 
 ### Attribute value
 
 ```java
-getWait().waitForAttributeContains(By.id("status"), "class", "active");  // substring
-getWait().waitForAttribute(By.id("status"), "aria-expanded", "true");    // exact match
+WaitEngine.waitForAttributeContains(By.id("status"), "class", "active");  // substring
+WaitEngine.waitForAttribute(By.id("status"), "aria-expanded", "true");    // exact match
 ```
 
 ### Text matches (regex)
 
 ```java
 // Wait until the element's visible text matches a regular expression
-getWait().waitForTextMatches(By.cssSelector(".total"), "\\$\\d+\\.\\d{2}");
+WaitEngine.waitForTextMatches(By.cssSelector(".total"), "\\$\\d+\\.\\d{2}");
 ```
 
 ### URL matches (regex)
 
 ```java
-getWait().waitForUrlContains("/orders");            // substring
-getWait().waitForUrlMatches(".*/orders/\\d+");      // regular expression
+WaitEngine.waitForUrlContains("/orders");            // substring
+WaitEngine.waitForUrlMatches(".*/orders/\\d+");      // regular expression
 ```
 
 ### DOM staleness
 
 ```java
 WebElement old = driver.findElement(By.id("row-1"));
-getWait().waitForStaleness(old);  // wait for DOM replacement / AJAX reload
+WaitEngine.waitForStaleness(old);  // wait for DOM replacement / AJAX reload
 ```
 
 ### Page load
 
 ```java
-getWait().waitForPageLoad();  // waits until document.readyState === "complete"
+WaitEngine.waitForPageLoad();  // waits until document.readyState === "complete"
 ```
+
+### Network
+
+Waits driven by the browser's network activity — CDP on Chrome/Edge, [BiDi](https://www.w3.org/TR/webdriver-bidi/) on Firefox and other BiDi-capable browsers. Throws `UnsupportedOperationException` on drivers with neither.
+
+```java
+// Wait until no request has been in flight for 500ms (the default), or a custom quiet period
+WaitEngine.waitForNetworkIdle();
+WaitEngine.waitForNetworkIdle(Duration.ofSeconds(1));
+
+// Wait for a response matching a URL glob (same syntax as NetworkMock.stub), get its status code
+int status = WaitEngine.waitForResponse("**/api/checkout");
+```
+
+Both are bounded by the configured explicit timeout by default; pass a `Duration` to override it for `waitForResponse`.
 
 ### Custom condition
 
 ```java
 // Escape hatch — pass any ExpectedCondition
-getWait().wait(ExpectedConditions.numberOfWindowsToBe(2));
+WaitEngine.wait(ExpectedConditions.numberOfWindowsToBe(2));
 ```
 
 ---
 
 ## Timeout override
 
-Use a custom timeout for a single wait without changing the global config:
-
-```java
-getWait(30).waitForVisible(By.id("slow-element"));  // 30-second timeout
-```
+`waitForNetworkIdle(Duration)` and `waitForResponse(String, Duration)` take an explicit timeout per call. Every other method reads `timeouts.explicit` from `selenium-boot.yml`.
 
 ---
 
@@ -103,7 +118,7 @@ timeouts:
 Thread.sleep(3000);
 
 // ✅ do this instead
-getWait().waitForVisible(By.id("result"));
+WaitEngine.waitForVisible(By.id("result"));
 ```
 
 ```java
@@ -111,6 +126,6 @@ getWait().waitForVisible(By.id("result"));
 new WebDriverWait(driver, Duration.ofSeconds(10))
     .until(ExpectedConditions.visibilityOf(...));
 
-// ✅ use getWait() — reads timeout from config
-getWait().waitForVisible(By.id("result"));
+// ✅ WaitEngine reads the timeout from config
+WaitEngine.waitForVisible(By.id("result"));
 ```
