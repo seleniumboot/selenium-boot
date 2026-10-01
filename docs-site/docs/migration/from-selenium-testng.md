@@ -1,5 +1,5 @@
 ---
-description: "Migrate a Selenium + TestNG framework to Selenium Boot: delete your driver factory, wait utils, retry analyzer, and reporting glue, and see the boilerplate disappear side by side."
+description: "Migrate a Selenium + TestNG framework to Selenium Boot: delete your driver factory, wait utils, retry analyzer, and reporting glue."
 id: from-selenium-testng
 title: Migrate from Selenium + TestNG
 sidebar_label: From Selenium + TestNG

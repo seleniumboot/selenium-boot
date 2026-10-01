@@ -1,5 +1,5 @@
 ---
-description: "Handle Shadow DOM in Selenium: Selenium Boot pierces shadow roots with shadowFind, shadowClick, and shadowType, and traverses nested web components with shadowPierce — no manual JavaScript."
+description: "Handle Shadow DOM in Selenium: Selenium Boot pierces shadow roots with shadowFind, shadowClick, and shadowType, no manual JavaScript needed."
 id: handle-shadow-dom
 title: Handle Shadow DOM
 sidebar_label: Handle Shadow DOM

@@ -20,7 +20,8 @@ Items tagged **`good first issue`** or **`help wanted`** are open for contributi
 
 Most users find a framework by searching, not by browsing GitHub.
 
-- **Per-page SEO descriptions** across all docs pages — *in progress*.
+- ✅ **Per-page SEO descriptions** across all docs pages — done. All 51 pages already had
+  one; trimmed the 10 that ran past Google's ~160-char display limit (2026-10-01).
 - **"Why" pages** — Why Selenium Boot? · Why not plain Selenium? · Why not Playwright? · Why accessibility-first locators? · Why WaitEngine? `good first issue`
 - **Recipes section** — task-titled, search-matched guides: upload a file, download a PDF, iframes, Shadow DOM, tables, infinite scroll, OAuth/SSO, alerts, drag & drop, REST + UI. `good first issue`
 - **Migration guides** — from Selenium + TestNG, from WebDriverManager, from Selenide, from Serenity; plus a "coming from Playwright" bridge (familiar vs. different, **not** a replacement claim). `help wanted`

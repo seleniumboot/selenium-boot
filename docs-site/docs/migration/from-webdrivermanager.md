@@ -1,5 +1,5 @@
 ---
-description: "Migrate off WebDriverManager: modern Selenium bundles Selenium Manager, so Selenium Boot resolves driver binaries with zero WebDriverManager code — delete the setup calls and the dependency."
+description: "Migrate off WebDriverManager: modern Selenium bundles Selenium Manager, so Selenium Boot resolves driver binaries with zero WebDriverManager code."
 id: from-webdrivermanager
 title: Migrate from WebDriverManager
 sidebar_label: From WebDriverManager

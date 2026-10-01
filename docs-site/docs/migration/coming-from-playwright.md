@@ -1,5 +1,5 @@
 ---
-description: "Coming from Playwright to Selenium Boot: a bridge, not a replacement. What's familiar — getByRole/getByLabel locators, auto-waiting, web-first assertThat — and what's genuinely different: architecture, language/runtime, and Selenium Grid."
+description: "Coming from Playwright to Selenium Boot: a bridge, not a replacement. What's familiar — getByRole/getByLabel locators, auto-waiting, web-first assertions."
 id: coming-from-playwright
 title: Coming from Playwright
 sidebar_label: Coming from Playwright

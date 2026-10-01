@@ -1,5 +1,5 @@
 ---
-description: "Upload a file in Selenium without OS dialogs: Selenium Boot's upload(By, path) sets the file input directly, with paths resolved from the classpath or an absolute location."
+description: "Upload a file in Selenium without OS dialogs: Selenium Boot's upload(By, path) sets the file input directly, with paths resolved from the classpath or disk."
 id: upload-a-file
 title: Upload a file
 sidebar_label: Upload a file
