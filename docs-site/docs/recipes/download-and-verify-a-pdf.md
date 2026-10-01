@@ -1,5 +1,5 @@
 ---
-description: "Download and verify a PDF in Selenium: DownloadManager waits for the file to appear in the download directory, handling partial downloads, so you can assert it exists and is non-empty."
+description: "Download and verify a PDF in Selenium: DownloadManager waits for the file to appear in the download directory, handling partial downloads."
 id: download-and-verify-a-pdf
 title: Download and verify a PDF
 sidebar_label: Download & verify a PDF

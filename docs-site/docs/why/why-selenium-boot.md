@@ -1,5 +1,5 @@
 ---
-description: "Why Selenium Boot: the Spring Boot of Selenium — zero setup, Playwright-inspired locators and auto-waiting, and enterprise features, without hiding Selenium. The philosophy before the API."
+description: "Why Selenium Boot: the Spring Boot of Selenium — zero setup, Playwright-inspired locators and auto-waiting, enterprise features, without hiding Selenium."
 id: why-selenium-boot
 title: Why Selenium Boot?
 sidebar_label: Why Selenium Boot?

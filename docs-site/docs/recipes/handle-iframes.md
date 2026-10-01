@@ -1,5 +1,5 @@
 ---
-description: "Handle iframes in Selenium without manual switchTo() bookkeeping: Selenium Boot's withinFrame runs your actions inside the frame and restores the previous context automatically, even when nested."
+description: "Handle iframes in Selenium without manual switchTo() bookkeeping: withinFrame runs your actions inside the frame and restores context automatically."
 id: handle-iframes
 title: Handle iframes
 sidebar_label: Handle iframes

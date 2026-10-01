@@ -1,5 +1,5 @@
 ---
-description: "Why not Playwright? An honest answer: Selenium Boot does not replace Playwright. It brings Playwright's best ideas — accessibility-first locators, auto-waiting, web-first assertions — to teams staying in the Selenium / Java / Grid ecosystem."
+description: "Why not Playwright? An honest answer: Selenium Boot does not replace it. It brings Playwright's best ideas to teams staying in Selenium / Java / Grid."
 id: why-not-playwright
 title: Why not Playwright?
 sidebar_label: Why not Playwright?

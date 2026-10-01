@@ -1,5 +1,5 @@
 ---
-description: "Why not plain Selenium? Raw Selenium is low-level by design — every team rebuilds the same driver factory, wait utils, retry analyzer, and reporting. Selenium Boot is that framework, maintained and tested, without hiding Selenium."
+description: "Why not plain Selenium? Raw Selenium is low-level by design — every team rebuilds the same driver factory, wait utils, retry analyzer, and reporting."
 id: why-not-plain-selenium
 title: Why not plain Selenium?
 sidebar_label: Why not plain Selenium?
