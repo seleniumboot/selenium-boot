@@ -40,6 +40,28 @@ import java.util.stream.Collectors;
 @SeleniumBootApi(since = "1.4.0")
 public final class Locator {
 
+    /** Records whether a native drag actually delivered a {@code drop} event to the target. */
+    private static final String ARM_DROP_LISTENER_JS =
+            "var t = arguments[0]; t.__sbDropped = false;"
+            + "t.__sbDropHandler = function () { t.__sbDropped = true; };"
+            + "t.addEventListener('drop', t.__sbDropHandler);";
+
+    private static final String COLLECT_DROP_RESULT_JS =
+            "var t = arguments[0]; t.removeEventListener('drop', t.__sbDropHandler);"
+            + "var dropped = t.__sbDropped === true; delete t.__sbDropped; delete t.__sbDropHandler;"
+            + "return dropped;";
+
+    /** HTML5 DnD fallback: replays the event sequence with one shared DataTransfer. */
+    private static final String SYNTHETIC_DRAG_JS =
+            "var src = arguments[0], dst = arguments[1], dt = new DataTransfer();"
+            + "function fire(el, type) {"
+            + "  var r = el.getBoundingClientRect();"
+            + "  el.dispatchEvent(new DragEvent(type, {bubbles: true, cancelable: true, composed: true,"
+            + "    dataTransfer: dt, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2}));"
+            + "}"
+            + "fire(src, 'dragstart'); fire(dst, 'dragenter'); fire(dst, 'dragover');"
+            + "fire(dst, 'drop'); fire(src, 'dragend');";
+
     /** How the base set of candidate elements is derived. */
     private enum Kind { CSS_OR_BY, ROLE, TEXT, LABEL, PLACEHOLDER, TESTID, ALT_TEXT, TITLE }
 
@@ -303,6 +325,34 @@ public final class Locator {
             ((JavascriptExecutor) driver()).executeScript("arguments[0].click();", el);
             return null;
         });
+    }
+
+    /**
+     * Drags this element onto {@code target} and drops it there.
+     *
+     * <p>Tries the native {@link Actions#dragAndDrop} gesture first. Pages built on the HTML5
+     * drag-and-drop API ({@code draggable="true"} plus {@code dragstart}/{@code drop} listeners)
+     * often ignore it, so when no {@code drop} event reached the target, the full sequence
+     * ({@code dragstart, dragenter, dragover, drop, dragend}) is dispatched with a synthetic
+     * {@code DataTransfer}. Both elements are waited for and re-resolved like every other
+     * terminal action.
+     *
+     * <pre>{@code
+     * Locator.byText("Card A").dragTo(Locator.ofCss("#done-column"));
+     * }</pre>
+     *
+     * @throws LocatorException if either element cannot be resolved within {@code timeouts.explicit}
+     */
+    public void dragTo(Locator target) {
+        target.whenVisible(dst -> whenVisible(src -> {
+            JavascriptExecutor js = (JavascriptExecutor) driver();
+            js.executeScript(ARM_DROP_LISTENER_JS, dst);
+            new Actions(driver()).dragAndDrop(src, dst).perform();
+            if (!Boolean.TRUE.equals(js.executeScript(COLLECT_DROP_RESULT_JS, dst))) {
+                js.executeScript(SYNTHETIC_DRAG_JS, src, dst);
+            }
+            return null;
+        }));
     }
 
     /** Returns the number of elements currently matching the locator chain (no wait). */
