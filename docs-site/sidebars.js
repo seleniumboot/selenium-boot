@@ -61,6 +61,7 @@ const sidebars = {
         'recipes/upload-a-file',
         'recipes/download-and-verify-a-pdf',
         'recipes/handle-iframes',
+        'recipes/handle-new-windows',
         'recipes/handle-shadow-dom',
       ],
     },

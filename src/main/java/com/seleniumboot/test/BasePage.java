@@ -30,6 +30,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.io.File;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Base class for all page objects.
@@ -331,6 +333,57 @@ public abstract class BasePage {
         all[0] = primary;
         System.arraycopy(fallbacks, 0, all, 1, fallbacks.length);
         return SmartLocator.find(driver, all);
+    }
+
+    // ----------------------------------------------------------
+    // Window / tab helpers
+    // ----------------------------------------------------------
+
+    /**
+     * Runs {@code opener} (the click that opens a new window or tab), switches to the window it
+     * opened, runs {@code body} there, then closes that window and switches back to the original.
+     * The original window is restored even if {@code opener} or {@code body} throws.
+     *
+     * <pre>
+     * withNewWindow(() -> click(By.linkText("Terms")), () -> {
+     *     assertEquals(driver.getTitle(), "Terms of Service");
+     * });
+     * // back on the original window here
+     * </pre>
+     *
+     * @throws org.openqa.selenium.TimeoutException if no new window appears within
+     *         {@code timeouts.explicit} — the body is not run, so a missing window fails the test
+     *         instead of passing it silently
+     */
+    protected void withNewWindow(Runnable opener, Runnable body) {
+        String original = driver.getWindowHandle();
+        Set<String> before = new HashSet<>(driver.getWindowHandles());
+        String opened = null;
+        try {
+            opener.run();
+            int timeout = SeleniumBootContext.getConfig().getTimeouts().getExplicit();
+            opened = new WebDriverWait(driver, Duration.ofSeconds(timeout)).until(d -> {
+                Set<String> added = new HashSet<>(d.getWindowHandles());
+                added.removeAll(before);
+                return added.isEmpty() ? null : added.iterator().next();
+            });
+            driver.switchTo().window(opened);
+            body.run();
+        } finally {
+            try {
+                if (opened != null && driver.getWindowHandles().contains(opened)) {
+                    driver.switchTo().window(opened);
+                    driver.close();
+                }
+            } finally {
+                driver.switchTo().window(original);
+            }
+        }
+    }
+
+    /** Alias for {@link #withNewWindow(Runnable, Runnable)} — browsers open both the same way. */
+    protected void withNewTab(Runnable opener, Runnable body) {
+        withNewWindow(opener, body);
     }
 
     // ----------------------------------------------------------
