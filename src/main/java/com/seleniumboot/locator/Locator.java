@@ -1,6 +1,7 @@
 package com.seleniumboot.locator;
 
 import com.seleniumboot.api.SeleniumBootApi;
+import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import org.openqa.selenium.By;
@@ -721,7 +722,9 @@ public final class Locator {
      * result may be {@code null}.
      */
     private <T> T whenReady(Predicate<WebElement> ready, Function<WebElement, T> action) {
-        int timeout = SeleniumBootContext.getConfig().getTimeouts().getExplicit();
+        SeleniumBootConfig cfg = SeleniumBootContext.getConfig();
+        int timeout = cfg.getTimeouts().getExplicit();
+        SeleniumBootConfig.Debug debug = cfg.getDebug();
         AtomicReference<T> result = new AtomicReference<>();
         try {
             new WebDriverWait(driver(), Duration.ofSeconds(timeout))
@@ -729,6 +732,7 @@ public final class Locator {
                     .until(d -> {
                         WebElement el = resolve();
                         if (!ready.test(el)) return null;
+                        if (debug.isHighlight()) highlight(el);
                         result.set(action.apply(el));
                         return Boolean.TRUE;
                     });
@@ -740,7 +744,26 @@ public final class Locator {
             }
             throw e;
         }
+        if (debug.getSlowMoMs() > 0) slowMo(debug.getSlowMoMs());
         return result.get();
+    }
+
+    /** Debug aid: outlines the element; best-effort, never fails the action. The outline is left in place. */
+    private void highlight(WebElement el) {
+        try {
+            ((JavascriptExecutor) driver()).executeScript(
+                    "arguments[0].style.outline='2px solid red';", el);
+        } catch (RuntimeException ignored) {
+            // element went stale or the page blocks script — highlighting is cosmetic
+        }
+    }
+
+    private static void slowMo(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     // ------------------------------------------------------------------

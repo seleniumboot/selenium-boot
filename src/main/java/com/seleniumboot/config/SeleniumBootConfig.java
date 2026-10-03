@@ -52,6 +52,27 @@ public final class SeleniumBootConfig {
         this.ci = ci;
     }
 
+    private Debug debug = new Debug();
+    public Debug getDebug() { return debug; }
+    public void setDebug(Debug debug) { this.debug = debug != null ? debug : new Debug(); }
+
+    /**
+     * Live-triage aids for watching a test run locally. Dev-only — both slow the run down or
+     * touch the page, so leave them off in CI.
+     */
+    public static final class Debug {
+        private long slowMoMs = 0;
+        private boolean highlight = false;
+
+        /** Pause after each terminal {@code Locator} action, in milliseconds. 0 disables. */
+        public long getSlowMoMs() { return slowMoMs; }
+        public void setSlowMoMs(long slowMoMs) { this.slowMoMs = Math.max(0, slowMoMs); }
+
+        /** Outline the resolved element in red just before each terminal {@code Locator} action. */
+        public boolean isHighlight() { return highlight; }
+        public void setHighlight(boolean highlight) { this.highlight = highlight; }
+    }
+
     private Network network;
     public Network getNetwork() { return network; }
     public void setNetwork(Network network) { this.network = network; }
