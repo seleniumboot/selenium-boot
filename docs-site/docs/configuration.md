@@ -248,6 +248,30 @@ to `data-qa`, `data-test`, etc. to match your app. See
 
 ---
 
+## Debug
+
+Live-triage aids for watching a test run on your own machine. **Dev-only — keep them off in CI**: they
+slow the run down and modify the page. Both are off by default and cost nothing when off.
+
+```yaml
+debug:
+  slowMoMs: 300     # pause after each Locator action (ms); 0 = off
+  highlight: true   # red outline on the element just before each Locator action
+```
+
+### `slowMoMs`
+Sleeps for the given number of milliseconds after every terminal `Locator` action
+(`click`, `type`, `getText`, `hover`, …), so you can follow the browser by eye.
+
+### `highlight`
+Applies `outline: 2px solid red` to the resolved element immediately before the action.
+The outline is left in place afterwards, so you can see what was touched.
+
+These complement trace and recording: `TraceRecorder` / `RecordingManager` give you a
+post-mortem after the test finishes; `debug` lets you watch it live.
+
+---
+
 ## Environment profiles
 
 Override the default config for a specific environment using a profile suffix:
