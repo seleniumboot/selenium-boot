@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout framework
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Java 17
         uses: actions/setup-java@v6
@@ -59,7 +59,7 @@ jobs:
 
     steps:
       - name: Checkout framework
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Java 17
         uses: actions/setup-java@v6
@@ -78,7 +78,7 @@ jobs:
           echo "value=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Checkout consumer test project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: seleniumboot/selenium-boot-test
           path: selenium-boot-test
