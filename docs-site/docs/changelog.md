@@ -11,6 +11,15 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [Unreleased]
+
+- **`Locator.dragTo(Locator)`** — drags one element onto another, including HTML5 drag-and-drop pages that ignore the native gesture. See [Drag and drop](./recipes/drag-and-drop). (#101)
+- **`debug.slowMoMs` / `debug.highlight`** — dev-only live-triage aids: pause after each `Locator` action and outline the element about to be acted on. Off by default, no cost when off; not for CI. See [Debug](./configuration#debug). (#52)
+- **`withNewWindow(opener, body)` / `withNewTab(...)` on `BasePage`** — run the click that opens a new window, switch to it, run your checks, close it and return to the original window, even if the checks throw. No window opening within `timeouts.explicit` throws `TimeoutException`. See [Handle new windows and tabs](./recipes/handle-new-windows). (#49)
+- **`browser.version`** — optional exact browser version for local Chrome/Firefox runs, resolved by Selenium Manager. Omit it to use the installed browser. (#51)
+
+---
+
 ## [3.6.0] — 2026-09-27
 
 - **`WaitEngine.waitForNetworkIdle()` / `waitForResponse(urlPattern)`** — waits until no network request has been in flight for a quiet period (default 500ms, or a custom `Duration`), or until a response whose URL matches a glob pattern (same syntax as `NetworkMock.stub`) is observed, returning its HTTP status code. Both are bounded by the configured explicit timeout. Works on Chrome/Edge (via CDP) and any BiDi-capable browser such as Firefox; throws `UnsupportedOperationException` on others. Firefox sessions now request a BiDi connection by default (`webSocketUrl` capability) so this works with no extra configuration — an explicit value in the user's own `browser.capabilities` still wins.
