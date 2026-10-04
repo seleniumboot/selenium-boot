@@ -32,6 +32,8 @@ public class LocalChromeDriverProvider implements DriverProvider {
             capabilities.forEach(options::setCapability);
         }
 
+        BrowserVersionPin.apply(options, config.getBrowser().getVersion());
+
         if (config.getBrowser().isHeadless()) {
             options.addArguments("--headless=new");
         }

@@ -49,6 +49,7 @@ browser:
   name: chrome              # chrome | firefox | edge | safari
   headless: false           # true in CI (auto-forced when CI detected)
   lifecycle: per-test       # per-test (default) | per-suite
+  # version: "120.0.6099.109"  # optional: pin local Chrome/Firefox to an exact build
 
   # Optional: extra browser arguments
   arguments:
@@ -183,6 +184,13 @@ The browser to use. Selenium Manager downloads the matching driver automatically
 
 ### `headless`
 Runs the browser without a visible window. Automatically forced to `true` when a CI environment is detected (GitHub Actions, Jenkins, etc.).
+
+### `version`
+Pins a local Chrome or Firefox run to an exact browser version, for when "passes on my
+laptop, fails in CI" is a browser-version mismatch. Passed to Selenium Manager, which resolves
+and downloads the matching build. Optional — omit it to use whatever browser is installed.
+Ignored by `remote`, `browserstack` and `saucelabs` modes (those use their own
+`browserVersion`).
 
 ### `lifecycle`
 Controls when the WebDriver session is closed.
