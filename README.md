@@ -28,7 +28,7 @@ Three files. Copy them as-is and `mvn test` goes green against a real Chrome.
     <dependency>
         <groupId>io.github.seleniumboot</groupId>
         <artifactId>selenium-boot</artifactId>
-        <version>3.6.0</version>
+        <version>3.7.0</version>
     </dependency>
 </dependencies>
 
@@ -205,7 +205,7 @@ Add to your `pom.xml`:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>3.6.0</version>
+    <version>3.7.0</version>
 </dependency>
 ```
 
@@ -787,7 +787,7 @@ ci:
 
 ## Project Status
 
-**Current release: v3.6.0** — `waitForNetworkIdle()` / `waitForResponse()` (CDP + BiDi), zero-config first run, terminal `Locator` actions that wait and re-resolve stale elements, and JUnit 6 support.
+**Current release: v3.7.0** — live-triage debug mode (`debug.slowMoMs` / `debug.highlight`), `withNewWindow` / `withNewTab`, `Locator.dragTo`, and `browser.version` pinning.
 
 See the full version history in **[CHANGELOG.md](CHANGELOG.md)**.
 

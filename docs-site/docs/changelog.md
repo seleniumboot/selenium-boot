@@ -11,7 +11,7 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
-## [Unreleased]
+## [3.7.0] — 2026-10-04
 
 - **`Locator.dragTo(Locator)`** — drags one element onto another, including HTML5 drag-and-drop pages that ignore the native gesture. See [Drag and drop](./recipes/drag-and-drop). (#101)
 - **`debug.slowMoMs` / `debug.highlight`** — dev-only live-triage aids: pause after each `Locator` action and outline the element about to be acted on. Off by default, no cost when off; not for CI. See [Debug](./configuration#debug). (#52)
