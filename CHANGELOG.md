@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Unreleased
 
+- **`Locator.dragTo(Locator)`** — drags one element onto another, including HTML5 drag-and-drop pages that ignore the native gesture. See [Drag and drop](docs-site/docs/recipes/drag-and-drop). (#101)
+- **`debug.slowMoMs` / `debug.highlight`** — dev-only live-triage aids: pause after each `Locator` action and outline the element about to be acted on. Off by default, no cost when off; not for CI. See [Debug](docs-site/docs/configuration.md). (#52)
+- **`withNewWindow(opener, body)` / `withNewTab(...)` on `BasePage`** — run the click that opens a new window, switch to it, run your checks, close it and return to the original window, even if the checks throw. No window opening within `timeouts.explicit` throws `TimeoutException`. See [Handle new windows and tabs](docs-site/docs/recipes/handle-new-windows). (#49)
+- **`browser.version`** — optional exact browser version for local Chrome/Firefox runs, resolved by Selenium Manager. Omit it to use the installed browser. (#51)
+
 ---
 
 ### v3.6.0 — 2026-09-27
