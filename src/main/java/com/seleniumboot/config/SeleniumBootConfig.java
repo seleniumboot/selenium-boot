@@ -110,6 +110,10 @@ public final class SeleniumBootConfig {
         private boolean failOnConsoleErrors = false;
         private List<String> matrix = Collections.emptyList();
         private String device;   // optional device profile name, e.g. "iPhone 14"
+        private String version;  // optional exact browser version for local Chrome/Firefox runs
+
+        public String getVersion()               { return version; }
+        public void   setVersion(String version) { this.version = version; }
 
         public String getDevice()              { return device; }
         public void   setDevice(String device) { this.device = device; }
