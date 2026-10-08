@@ -89,6 +89,10 @@ mvn test
 
 No driver setup, no teardown, no waits, no `WebDriver` to manage — `BaseTest` owns the lifecycle. The HTML report lands at `target/selenium-boot-report.html`.
 
+![Selenium Boot HTML report: pass/fail/skip totals, run metadata, and execution-time charts](docs/images/report.png)
+
+*The report from the [sample project](https://github.com/seleniumboot/selenium-boot-test)'s suite (102 tests, parallel).*
+
 Note what the test *doesn't* contain: no CSS selector, no XPath, no `WebDriverWait`. `getByRole`
 finds elements the way a screen reader does, and `assertThat(...).isVisible()` retries until the
 timeout instead of failing on the first miss. Both are available on every test and page object.
