@@ -56,11 +56,9 @@ public final class HtmlReportGenerator {
         }
     }
 
-    private static String buildMetadataSection(JsonNode root) {
+    /** @return {run summary line, collapsed run-configuration block} */
+    private static String[] buildMetadataSection(JsonNode root) {
         String profile = System.getProperty("selenium.boot.profile", "default");
-        String buildNumber = System.getenv().getOrDefault("BUILD_NUMBER", "local");
-        String branch = System.getenv().getOrDefault("GIT_BRANCH", "local");
-        String commit = System.getenv().getOrDefault("GIT_COMMIT", "unknown");
 
         SeleniumBootConfig config = SeleniumBootContext.getConfig();
 
@@ -85,33 +83,52 @@ public final class HtmlReportGenerator {
         String timestamp = java.time.LocalDateTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
+        // Ordered so the one-line summary reads naturally; empty values are dropped.
+        java.util.Map<String, String> meta = new java.util.LinkedHashMap<>();
+        meta.put("Browser", browser + (headless ? " (headless)" : ""));
+        meta.put("Execution Mode", executionMode);
+        meta.put("Parallel", parallel);
+        meta.put("Thread Count", String.valueOf(threadCount));
+        meta.put("Retry", retryEnabled ? "Enabled (max " + maxAttempts + ")" : "Disabled");
+        meta.put("Profile", profile);
+        meta.put("Base URL", baseUrl);
+        meta.put("Grid URL", gridUrl);
+        meta.put("Max Sessions", String.valueOf(maxSessions));
+        meta.put("Explicit Timeout", explicitTimeout + "s");
+        meta.put("Page Load Timeout", pageLoadTimeout + "s");
+        meta.put("Build Number", ciValue("BUILD_NUMBER"));
+        meta.put("Branch", ciValue("GIT_BRANCH"));
+        meta.put("Commit", ciValue("GIT_COMMIT"));
+        meta.put("Generated At", timestamp);
+        meta.values().removeIf(v -> v == null || v.isBlank());
+
+        StringBuilder summary = new StringBuilder();
+        for (String key : new String[]{"Browser", "Execution Mode", "Thread Count", "Retry", "Branch", "Generated At"}) {
+            String v = meta.get(key);
+            if (v == null) continue;
+            if (summary.length() > 0) summary.append(" &middot; ");
+            summary.append("Thread Count".equals(key) ? escapeHtml(v) + " threads"
+                         : "Retry".equals(key) ? "retry " + escapeHtml(v.toLowerCase())
+                         : escapeHtml(v));
+        }
+
         StringBuilder sb = new StringBuilder();
-        sb.append("<div class=\"card metadata-card\" style=\"margin-bottom:24px;\">\n");
-        sb.append("  <div class=\"card-header\">Build Metadata</div>\n");
+        sb.append("<details class=\"card metadata-card\" style=\"margin-bottom:24px;\">\n");
+        sb.append("  <summary class=\"card-header\">Run configuration</summary>\n");
         sb.append("  <div class=\"card-body\">\n");
         sb.append("    <div class=\"meta-grid\">\n");
-
-        appendMetaItem(sb, "Profile", profile);
-        appendMetaItem(sb, "Execution Mode", executionMode);
-        appendMetaItem(sb, "Browser", browser + (headless ? " (headless)" : ""));
-        appendMetaItem(sb, "Base URL", baseUrl != null ? baseUrl : "—");
-        appendMetaItem(sb, "Grid URL", gridUrl != null ? gridUrl : "—");
-        appendMetaItem(sb, "Parallel", parallel);
-        appendMetaItem(sb, "Thread Count", String.valueOf(threadCount));
-        appendMetaItem(sb, "Max Sessions", String.valueOf(maxSessions));
-        appendMetaItem(sb, "Retry", retryEnabled ? "Enabled (max " + maxAttempts + ")" : "Disabled");
-        appendMetaItem(sb, "Explicit Timeout", explicitTimeout + "s");
-        appendMetaItem(sb, "Page Load Timeout", pageLoadTimeout + "s");
-        appendMetaItem(sb, "Build Number", buildNumber);
-        appendMetaItem(sb, "Branch", branch);
-        appendMetaItem(sb, "Commit", commit);
-        appendMetaItem(sb, "Generated At", timestamp);
-
+        meta.forEach((k, v) -> appendMetaItem(sb, k, escapeHtml(v)));
         sb.append("    </div>\n");
         sb.append("  </div>\n");
-        sb.append("</div>\n");
+        sb.append("</details>\n");
 
-        return sb.toString();
+        return new String[]{"<div class=\"run-summary\">" + summary + "</div>\n", sb.toString()};
+    }
+
+    /** CI-provided value, or null when not running under CI (so the row is omitted). */
+    private static String ciValue(String env) {
+        String v = System.getenv(env);
+        return v == null || v.isBlank() ? null : v;
     }
 
     private static String buildScreenshotCell(JsonNode test) {
@@ -140,14 +157,14 @@ public final class HtmlReportGenerator {
         sb.append("      </div>\n");
     }
 
-    private static String buildHtml(JsonNode root) {
+    static String buildHtml(JsonNode root) {
 
         String executionPercentiles =
                 root.has("executionPercentilesMs")
                         ? root.get("executionPercentilesMs").toString()
                         : "{}";
 
-        String metadataSection = buildMetadataSection(root);
+        String[] metadata = buildMetadataSection(root);
 
         int totalTests    = root.has("totalTests")    ? root.get("totalTests").asInt()    : 0;
         int passedTests   = root.has("passedTests")   ? root.get("passedTests").asInt()   : 0;
@@ -212,10 +229,16 @@ public final class HtmlReportGenerator {
                 ? "<span class=\"nav-count nav-count-fail\">" + failedTests + "</span>"
                 : "";
 
+        String failuresShortcut = failedTests > 0
+                ? "<div class=\"failures-shortcut\"><strong>" + failedTests + " failed.</strong> "
+                  + "<a href=\"#\" onclick=\"showTab('failures', document.querySelector('.nav-item[onclick*=\\'failures\\']')); return false;\">View failures &rarr;</a></div>\n"
+                : "";
+
         String template = loadTemplate();
 
         return template
-                .replace("{{METADATA}}", metadataSection)
+                .replace("{{RUN_SUMMARY}}", metadata[0])
+                .replace("{{METADATA}}", metadata[1])
                 .replace("{{PASSED}}", String.valueOf(passedTests))
                 .replace("{{FAILED}}", String.valueOf(failedTests))
                 .replace("{{SKIPPED}}", String.valueOf(skippedTests))
@@ -233,6 +256,7 @@ public final class HtmlReportGenerator {
                 .replace("{{ROWS}}", rows.toString())
                 .replace("{{FAILURE_ROWS}}", failureRows)
                 .replace("{{FAILURE_BADGE}}", failureBadge)
+                .replace("{{FAILURES_SHORTCUT}}", failuresShortcut)
                 .replace("{{EXECUTION_PERCENTILES}}", executionPercentiles.replace("'", "\\'"));
     }
 

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Unreleased
 
+- **HTML report: results first.** The dashboard now opens with a one-line run summary and the stat cards; the full run configuration moved into a collapsed "Run configuration" block at the bottom, with empty rows (Grid URL, unset CI fields) dropped. A "View failures" shortcut appears when any test failed.
+
 ---
 
 ### v3.7.0 — 2026-10-04
