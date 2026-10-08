@@ -130,12 +130,23 @@ Next: [the full Getting Started walkthrough](#getting-started) adds page objects
 
 ---
 
-> **AI-powered test authoring for Selenium Boot users**
-> Use **seleniumboot-mcp** to let Claude / GitHub Copilot control a real browser, record your session, and generate ready-to-run Selenium Boot test code — TestNG, JUnit 5, Page Object, Gherkin, or C# NUnit.
+### Already have a Selenium Java project?
+
+[`selenium-boot-migrator`](https://github.com/seleniumboot/selenium-boot-migrator) analyzes it first and
+changes nothing: what maps cleanly, what needs manual work. Maven and Gradle (including version catalogs).
+
+```bash
+java -jar selenium-boot-migrator.jar analyze path/to/your-project
+```
+
+Grab the jar from the [latest release](https://github.com/seleniumboot/selenium-boot-migrator/releases/latest). Requires Java 17+.
+
+> **Let an AI assistant drive a real browser and write the tests**
+> **seleniumboot-mcp** is a standalone MCP server for Claude / GitHub Copilot: it controls Chrome, records your session, and generates ready-to-run test code (Java TestNG / JUnit 5 / Gherkin, Python, C#, Playwright) — Selenium Boot-native when the dependency is present. Its `migrate` tool runs the analysis above for you.
 > ```
 > pip install seleniumboot-mcp
 > ```
-> [PyPI](https://pypi.org/project/seleniumboot-mcp/) · [GitHub](https://github.com/seleniumboot/selenium-mcp) · 84 tools · self-healing locators · codegen for Java / Python / C# / Playwright
+> [PyPI](https://pypi.org/project/seleniumboot-mcp/) · [GitHub](https://github.com/seleniumboot/selenium-mcp) · 43 tools by default (77 total) · self-healing locators
 
 ---
 
