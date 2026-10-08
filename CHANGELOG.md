@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Unreleased
 
+- **HTML report: suite duration in `hh:mm:ss`, wall-clock.** The report previously showed the *sum* of every test's time in milliseconds, which overstates a parallel run. It now shows how long the suite actually ran (`01:42:07`; hours aren't capped). The metrics JSON gains `suiteDurationMs`; `totalTimeMs` (summed test time) is unchanged.
+
 - **HTML report: results first.** The dashboard now opens with a one-line run summary and the stat cards; the full run configuration moved into a collapsed "Run configuration" block at the bottom, with empty rows (Grid URL, unset CI fields) dropped. A "View failures" shortcut appears when any test failed.
 
 ---

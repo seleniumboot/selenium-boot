@@ -209,6 +209,26 @@ public class ExecutionMetricsTest {
         assertTrue(json.contains("\"recoveredTests\""), "JSON must include top-level recoveredTests");
     }
 
+    @Test
+    public void exportToJson_suiteDurationIsWallClockNotSumOfTests() throws Exception {
+        // two tests running in parallel for ~300ms: summed test time ~600ms, wall-clock ~300ms
+        ExecutionMetrics.markStart("a");
+        ExecutionMetrics.markStart("b");
+        Thread.sleep(300);
+        ExecutionMetrics.markEnd("a");
+        ExecutionMetrics.markEnd("b");
+        ExecutionMetrics.recordStatus("a", "PASSED");
+        ExecutionMetrics.recordStatus("b", "PASSED");
+        ExecutionMetrics.exportToJson();
+
+        com.fasterxml.jackson.databind.JsonNode root = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readTree(new File("target/selenium-boot-metrics.json"));
+        long total = root.get("totalTimeMs").asLong();
+        long suite = root.get("suiteDurationMs").asLong();
+        assertTrue(total >= 550, "summed test time should be ~600ms, was " + total);
+        assertTrue(suite >= 300 && suite < total, "wall-clock " + suite + " must be below summed " + total);
+    }
+
     // ----------------------------------------------------------
     // reset
     // ----------------------------------------------------------

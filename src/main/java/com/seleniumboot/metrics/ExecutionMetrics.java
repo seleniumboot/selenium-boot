@@ -20,6 +20,9 @@ public final class ExecutionMetrics {
     private static final AtomicLong TOTAL_DURATION =
             new AtomicLong(0);
 
+    /** Wall-clock start of the first test; 0 until one starts. */
+    private static final AtomicLong SUITE_START = new AtomicLong(0);
+
     private ExecutionMetrics() {}
 
     // ==========================================================
@@ -27,6 +30,7 @@ public final class ExecutionMetrics {
     // ==========================================================
 
     public static void markStart(String testId) {
+        SUITE_START.compareAndSet(0, System.currentTimeMillis());
         START_TIMES.put(testId, System.currentTimeMillis());
     }
 
@@ -291,6 +295,8 @@ public final class ExecutionMetrics {
         report.put("flakyTests", flaky);
         report.put("recoveredTests", recovered);
         report.put("totalTimeMs", totalTime);
+        long suiteStart = SUITE_START.get();
+        report.put("suiteDurationMs", suiteStart == 0 ? 0 : System.currentTimeMillis() - suiteStart);
         report.put("averageTimeMs",
                 totalTests == 0 ? 0 : totalTime / totalTests);
 
@@ -426,6 +432,7 @@ public final class ExecutionMetrics {
         START_TIMES.clear();
         TIMINGS.clear();
         TOTAL_DURATION.set(0);
+        SUITE_START.set(0);
     }
 
     // ==========================================================

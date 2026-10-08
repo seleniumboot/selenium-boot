@@ -157,6 +157,12 @@ public final class HtmlReportGenerator {
         sb.append("      </div>\n");
     }
 
+    /** hh:mm:ss; hours are not capped at 24. */
+    static String formatDuration(long ms) {
+        long totalSeconds = Math.max(0, ms) / 1000;
+        return String.format("%02d:%02d:%02d", totalSeconds / 3600, (totalSeconds % 3600) / 60, totalSeconds % 60);
+    }
+
     static String buildHtml(JsonNode root) {
 
         String executionPercentiles =
@@ -171,6 +177,9 @@ public final class HtmlReportGenerator {
         int failedTests   = root.has("failedTests")   ? root.get("failedTests").asInt()   : 0;
         int skippedTests  = root.has("skippedTests")  ? root.get("skippedTests").asInt()  : 0;
         long totalTimeMs   = root.has("totalTimeMs")   ? root.get("totalTimeMs").asLong()  : 0L;
+        // Wall-clock suite duration; older metrics JSON lacks it, so fall back to the summed test time.
+        long suiteMs = root.has("suiteDurationMs") && root.get("suiteDurationMs").asLong() > 0
+                ? root.get("suiteDurationMs").asLong() : totalTimeMs;
         long averageTimeMs = root.has("averageTimeMs") ? root.get("averageTimeMs").asLong(): 0L;
         double passRate    = root.has("passRate")       ? root.get("passRate").asDouble()   : 0.0;
         int flakyTests     = root.has("flakyTests")     ? root.get("flakyTests").asInt()    : 0;
@@ -244,6 +253,7 @@ public final class HtmlReportGenerator {
                 .replace("{{SKIPPED}}", String.valueOf(skippedTests))
                 .replace("{{TOTAL_TESTS}}", String.valueOf(totalTests))
                 .replace("{{TOTAL_TIME_MS}}", String.valueOf(totalTimeMs))
+                .replace("{{SUITE_DURATION}}", formatDuration(suiteMs))
                 .replace("{{AVG_TIME_MS}}", String.valueOf(averageTimeMs))
                 .replace("{{PASS_RATE}}", passRateStr)
                 .replace("{{PASS_RATE_CLASS}}", passRateClass)
