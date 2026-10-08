@@ -98,5 +98,7 @@ public class HtmlReportGeneratorTest {
         String html = HtmlReportGenerator.buildHtml(root);
         assertTrue(html.contains("Duration: <strong>01:01:01</strong>"));
         assertFalse(html.contains("7200000 ms"));
+        assertTrue(html.contains("<div class=\"stat-value\">01:01:01</div>"), "stat tile shows suite time");
+        assertFalse(html.contains("Avg Time (ms)"), "per-test average tile is gone");
     }
 }
