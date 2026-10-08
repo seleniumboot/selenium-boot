@@ -81,4 +81,22 @@ public class HtmlReportGeneratorTest {
         assertFalse(html(3, 0).contains("View failures"));
         assertTrue(html(2, 1).contains("View failures"));
     }
+
+    @Test
+    public void durationIsFormattedAsHhMmSs() {
+        assertEquals(HtmlReportGenerator.formatDuration(0), "00:00:00");
+        assertEquals(HtmlReportGenerator.formatDuration(59_999), "00:00:59");
+        assertEquals(HtmlReportGenerator.formatDuration(3_661_000), "01:01:01");
+        assertEquals(HtmlReportGenerator.formatDuration(100L * 3600_000), "100:00:00", "hours are not capped");
+    }
+
+    @Test
+    public void reportShowsSuiteWallClockInHhMmSs() throws Exception {
+        JsonNode root = new ObjectMapper().readTree(
+                "{\"totalTests\":2,\"passedTests\":2,\"failedTests\":0,\"skippedTests\":0,"
+                + "\"passRate\":100.0,\"totalTimeMs\":7200000,\"suiteDurationMs\":3661000,\"tests\":[]}");
+        String html = HtmlReportGenerator.buildHtml(root);
+        assertTrue(html.contains("Duration: <strong>01:01:01</strong>"));
+        assertFalse(html.contains("7200000 ms"));
+    }
 }
