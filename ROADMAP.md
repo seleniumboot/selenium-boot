@@ -31,6 +31,15 @@ Every item below is a real, scoped issue with acceptance criteria. Comment to cl
 - [#128](https://github.com/seleniumboot/selenium-boot/issues/128) Why accessibility-first locators? / Why WaitEngine?
 - [#129](https://github.com/seleniumboot/selenium-boot/issues/129) Document the Trace Viewer (no guide page yet)
 
+**Framework code** (the Locator API is the Playwright-style surface, and it has gaps; see each issue for acceptance criteria)
+
+- [#132](https://github.com/seleniumboot/selenium-boot/issues/132) `Locator.first()` / `last()` `good first issue`
+- [#134](https://github.com/seleniumboot/selenium-boot/issues/134) `press`, `focus`, `doubleClick`, `rightClick` on `Locator` `good first issue`
+- [#133](https://github.com/seleniumboot/selenium-boot/issues/133) Form actions: `clear`, `check`/`uncheck`/`isChecked`, `selectOption`, `inputValue` `help wanted`
+- [#135](https://github.com/seleniumboot/selenium-boot/issues/135) `waitFor`, `allTextContents`, element screenshot `help wanted`
+- [#136](https://github.com/seleniumboot/selenium-boot/issues/136) Assertions: `isFocused`, `isEmpty`, regex overloads `help wanted`
+- [#137](https://github.com/seleniumboot/selenium-boot/issues/137) Failed tests and trace links in the GitHub Actions job summary `help wanted`
+
 **Design discussion**
 
 - [#130](https://github.com/seleniumboot/selenium-boot/issues/130) What would make the Trace Viewer something teams share? Comment with a use case before any code.
