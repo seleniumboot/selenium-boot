@@ -9,6 +9,10 @@
 
 **[Documentation](https://docs.seleniumboot.com) · [Starter Template](https://github.com/seleniumboot/selenium-boot-starter) · [Sample Project](https://github.com/seleniumboot/selenium-boot-test) · [Changelog](#project-status)**
 
+![Same login flow in plain Selenium and in Selenium Boot, both passing](docs/images/before-after.gif)
+
+*The same login flow against a real page, written both ways. Both tests pass.*
+
 ---
 
 ## Quickstart — a green test in 60 seconds
