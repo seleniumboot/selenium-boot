@@ -16,27 +16,34 @@ The roadmap is intentionally opinionated and incremental. Each phase focuses on 
 Items tagged **`good first issue`** or **`help wanted`** are open for contribution. Read
 [CONTRIBUTING.md](CONTRIBUTING.md), comment on the issue to claim it, then open a PR against `master`.
 
-### Documentation & discoverability (current priority)
+### Open issues to pick up
 
-Most users find a framework by searching, not by browsing GitHub.
+Every item below is a real, scoped issue with acceptance criteria. Comment to claim one.
 
-- ✅ **Per-page SEO descriptions** across all docs pages — done. All 51 pages already had
-  one; trimmed the 10 that ran past Google's ~160-char display limit (2026-10-01).
-- **"Why" pages** — Why Selenium Boot? · Why not plain Selenium? · Why not Playwright? · Why accessibility-first locators? · Why WaitEngine? `good first issue`
-- **Recipes section** — task-titled, search-matched guides: upload a file, download a PDF, iframes, Shadow DOM, tables, infinite scroll, OAuth/SSO, alerts, drag & drop, REST + UI. `good first issue`
-- **Migration guides** — from Selenium + TestNG, from WebDriverManager, from Selenide, from Serenity; plus a "coming from Playwright" bridge (familiar vs. different, **not** a replacement claim). `help wanted`
-- **Homepage before/after** — a visual `wait.until(...)` → `click("#login")` comparison component. `enhancement`
-- **SEO hygiene** — verify `sitemap.xml` generation, tighten generic page `<title>`s. `good first issue`
+**Documentation** (most are `good first issue`; docs live in `docs-site/docs/`)
 
-### Framework & ecosystem
+- [#122](https://github.com/seleniumboot/selenium-boot/issues/122) Recipe: JavaScript alerts and confirm dialogs
+- [#123](https://github.com/seleniumboot/selenium-boot/issues/123) Recipe: read and assert on table rows with `Locator.rows()`
+- [#124](https://github.com/seleniumboot/selenium-boot/issues/124) Recipe: scroll to load more (infinite scroll)
+- [#125](https://github.com/seleniumboot/selenium-boot/issues/125) Recipe: log in once with OAuth/SSO and reuse the session `help wanted`
+- [#126](https://github.com/seleniumboot/selenium-boot/issues/126) Migration guide: coming from Selenide `help wanted`
+- [#127](https://github.com/seleniumboot/selenium-boot/issues/127) Migration guide: coming from Serenity BDD `help wanted`
+- [#128](https://github.com/seleniumboot/selenium-boot/issues/128) Why accessibility-first locators? / Why WaitEngine?
+- [#129](https://github.com/seleniumboot/selenium-boot/issues/129) Document the Trace Viewer (no guide page yet)
+
+**Design discussion**
+
+- [#130](https://github.com/seleniumboot/selenium-boot/issues/130) What would make the Trace Viewer something teams share? Comment with a use case before any code.
+
+### Already done (don't duplicate)
+
+Per-page SEO descriptions · Why pages (Selenium Boot / plain Selenium / Playwright) · six recipes (upload, download PDF, iframes, Shadow DOM, drag & drop, new windows) · migration guides (Selenium+TestNG, WebDriverManager, Playwright) · homepage before/after · Edge and Safari local browsers.
+
+### Ongoing
 
 - More built-in `WaitEngine` conditions requested by users. `help wanted`
-- Additional first-class browser providers (Edge, Safari) via the existing SPI. `help wanted`
-- **seleniumboot-mcp** — keep MCP codegen output framework-native and accessibility-first as the API evolves. (See the [MCP repo](https://github.com/seleniumboot/selenium-mcp).)
-
-### Ongoing quality
-
 - Grow unit-test coverage for untested code paths. `good first issue`
+- **seleniumboot-mcp** — keep MCP codegen output framework-native and accessibility-first as the API evolves. (See the [MCP repo](https://github.com/seleniumboot/selenium-mcp).)
 - Keep the consumer sample project (`selenium-boot-test`) in step with new features.
 
 > Don't see what you want to work on? Open a
