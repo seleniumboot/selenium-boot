@@ -40,6 +40,13 @@ Every item below is a real, scoped issue with acceptance criteria. Comment to cl
 - [#136](https://github.com/seleniumboot/selenium-boot/issues/136) Assertions: `isFocused`, `isEmpty`, regex overloads `help wanted`
 - [#137](https://github.com/seleniumboot/selenium-boot/issues/137) Failed tests and trace links in the GitHub Actions job summary `help wanted`
 
+**Failure Intelligence** (know why a test failed, with no API key; design in #138, build in this order)
+
+- [#139](https://github.com/seleniumboot/selenium-boot/issues/139) Rule-based failure classification `help wanted`
+- [#140](https://github.com/seleniumboot/selenium-boot/issues/140) Group failures by root cause in the report `help wanted`
+- [#141](https://github.com/seleniumboot/selenium-boot/issues/141) Retry- and history-aware failure status `help wanted`
+- [#142](https://github.com/seleniumboot/selenium-boot/issues/142) Richer context for AI failure analysis `help wanted`
+
 **Design discussion**
 
 - [#130](https://github.com/seleniumboot/selenium-boot/issues/130) What would make the Trace Viewer something teams share? Comment with a use case before any code.
