@@ -77,7 +77,7 @@ All source lives under `src/main/java/com/seleniumboot/`. Key packages:
 - **Registry + SPI** — `DriverProviderRegistry`, `PluginRegistry`, `ReportAdapterRegistry` use `ServiceLoader` for extensibility.
 - **ThreadLocal driver isolation** — `DriverManager` stores `WebDriver` per thread; safe for parallel TestNG execution.
 - **Template Method** — `BaseTest` / `BasePage` define framework-managed lifecycle; users override hook methods.
-- **Convention over configuration** — `selenium-boot.yml` is optional. `ConfigurationLoader` falls back to built-in defaults (`browser.name: chrome`, `execution.mode: local`, `timeouts.explicit: 10`, `timeouts.pageLoad: 30`) for an absent file (only when no profile / explicit path was requested — those still throw if missing) and for any omitted field; `SeleniumBootDefaults` programmatic overrides take precedence over the built-ins. Present-but-invalid values (unknown `execution.mode`, negative timeout) still fail validation.
+- **Convention over configuration** — `selenium-boot.yml` is optional. `ConfigurationLoader` falls back to built-in defaults (`browser.name: chrome`, `execution.mode: local`, `timeouts.explicit: 10`, `timeouts.pageLoad: 30`) for an absent file (only when no profile / explicit path was requested — those still throw if missing) and for any omitted field listed there (`execution.baseUrl` has no default; `open()` requires it); `SeleniumBootDefaults` programmatic overrides take precedence over the built-ins. Present-but-invalid values (unknown `execution.mode`, negative timeout) still fail validation.
 
 ### Public API Contract
 
