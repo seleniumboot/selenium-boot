@@ -138,26 +138,6 @@ Next: [page objects and tests](#page-objects-and-tests), [configuration](#config
 
 ---
 
-### Already have a Selenium Java project?
-
-[`selenium-boot-migrator`](https://github.com/seleniumboot/selenium-boot-migrator) analyzes it first and
-changes nothing: what maps cleanly, what needs manual work. Maven and Gradle (including version catalogs).
-
-```bash
-java -jar selenium-boot-migrator.jar analyze path/to/your-project
-```
-
-Grab the jar from the [latest release](https://github.com/seleniumboot/selenium-boot-migrator/releases/latest). Requires Java 17+.
-
-> **Let an AI assistant drive a real browser and write the tests**
-> **seleniumboot-mcp** is a standalone MCP server for Claude / GitHub Copilot: it controls Chrome, records your session, and generates ready-to-run test code (Java TestNG / JUnit 5 / Gherkin, Python, C#, Playwright) — Selenium Boot-native when the dependency is present. Its `migrate` tool runs the analysis above for you.
-> ```
-> pip install seleniumboot-mcp
-> ```
-> [PyPI](https://pypi.org/project/seleniumboot-mcp/) · [GitHub](https://github.com/seleniumboot/selenium-mcp) · 43 tools by default (77 total) · self-healing locators
-
----
-
 ## Overview
 
 Selenium Boot is an opinionated framework for Java Selenium, inspired by Spring Boot. Add one dependency, extend `BaseTest` / `BasePage`, and the driver lifecycle, waits, retries, reporting and CI wiring are already decided.
@@ -175,13 +155,13 @@ Already on Selenium? You keep your stack, TestNG, team skills and Grid, and gain
 Outcomes first — the API that delivers each one is named so you can find it in the docs.
 
 - **No driver setup, teardown or `Thread.sleep()`** — thread-safe WebDriver lifecycle per test and an auto-waiting `WaitEngine`
-- **Tests survive CSS and DOM refactors** — accessibility-first locators (`getByRole`, `getByText`, `getByLabel`, `getByPlaceholder`, `getByTestId`, `getByAltText`, `getByTitle`) plus a `SmartLocator` fallback
-- **Flaky tests stop failing your build** — automatic retry via `@Retryable`
+- **Tests less coupled to markup** — accessibility-first locators (`getByRole`, `getByText`, `getByLabel`, `getByPlaceholder`, `getByTestId`, `getByAltText`, `getByTitle`) plus a `SmartLocator` fallback
+- **Transient failures don't fail the build** — automatic retry via `@Retryable`; flaky tests are still reported as retried
 - **Parallel runs that are safe** — thread-isolated drivers, `parallel` in one YAML line
 - **See exactly why a test failed** — screenshot on failure, `StepLogger` named steps, and an HTML report with pass-rate gauge, slowest tests and step timeline
 - **Write pages, not plumbing** — `BasePage` with wait-backed `click`, `type`, `getText`, iFrame helpers and file upload; `@PreCondition` logs in once and reuses the session
 - **UI and API in the same suite** — `BaseApiTest` + fluent `ApiClient` with auth, schema validation and JSONPath
-- **CI that configures itself** — auto-detects GitHub Actions, Jenkins, CircleCI; forces headless, emits JUnit XML
+- **CI-aware defaults** — detects GitHub Actions, Jenkins, CircleCI and others; forces headless, emits JUnit XML
 
 Also built in: accessibility checks (axe-core bundled), download testing, JavaScript console-error capture, environment profiles, and SPI plugins for custom drivers, report adapters and hooks.
 
@@ -189,26 +169,24 @@ Also built in: accessibility checks (axe-core bundled), download testing, JavaSc
 
 ## Page Objects and Tests
 
-Extend `BasePage` for wait-backed `click`, `type`, `getText`, `getAttribute`, `isDisplayed`, `withinFrame` and `upload`:
+Extend `BasePage` for the same semantic locators plus wait-backed helpers (`click`, `type`, `getText`, `isDisplayed`, `withinFrame`, `upload`):
 
 ```java
 public class LoginPage extends BasePage {
-
-    private final By usernameField = By.id("username");
-    private final By passwordField = By.id("password");
-    private final By loginButton   = By.id("login-btn");
 
     public LoginPage(WebDriver driver) {
         super(driver);
     }
 
     public void login(String username, String password) {
-        type(usernameField, username);
-        type(passwordField, password);
-        click(loginButton);
+        getByLabel("Username").type(username);
+        getByLabel("Password").type(password);
+        getByRole(Role.BUTTON, "Log in").click();
     }
 }
 ```
+
+Prefer semantic locators. When an element has no accessible name, fall back to `By` — `type(By.id("username"), username)` — or to the raw `WebDriver`.
 
 Extend `BaseTest` — that's all the setup a test needs:
 
@@ -281,6 +259,28 @@ Environment profiles (`-Dselenium.boot.profile=staging`), `ci:` quality gates an
 | **Extending** | [Custom drivers](https://docs.seleniumboot.com/extensibility/custom-drivers) · [Report adapters](https://docs.seleniumboot.com/extensibility/report-adapters) · [Hooks](https://docs.seleniumboot.com/extensibility/hooks) · [Plugins](https://docs.seleniumboot.com/extensibility/plugins) |
 | **Migrating** | [From Selenium + TestNG](https://docs.seleniumboot.com/migration/from-selenium-testng) · [Coming from Playwright](https://docs.seleniumboot.com/migration/coming-from-playwright) |
 | **Examples** | [Sample project](https://github.com/seleniumboot/selenium-boot-test) · [Starter template](https://github.com/seleniumboot/selenium-boot-starter) |
+
+---
+
+## Related Tools
+
+### Already have a Selenium Java project?
+
+[`selenium-boot-migrator`](https://github.com/seleniumboot/selenium-boot-migrator) analyzes it first and
+changes nothing: what maps cleanly, what needs manual work. Maven and Gradle (including version catalogs).
+
+```bash
+java -jar selenium-boot-migrator.jar analyze path/to/your-project
+```
+
+Grab the jar from the [latest release](https://github.com/seleniumboot/selenium-boot-migrator/releases/latest). Requires Java 17+.
+
+> **Let an AI assistant drive a real browser and write the tests**
+> **seleniumboot-mcp** is a standalone MCP server for Claude / GitHub Copilot: it controls Chrome, records your session, and generates ready-to-run test code (Java TestNG / JUnit 5 / Gherkin, Python, C#, Playwright) — Selenium Boot-native when the dependency is present. Its `migrate` tool runs the analysis above for you.
+> ```
+> pip install seleniumboot-mcp
+> ```
+> [PyPI](https://pypi.org/project/seleniumboot-mcp/) · [GitHub](https://github.com/seleniumboot/selenium-mcp) · 43 tools by default (77 total) · self-healing locators
 
 ---
 
