@@ -313,6 +313,12 @@ Then read [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, the PR checklist, an
 
 ---
 
+## Thanks
+
+Thanks to everyone who has contributed to Selenium Boot. Your bug reports, ideas, documentation, and code help make the project better. [Meet the contributors](https://github.com/seleniumboot/selenium-boot/graphs/contributors).
+
+---
+
 ## Disclaimer
 
 Selenium Boot is an independent open-source project and is not affiliated with Selenium or the Spring Framework.
