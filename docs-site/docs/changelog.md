@@ -11,6 +11,12 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [Unreleased]
+
+- **`Locator.first()` and `Locator.last()`** — narrow matches to the first or last matching element (e.g. `getByRole(Role.LISTITEM).first()`). Both resolve at action time, re-evaluating candidate elements on every poll and retrying stale/not-yet-present elements up to `timeouts.explicit`. (#132)
+
+---
+
 ## [3.7.0] — 2026-10-04
 
 - **`Locator.dragTo(Locator)`** — drags one element onto another, including HTML5 drag-and-drop pages that ignore the native gesture. See [Drag and drop](./recipes/drag-and-drop). (#101)

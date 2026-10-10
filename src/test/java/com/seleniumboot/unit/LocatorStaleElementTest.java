@@ -190,4 +190,53 @@ public class LocatorStaleElementTest {
 
         verify(js).executeScript(anyString(), eq(fresh));
     }
+
+    @Test
+    public void last_elementGoesStaleBetweenCheckAndClick_reResolvesAndClicksFreshLastElement() {
+        WebElement other = liveElement();
+        WebElement staleLast = liveElement();
+        doThrow(new StaleElementReferenceException("re-rendered")).when(staleLast).click();
+        WebElement freshLast = liveElement();
+        By by = By.cssSelector(".items");
+        when(driver.findElements(by))
+                .thenReturn(List.of(other, staleLast))
+                .thenReturn(List.of(other, freshLast));
+
+        Locator.of(by).last().click();
+
+        verify(freshLast, times(1)).click();
+        verify(staleLast, times(1)).click();
+    }
+
+    @Test
+    public void last_elementNotInDomYet_waitsForItToAppear() {
+        WebElement el1 = liveElement();
+        WebElement el2 = liveElement();
+        By by = By.cssSelector(".late-items");
+        when(driver.findElements(by))
+                .thenReturn(List.of())
+                .thenReturn(List.of())
+                .thenReturn(List.of(el1, el2));
+
+        Locator.of(by).last().click();
+
+        verify(el2, times(1)).click();
+    }
+
+    @Test
+    public void first_elementGoesStaleBetweenCheckAndClick_reResolvesAndClicksFreshFirstElement() {
+        WebElement staleFirst = liveElement();
+        doThrow(new StaleElementReferenceException("re-rendered")).when(staleFirst).click();
+        WebElement freshFirst = liveElement();
+        WebElement other = liveElement();
+        By by = By.cssSelector(".items");
+        when(driver.findElements(by))
+                .thenReturn(List.of(staleFirst, other))
+                .thenReturn(List.of(freshFirst, other));
+
+        Locator.of(by).first().click();
+
+        verify(freshFirst, times(1)).click();
+        verify(staleFirst, times(1)).click();
+    }
 }

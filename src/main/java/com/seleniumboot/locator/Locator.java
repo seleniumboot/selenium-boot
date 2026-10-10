@@ -88,6 +88,8 @@ public final class Locator {
     private String withText;
     private By withinContainer;
     private int nthIndex = -1;   // -1 = no nth filter
+    private boolean first;
+    private boolean last;
 
     // ------------------------------------------------------------------
     // Factory — called from BasePage / BaseTest via $() and getBy*()
@@ -199,7 +201,42 @@ public final class Locator {
      * <pre>$(".item").nth(2).getText()</pre>
      */
     public Locator nth(int index) {
+        this.first = false;
+        this.last = false;
         this.nthIndex = index;
+        return this;
+    }
+
+    /**
+     * Narrow results to the first matched element.
+     *
+     * <p>Equivalent to {@link #nth(int) nth(0)}.
+     *
+     * <pre>$(".item").first().click();</pre>
+     *
+     * @return this locator for chaining
+     */
+    public Locator first() {
+        this.first = true;
+        this.last = false;
+        this.nthIndex = 0;
+        return this;
+    }
+
+    /**
+     * Narrow results to the last matched element.
+     *
+     * <p>Resolves lazily at action time on every poll, ensuring dynamic element lists
+     * and auto-waiting reflect the current DOM state when the terminal action runs.
+     *
+     * <pre>$(".item").last().click();</pre>
+     *
+     * @return this locator for chaining
+     */
+    public Locator last() {
+        this.last = true;
+        this.first = false;
+        this.nthIndex = -1;
         return this;
     }
 
@@ -553,11 +590,22 @@ public final class Locator {
                     .collect(Collectors.toList());
         }
 
-        // apply nth
+        // apply nth / first / last
+        if (last) {
+            if (candidates.isEmpty()) {
+                throw new LocatorException(
+                        "last() requested but only 0 element(s) matched: " + describe());
+            }
+            List<WebElement> single = new ArrayList<>();
+            single.add(candidates.get(candidates.size() - 1));
+            return single;
+        }
+
         if (nthIndex >= 0) {
             if (nthIndex >= candidates.size()) {
+                String prefix = first ? "first()" : ("nth(" + nthIndex + ")");
                 throw new LocatorException(
-                        "nth(" + nthIndex + ") requested but only " + candidates.size()
+                        prefix + " requested but only " + candidates.size()
                         + " element(s) matched: " + describe());
             }
             List<WebElement> single = new ArrayList<>();
@@ -783,7 +831,9 @@ public final class Locator {
         if (withinContainer != null) sb.append(" within(").append(withinContainer).append(")");
         if (filterCss       != null) sb.append(".filter(\"").append(filterCss).append("\")");
         if (withText        != null) sb.append(".withText(\"").append(withText).append("\")");
-        if (nthIndex        >= 0)    sb.append(".nth(").append(nthIndex).append(")");
+        if (last)                    sb.append(".last()");
+        else if (first)              sb.append(".first()");
+        else if (nthIndex   >= 0)    sb.append(".nth(").append(nthIndex).append(")");
         return sb.toString();
     }
 
