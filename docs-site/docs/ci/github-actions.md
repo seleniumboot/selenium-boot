@@ -51,24 +51,16 @@ jobs:
 
 ---
 
-## Headless Chrome
+## What Selenium Boot configures on CI
 
-Chrome on CI runners must run headless. Configure this in `selenium-boot.yml`:
+When it detects a CI environment (GitHub Actions, Jenkins, CircleCI and others), Selenium Boot adjusts itself — no YAML changes needed:
 
-```yaml title="selenium-boot.yml"
-browser:
-  type: chrome
-  headless: true
-```
+- `browser.headless` is forced to `true`.
+- `execution.threadCount` is derived from the available CPU cores, capped at `execution.maxActiveSessions` — only when you left it at the default of `1` and `parallel` is not `none`.
+- Inside Docker or Kubernetes, Chrome and Firefox get the container flags they need (for Chrome: `--no-sandbox`, `--disable-dev-shm-usage`, `--disable-gpu`, `--window-size=1920,1080`).
+- JUnit XML is written to `target/surefire-reports/TEST-SeleniumBoot.xml` on every run.
 
-Or set it only in CI using an environment variable override (if supported by your config loading):
-
-```yaml
-      - name: Run tests
-        run: mvn test -B
-        env:
-          SELENIUM_HEADLESS: true
-```
+Each override is printed to the console as `[Selenium Boot] CI override: …`.
 
 ---
 
