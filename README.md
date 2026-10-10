@@ -174,23 +174,16 @@ Already on Selenium? You keep your stack, TestNG, team skills and Grid, and gain
 
 Outcomes first — the API that delivers each one is named so you can find it in the docs.
 
-- **Never write driver setup or teardown again** — automatic WebDriver lifecycle, thread-safe per test
-- **Never write `Thread.sleep()` again** — auto-waiting `WaitEngine` with 10+ built-in conditions
-- **Tests survive CSS and DOM refactors** — accessibility-first locators (`getByRole`, `getByText`, `getByLabel`, `getByPlaceholder`, `getByTestId`, `getByAltText`, `getByTitle`) plus a `SmartLocator` fallback that tries multiple strategies
+- **No driver setup, teardown or `Thread.sleep()`** — thread-safe WebDriver lifecycle per test and an auto-waiting `WaitEngine`
+- **Tests survive CSS and DOM refactors** — accessibility-first locators (`getByRole`, `getByText`, `getByLabel`, `getByPlaceholder`, `getByTestId`, `getByAltText`, `getByTitle`) plus a `SmartLocator` fallback
 - **Flaky tests stop failing your build** — automatic retry via `@Retryable`
-- **Run your whole suite in parallel, safely** — thread-isolated drivers, `parallel` in one YAML line
-- **Switch environments without touching code** — YAML config with environment profile switching
-- **See exactly why a test failed** — screenshot auto-captured on failure and embedded in the report
-- **Hand stakeholders a report they'll actually read** — HTML dashboard with pass-rate gauge, donut chart, slowest tests, step timeline, dark mode
-- **Write pages, not plumbing** — `BasePage` with wait-backed `click`, `type`, `getText`, `isDisplayed`, iFrame helpers, file upload
-- **Log in once, reuse the session** — `@PreCondition` with automatic cookie + localStorage caching
-- **Catch JavaScript errors your users would hit** — `ConsoleErrorCollector` (Chrome via logs, Firefox via shim)
-- **File download testing that just works** — `DownloadManager` polls the download dir and handles partial files
-- **Read the test like a spec** — `StepLogger` named steps with timestamps and per-step screenshots
-- **Test UI and API in the same suite** — `BaseApiTest` + fluent `ApiClient` with auth, schema validation, JSONPath; hybrid UI + API tests
-- **Accessibility testing in one line** — `accessibility().withTags("wcag2a","wcag21aa").run()`; axe-core bundled in the JAR, no extra dependency
-- **Extend it without forking it** — Java SPI plugins for custom browser providers, report adapters, lifecycle hooks
+- **Parallel runs that are safe** — thread-isolated drivers, `parallel` in one YAML line
+- **See exactly why a test failed** — screenshot on failure, `StepLogger` named steps, and an HTML report with pass-rate gauge, slowest tests and step timeline
+- **Write pages, not plumbing** — `BasePage` with wait-backed `click`, `type`, `getText`, iFrame helpers and file upload; `@PreCondition` logs in once and reuses the session
+- **UI and API in the same suite** — `BaseApiTest` + fluent `ApiClient` with auth, schema validation and JSONPath
 - **CI that configures itself** — auto-detects GitHub Actions, Jenkins, CircleCI; forces headless, emits JUnit XML
+
+Also built in: accessibility checks (axe-core bundled), download testing, JavaScript console-error capture, environment profiles, and SPI plugins for custom drivers, report adapters and hooks.
 
 ---
 
