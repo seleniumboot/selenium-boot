@@ -52,7 +52,7 @@ Three files. Copy them as-is and `mvn test` goes green against a real Chrome.
 </build>
 ```
 
-**2. `selenium-boot.yml`** — optional; project root, next to `pom.xml`. Omit it entirely and the framework runs on built-in defaults (Chrome, local execution, 10s/30s timeouts). Shown below with every key set explicitly, but each one defaults if left out.
+**2. `selenium-boot.yml`** — project root, next to `pom.xml`. The test below calls `open()`, which needs `baseUrl`. The browser, mode and timeouts shown are the built-in defaults, listed for reference.
 
 ```yaml
 execution:
@@ -162,7 +162,7 @@ Grab the jar from the [latest release](https://github.com/seleniumboot/selenium-
 
 Selenium Boot is an opinionated framework for Java Selenium, inspired by Spring Boot. Add one dependency, extend `BaseTest` / `BasePage`, and the driver lifecycle, waits, retries, reporting and CI wiring are already decided.
 
-- **Convention over configuration.** `selenium-boot.yml` is optional and every key in it defaults.
+- **Convention over configuration.** Browser, mode and timeouts have built-in defaults; `selenium-boot.yml` only says what you want to change.
 - **Never hides Selenium.** The raw `WebDriver` / `By` / `WebElement` is always one call away via `getDriver()`.
 - **Extensible, not required.** Custom drivers, report adapters and hooks plug in through SPI. Most users never touch it.
 
@@ -243,7 +243,7 @@ public class LoginTest extends BaseTest {
 
 ## Configuration
 
-`selenium-boot.yml` lives at the project root, next to `pom.xml`. It is optional, and so is every key in it. Omit the file, or any key, and the built-in default applies. Values that are present but invalid (an unknown `execution.mode`, a negative timeout) fail at startup.
+`selenium-boot.yml` lives at the project root, next to `pom.xml`. It is optional: omit the file, or any key, and the built-in default applies. The one exception is `execution.baseUrl`, which has no default and is needed by `open()`. Values that are present but invalid (an unknown `execution.mode`, a negative timeout) fail at startup.
 
 ```yaml
 execution:
