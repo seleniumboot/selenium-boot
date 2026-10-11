@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-### Unreleased
+### v3.8.0 — 2026-10-11
 
 - **`Locator.first()` and `Locator.last()`** — narrow matches to the first or last matching element (e.g. `getByRole(Role.LISTITEM).first()`). Both resolve at action time, re-evaluating candidate elements on every poll and retrying stale/not-yet-present elements up to `timeouts.explicit`. (#132)
 
