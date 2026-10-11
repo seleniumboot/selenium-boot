@@ -32,7 +32,7 @@ Three files. Copy them as-is and `mvn test` goes green against a real Chrome.
     <dependency>
         <groupId>io.github.seleniumboot</groupId>
         <artifactId>selenium-boot</artifactId>
-        <version>3.7.0</version>
+        <version>3.8.0</version>
     </dependency>
 </dependencies>
 
@@ -286,7 +286,7 @@ Grab the jar from the [latest release](https://github.com/seleniumboot/selenium-
 
 ## Project Status
 
-**Current release: v3.7.0** — live-triage debug mode (`debug.slowMoMs` / `debug.highlight`), `withNewWindow` / `withNewTab`, `Locator.dragTo`, and `browser.version` pinning.
+**Current release: v3.8.0** — `Locator.first()` / `Locator.last()` and a results-first HTML report (suite wall-clock time in `hh:mm:ss`).
 
 See the full version history in **[CHANGELOG.md](CHANGELOG.md)**.
 
