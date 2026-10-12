@@ -13,6 +13,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -46,7 +49,16 @@ public final class AiFailureAnalyzer {
     private static final String API_URL = "https://api.anthropic.com/v1/messages";
     private static final String API_VERSION = "2023-06-01";
 
+    /** Analysis per failure signature, so one cause costs one API call. */
+    private static final ConcurrentHashMap<String, CompletableFuture<String>> BY_SIGNATURE =
+            new ConcurrentHashMap<>();
+
     private AiFailureAnalyzer() {}
+
+    /** Test hook: forget cached analyses. */
+    static void resetCache() {
+        BY_SIGNATURE.clear();
+    }
 
     // ------------------------------------------------------------------
     // Public API — called by TestExecutionListener
@@ -74,8 +86,26 @@ public final class AiFailureAnalyzer {
             TestTiming timing = ExecutionMetrics.getTiming(testId);
             if (timing == null) return;
 
-            String prompt = buildPrompt(timing, pageUrl, pageTitle);
-            String analysis = callApi(apiKey, aiCfg.getModel(), prompt, aiCfg.getTimeoutSeconds());
+            // One call per distinct cause: tests failing for the same reason share the analysis of
+            // whichever failed first. Concurrent same-cause failures wait for that one call.
+            String signature = com.seleniumboot.failure.FailureSignature.of(timing);
+            CompletableFuture<String> mine = new CompletableFuture<>();
+            CompletableFuture<String> existing = BY_SIGNATURE.putIfAbsent(signature, mine);
+            String analysis;
+            if (existing != null) {
+                analysis = existing.get(aiCfg.getTimeoutSeconds() + 5L, TimeUnit.SECONDS);
+                if (analysis != null) LOG.info("[AiFailureAnalyzer] Reusing analysis for same cause: " + testId);
+            } else {
+                String result = null;
+                try {
+                    result = callApi(apiKey, aiCfg.getModel(), buildPrompt(timing, pageUrl, pageTitle),
+                            aiCfg.getTimeoutSeconds());
+                } finally {
+                    if (result == null || result.isBlank()) BY_SIGNATURE.remove(signature, mine);
+                    mine.complete(result);
+                }
+                analysis = result;
+            }
             if (analysis != null && !analysis.isBlank()) {
                 ExecutionMetrics.recordAiAnalysis(testId, analysis.strip());
                 LOG.info("[AiFailureAnalyzer] Analysis recorded for: " + testId);

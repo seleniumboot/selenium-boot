@@ -78,6 +78,12 @@ The category is also written to the metrics JSON as `failureCategory` and `failu
 
 ---
 
+### Same-cause groups
+
+When two or more failures share a cause, the Failures tab lists them above the flat list as "N tests, same cause", largest group first, so one outage does not read as forty problems. Tests are grouped by a signature made of the failure category, the exception type, the first line of the message with ids, numbers and quoted values replaced by placeholders, and the top application stack frame (class and method, not line number). The flat list below still shows every failure. With `ai.failureAnalysis` on, one API call is made per group and the other tests in it reuse that analysis.
+
+---
+
 ## Self-contained format
 
 All screenshots are Base64-encoded and embedded inline. The report is a single file you can:

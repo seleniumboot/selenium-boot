@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Unreleased
 
+- **Failure grouping** — the report's Failures tab now opens with a "N tests, same cause" panel: failed tests are grouped by a signature of category, exception type, normalised message (ids, numbers and quoted values stripped) and top application stack frame. The flat per-class list is unchanged below it. With `ai.failureAnalysis` on, one Claude call is made per group; the other tests in the group reuse its analysis. The metrics JSON gains `failureSignature`. (#140)
+
 - **Failure classification** — every failed test is tagged with a category (`LOCATOR_NOT_FOUND`, `ELEMENT_NOT_INTERACTABLE`, `STALE_ELEMENT`, `TIMEOUT`, `ASSERTION_MISMATCH`, `NAVIGATION_ERROR`, `BROWSER_CRASH`, or `UNKNOWN`) and the evidence for it, from the exception class chain and message alone. No AI, no API key, no network. Shown as a badge in the HTML report's failure panel, as `failureCategory` / `failureEvidence` in the metrics JSON, and as the `type` of `<failure>` in the JUnit XML. The raw error and stack trace are unchanged. (#139)
 
 ---

@@ -254,6 +254,11 @@
         .detail-row td { padding: 0; }
         .detail-panel { padding: 16px 24px; background: var(--surface2); border-top: 2px solid var(--bad); }
         .error-msg { font-size: 13px; font-weight: 600; color: var(--bad); margin-bottom: 10px; }
+        .failure-group { padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .failure-group:last-child { border-bottom: 0; }
+        .failure-group-title { font-size: 14px; margin-bottom: 4px; }
+        .failure-group-msg { font-size: 13px; color: var(--bad); margin-bottom: 6px; word-break: break-word; }
+        .failure-group-tests { margin: 0; padding-left: 20px; font-size: 12px; color: var(--text-secondary); }
         .failure-why { font-size: 12px; color: var(--muted, #6b7280); margin-bottom: 8px; }
         .failure-badge { display: inline-block; padding: 1px 8px; margin-right: 6px; border-radius: 10px; font-size: 11px; font-weight: 700; letter-spacing: .03em; color: var(--bad); border: 1px solid var(--bad); }
         .stack-trace {
@@ -479,6 +484,7 @@
         <!-- ═══════════════ FAILURES TAB ═══════════════ -->
         <div id="tab-failures" class="tab-pane">
             <div class="tab-heading">Failures <span style="font-size:14px;font-weight:400;color:var(--text-secondary)">({{FAILED}} failed)</span></div>
+            {{FAILURE_GROUPS}}
             <div class="card table-card">
                 <div class="table-wrap">
                     <table id="failureTable">

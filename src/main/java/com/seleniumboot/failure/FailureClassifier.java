@@ -91,6 +91,10 @@ public final class FailureClassifier {
         return unknown(outer != null ? "unrecognised " + simple(outer) : "unrecognised error");
     }
 
+    static List<String> causeChainOf(String stackTrace) {
+        return causeChain(stackTrace);
+    }
+
     /** Fully-qualified class names of the outer throwable followed by each cause, in order. */
     static List<String> causeChain(String stackTrace) {
         List<String> chain = new ArrayList<>();

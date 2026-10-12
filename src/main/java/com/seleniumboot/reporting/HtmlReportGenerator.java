@@ -234,6 +234,7 @@ public final class HtmlReportGenerator {
         String slowestSection   = tests != null ? buildSlowestTests(tests) : "";
         String flakinessSection = buildFlakinessSection();
         String failureRows    = buildFailureRows(tests, isMatrixRun);
+        String failureGroups  = buildFailureGroups(tests);
         String failureBadge   = failedTests > 0
                 ? "<span class=\"nav-count nav-count-fail\">" + failedTests + "</span>"
                 : "";
@@ -265,6 +266,7 @@ public final class HtmlReportGenerator {
                 .replace("{{DONUT_DATA}}", donutData)
                 .replace("{{ROWS}}", rows.toString())
                 .replace("{{FAILURE_ROWS}}", failureRows)
+                .replace("{{FAILURE_GROUPS}}", failureGroups)
                 .replace("{{FAILURE_BADGE}}", failureBadge)
                 .replace("{{FAILURES_SHORTCUT}}", failuresShortcut)
                 .replace("{{EXECUTION_PERCENTILES}}", executionPercentiles.replace("'", "\\'"));
@@ -434,6 +436,55 @@ public final class HtmlReportGenerator {
             }
         }
         return rows.toString();
+    }
+
+    /**
+     * "N tests, same cause" panel shown above the flat failure list. Only causes shared by two or
+     * more tests are listed, largest first; the flat list below still shows every failure.
+     */
+    private static String buildFailureGroups(JsonNode tests) {
+        if (tests == null) return "";
+        java.util.Map<String, java.util.List<JsonNode>> bySignature = new java.util.LinkedHashMap<>();
+        for (JsonNode test : tests) {
+            if (!"FAILED".equals(test.has("status") ? test.get("status").asText() : "")) continue;
+            String signature = test.has("failureSignature")
+                    ? test.get("failureSignature").asText()
+                    : com.seleniumboot.failure.FailureSignature.of(
+                            test.has("errorMessage") ? test.get("errorMessage").asText() : null,
+                            test.has("stackTrace") ? test.get("stackTrace").asText() : null);
+            bySignature.computeIfAbsent(signature, k -> new java.util.ArrayList<>()).add(test);
+        }
+        java.util.List<java.util.List<JsonNode>> groups = new java.util.ArrayList<>();
+        for (java.util.List<JsonNode> g : bySignature.values()) {
+            if (g.size() >= 2) groups.add(g);
+        }
+        if (groups.isEmpty()) return "";
+        groups.sort((a, b) -> Integer.compare(b.size(), a.size()));
+
+        StringBuilder sb = new StringBuilder("<div class=\"card section-mb failure-groups\">")
+                .append("<div class=\"card-header\">Same cause (")
+                .append(groups.size()).append(groups.size() == 1 ? " group" : " groups").append(")</div>")
+                .append("<div class=\"card-body\">");
+        for (java.util.List<JsonNode> g : groups) {
+            JsonNode first = g.get(0);
+            sb.append("<div class=\"failure-group\"><div class=\"failure-group-title\">");
+            if (first.has("failureCategory")) {
+                sb.append(buildFailureWhy(first)).append("");
+            }
+            sb.append("<strong>").append(g.size()).append(" tests, same cause</strong></div>");
+            String msg = first.has("errorMessage") ? first.get("errorMessage").asText() : "";
+            int nl = msg.indexOf('\n');
+            if (nl >= 0) msg = msg.substring(0, nl);
+            if (!msg.isEmpty()) {
+                sb.append("<div class=\"failure-group-msg\">").append(escapeHtml(msg)).append("</div>");
+            }
+            sb.append("<ul class=\"failure-group-tests\">");
+            for (JsonNode t : g) {
+                sb.append("<li>").append(escapeHtml(t.has("testId") ? t.get("testId").asText() : "")).append("</li>");
+            }
+            sb.append("</ul></div>");
+        }
+        return sb.append("</div></div>").toString();
     }
 
     private static String noFailuresRow() {

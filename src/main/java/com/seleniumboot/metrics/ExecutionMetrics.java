@@ -353,6 +353,7 @@ public final class ExecutionMetrics {
                         com.seleniumboot.failure.FailureClassifier.classify(timing);
                 testEntry.put("failureCategory", failure.category().name());
                 testEntry.put("failureEvidence", failure.evidence());
+                testEntry.put("failureSignature", com.seleniumboot.failure.FailureSignature.of(timing));
             }
             if (timing.getBrowser() != null) {
                 testEntry.put("browser", timing.getBrowser());
