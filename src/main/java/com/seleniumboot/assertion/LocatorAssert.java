@@ -5,6 +5,7 @@ import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.locator.Locator;
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -14,6 +15,9 @@ import org.testng.Assert;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 /**
  * Fluent, auto-retrying assertion for a specific locator.
@@ -96,6 +100,47 @@ public final class LocatorAssert {
         return this;
     }
 
+    /** Asserts the element owns browser focus — retries until timeout. */
+    public LocatorAssert isFocused() {
+        AtomicReference<String> actual = new AtomicReference<>("no matching element");
+        poll(driver -> {
+            try {
+                List<WebElement> els = driver.findElements(by);
+                if (els.isEmpty()) return null;
+                WebElement focused = driver.switchTo().activeElement();
+                actual.set(describeElement(focused));
+                return els.get(0).equals(focused) ? true : null;
+            } catch (StaleElementReferenceException e) {
+                actual.set("stale element");
+                return null;
+            }
+        }, "Expected element to be focused: " + description, actual::get);
+        return this;
+    }
+
+    /**
+     * Asserts the element is empty — inputs use their {@code value}; other
+     * elements use visible text. Retries until timeout.
+     */
+    public LocatorAssert isEmpty() {
+        AtomicReference<String> actual = new AtomicReference<>("no matching element");
+        poll(driver -> {
+            try {
+                List<WebElement> els = driver.findElements(by);
+                if (els.isEmpty()) return null;
+                WebElement el = els.get(0);
+                String tag = el.getTagName();
+                String content = isFormValueElement(tag) ? el.getAttribute("value") : el.getText();
+                actual.set(content == null ? "null" : content);
+                return content == null || content.isEmpty() ? true : null;
+            } catch (StaleElementReferenceException e) {
+                actual.set("stale element");
+                return null;
+            }
+        }, "Expected element to be empty: " + description, actual::get);
+        return this;
+    }
+
     // ------------------------------------------------------------------
     // Text
     // ------------------------------------------------------------------
@@ -107,11 +152,21 @@ public final class LocatorAssert {
         return this;
     }
 
+    /** Asserts the element's visible text fully matches {@code pattern} — retries until timeout. */
+    public LocatorAssert hasText(Pattern pattern) {
+        return matches(pattern, false, false);
+    }
+
     /** Asserts the element's visible text contains {@code fragment} — retries until timeout. */
     public LocatorAssert containsText(String fragment) {
         poll(ExpectedConditions.textToBePresentInElementLocated(by, fragment),
                 "Expected text to contain [" + fragment + "] for: " + description);
         return this;
+    }
+
+    /** Asserts some part of the element's visible text matches {@code pattern} — retries until timeout. */
+    public LocatorAssert containsText(Pattern pattern) {
+        return matches(pattern, true, false);
     }
 
     // ------------------------------------------------------------------
@@ -123,6 +178,11 @@ public final class LocatorAssert {
         poll(ExpectedConditions.attributeToBe(by, "value", expected),
                 "Expected value [" + expected + "] for: " + description);
         return this;
+    }
+
+    /** Asserts the element's {@code value} fully matches {@code pattern} — retries until timeout. */
+    public LocatorAssert hasValue(Pattern pattern) {
+        return matches(pattern, false, true);
     }
 
     /** Asserts the element has a specific attribute value — retries until timeout. */
@@ -163,12 +223,58 @@ public final class LocatorAssert {
     // ------------------------------------------------------------------
 
     private <T> void poll(ExpectedCondition<T> condition, String failMessage) {
+        poll(condition, failMessage, null);
+    }
+
+    private <T> void poll(ExpectedCondition<T> condition, String failMessage,
+                          Supplier<String> actualValue) {
         int timeout = SeleniumBootContext.getConfig().getTimeouts().getExplicit();
         WebDriver driver = DriverManager.getDriver();
         try {
             new WebDriverWait(driver, Duration.ofSeconds(timeout)).until(condition);
         } catch (Exception e) {
-            Assert.fail(failMessage + " (timeout: " + timeout + "s)");
+            String actual = actualValue == null ? "" : "; actual: [" + actualValue.get() + "]";
+            Assert.fail(failMessage + actual + " (timeout: " + timeout + "s)");
+        }
+    }
+
+    private LocatorAssert matches(Pattern pattern, boolean find, boolean valueAttribute) {
+        AtomicReference<String> actual = new AtomicReference<>("no matching element");
+        String subject = valueAttribute ? "value" : "text";
+        poll(driver -> {
+            try {
+                List<WebElement> els = driver.findElements(by);
+                if (els.isEmpty()) return null;
+                String candidate = valueAttribute
+                        ? els.get(0).getAttribute("value")
+                        : els.get(0).getText();
+                actual.set(candidate == null ? "null" : candidate);
+                if (candidate == null) return null;
+                var matcher = pattern.matcher(candidate);
+                return (find ? matcher.find() : matcher.matches()) ? true : null;
+            } catch (StaleElementReferenceException e) {
+                actual.set("stale element");
+                return null;
+            }
+        }, "Expected " + subject + " to " + (find ? "contain a match for " : "match ")
+                + "[" + pattern + "] for: " + description, actual::get);
+        return this;
+    }
+
+    private static boolean isFormValueElement(String tag) {
+        return "input".equalsIgnoreCase(tag)
+                || "textarea".equalsIgnoreCase(tag)
+                || "select".equalsIgnoreCase(tag);
+    }
+
+    private static String describeElement(WebElement element) {
+        if (element == null) return "none";
+        try {
+            String tag = element.getTagName();
+            String id = element.getAttribute("id");
+            return id == null || id.isEmpty() ? "<" + tag + ">" : "<" + tag + " id=\"" + id + "\">";
+        } catch (StaleElementReferenceException e) {
+            return "stale element";
         }
     }
 }

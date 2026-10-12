@@ -24,6 +24,8 @@ Every semantic locator returns the same chainable, **auto-waiting** `Locator`
 used by the `$()` API — no `Thread.sleep`, no explicit waits. They're available
 on both `BaseTest` and `BasePage`. Narrow multiple matches using `.first()`, `.last()`, or `.nth(index)` (e.g. `getByRole(Role.LISTITEM).first().click()`).
 
+Assertions can retry focus and empty-state checks, and accept regular expressions for text and values: `assertThat(getByLabel("Email")).isFocused()`, `isEmpty()`, or `hasValue(Pattern.compile("user-\\d+"))`.
+
 Auto-waiting covers the element *existing* as well as being visible: an action such as `click()` or
 `type()` keeps looking for the element until `timeouts.explicit` elapses, and looks it up afresh each
 time, so a page that re-renders it mid-action doesn't cause a stale-element error. If it never
