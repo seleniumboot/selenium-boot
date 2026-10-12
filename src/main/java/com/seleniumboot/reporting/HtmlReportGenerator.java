@@ -336,11 +336,12 @@ public final class HtmlReportGenerator {
                 ? test.get("performanceMetrics") : null;
 
         String stepsHtml   = buildStepTimeline(test);
-        boolean hasDetail  = errorMsg != null || stackTrace != null || !stepsHtml.isEmpty()
+        boolean hasDetail  = errorMsg != null || stackTrace != null || test.has("failureCategory") || !stepsHtml.isEmpty()
                              || recordingPath != null || aiAnalysis != null || perfNode != null;
         String detailRow   = "";
         if (hasDetail) {
-            String errorHtml     = errorMsg      != null ? "<div class=\"error-msg\">"      + escapeHtml(errorMsg)   + "</div>" : "";
+            String whyHtml       = test.has("failureCategory") ? buildFailureWhy(test) : "";
+            String errorHtml     = whyHtml + (errorMsg != null ? "<div class=\"error-msg\">" + escapeHtml(errorMsg) + "</div>" : "");
             String traceHtml     = stackTrace    != null ? "<pre class=\"stack-trace\">"    + escapeHtml(stackTrace) + "</pre>" : "";
             String recordingHtml = recordingPath != null ? buildRecordingCell(recordingPath) : "";
             String traceLink     = tracePath     != null ? buildTraceLink(tracePath) : "";
@@ -382,6 +383,19 @@ public final class HtmlReportGenerator {
                 + "<td>" + (hasDetail ? "<span class=\"expand-icon" + iconOpen + "\" id=\"icon-" + rowIndex + "\">&#x25BC;</span>" : "") + "</td>"
                 + "</tr>"
                 + detailRow;
+    }
+
+    private static String buildFailureWhy(JsonNode test) {
+        String cat = test.get("failureCategory").asText();
+        String label;
+        try {
+            label = com.seleniumboot.failure.FailureCategory.valueOf(cat).label();
+        } catch (IllegalArgumentException e) {
+            label = cat;
+        }
+        String evidence = test.has("failureEvidence") ? test.get("failureEvidence").asText() : "";
+        return "<div class=\"failure-why\"><span class=\"failure-badge\">" + escapeHtml(label) + "</span>"
+                + escapeHtml(evidence) + "</div>";
     }
 
     private static String buildFailureRows(JsonNode tests) {

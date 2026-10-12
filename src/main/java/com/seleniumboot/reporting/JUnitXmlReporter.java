@@ -100,8 +100,11 @@ public final class JUnitXmlReporter {
                     String msg = t.getErrorMessage() != null ? t.getErrorMessage() : "Test failed";
                     String trace = t.getStackTrace() != null ? t.getStackTrace() : t.getTestId() + " FAILED";
                     xml.append(">\n");
-                    xml.append("    <failure message=\"").append(escapeXml(msg)).append("\">")
-                       .append(escapeXml(trace))
+                    com.seleniumboot.failure.FailureClassifier.Result why =
+                            com.seleniumboot.failure.FailureClassifier.classify(t);
+                    xml.append("    <failure message=\"").append(escapeXml(msg))
+                       .append("\" type=\"").append(why.category().name()).append("\">")
+                       .append(escapeXml("[" + why.category().name() + "] " + why.evidence() + "\n" + trace))
                        .append("</failure>\n");
                     xml.append("  </testcase>\n");
                     break;

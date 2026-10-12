@@ -59,6 +59,25 @@ Same detail panels as Test Cases tab, but only for failed tests. Detail panels a
 
 ---
 
+## Failure classification
+
+Each failed test is tagged with a category and the evidence for it, worked out from the exception class chain and message the framework already records. It needs no AI, no API key and no network. The badge and evidence appear at the top of the failure's detail panel; the raw error and stack trace stay right below.
+
+| Category | Triggered by |
+|---|---|
+| `LOCATOR_NOT_FOUND` | `LocatorException`, `NoSuchElementException`, `NoSuchFrameException` or `NoSuchShadowRootException` anywhere in the cause chain, including a `LocatorException` caused by a `TimeoutException` |
+| `ELEMENT_NOT_INTERACTABLE` | `ElementNotInteractableException`, `ElementClickInterceptedException`, `InvalidElementStateException` |
+| `STALE_ELEMENT` | `StaleElementReferenceException` anywhere in the cause chain |
+| `TIMEOUT` | a `TimeoutException` with no locator or navigation cause |
+| `ASSERTION_MISMATCH` | the outermost error is an `AssertionError` (or TestNG/JUnit/`DbAssertException` equivalent), or soft assertions failed |
+| `NAVIGATION_ERROR` | `net::ERR_*`, DNS failures, "Timed out receiving message from renderer", page load timeouts, HTTP 5xx in the message |
+| `BROWSER_CRASH` | `NoSuchSessionException`, `UnreachableBrowserException`, "invalid session id", page crash |
+| `UNKNOWN` | none of the above. The classifier never guesses |
+
+The category is also written to the metrics JSON as `failureCategory` and `failureEvidence`, and to the JUnit XML as the `type` of `<failure>`.
+
+---
+
 ## Self-contained format
 
 All screenshots are Base64-encoded and embedded inline. The report is a single file you can:

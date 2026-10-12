@@ -32,7 +32,8 @@ target/
 
     <testcase classname="CheckoutTest" name="checkout_withInvalidCard" time="1.823">
         <failure message="Expected [Order confirmed] but found [Payment declined]"
-                 type="org.openqa.selenium.NoSuchElementException">
+                 type="LOCATOR_NOT_FOUND">
+            [LOCATOR_NOT_FOUND] NoSuchElementException in cause chain
             org.openqa.selenium.NoSuchElementException: no such element
                 at com.example.tests.CheckoutTest.checkout_withInvalidCard(CheckoutTest.java:42)
                 ...
@@ -51,6 +52,8 @@ target/
 ## Failure messages
 
 The `message` attribute on `<failure>` contains the actual assertion message or exception message from your test — not a generic "Test failed" placeholder.
+
+The `type` attribute is the [failure category](html-report.md#failure-classification) (`LOCATOR_NOT_FOUND`, `TIMEOUT`, `UNKNOWN`, …), and the first line of the body names the evidence it was chosen from. The original stack trace follows unchanged.
 
 This means CI tools that display failure summaries (GitHub Actions, Jenkins, Azure Pipelines) show meaningful error descriptions without needing to open the full report.
 

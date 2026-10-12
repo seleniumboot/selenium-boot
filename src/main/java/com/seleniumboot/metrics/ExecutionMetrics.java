@@ -348,6 +348,12 @@ public final class ExecutionMetrics {
             if (timing.getStackTrace() != null) {
                 testEntry.put("stackTrace", timing.getStackTrace());
             }
+            if ("FAILED".equals(timing.getStatus())) {
+                com.seleniumboot.failure.FailureClassifier.Result failure =
+                        com.seleniumboot.failure.FailureClassifier.classify(timing);
+                testEntry.put("failureCategory", failure.category().name());
+                testEntry.put("failureEvidence", failure.evidence());
+            }
             if (timing.getBrowser() != null) {
                 testEntry.put("browser", timing.getBrowser());
             }

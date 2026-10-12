@@ -11,6 +11,12 @@ All notable changes to Selenium Boot are documented here.
 
 ---
 
+## [Unreleased]
+
+- **Failure classification** — every failed test is tagged with a category (`LOCATOR_NOT_FOUND`, `ELEMENT_NOT_INTERACTABLE`, `STALE_ELEMENT`, `TIMEOUT`, `ASSERTION_MISMATCH`, `NAVIGATION_ERROR`, `BROWSER_CRASH`, or `UNKNOWN`) and the evidence for it, from the exception class chain and message alone. No AI, no API key, no network. Shown as a badge in the HTML report's failure panel, as `failureCategory` / `failureEvidence` in the metrics JSON, and as the `type` of `<failure>` in the JUnit XML. The raw error and stack trace are unchanged. (#139)
+
+---
+
 ## [3.8.0] — 2026-10-11
 
 - **`Locator.first()` and `Locator.last()`** — narrow matches to the first or last matching element (e.g. `getByRole(Role.LISTITEM).first()`). Both resolve at action time, re-evaluating candidate elements on every poll and retrying stale/not-yet-present elements up to `timeouts.explicit`. (#132)
