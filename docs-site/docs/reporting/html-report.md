@@ -84,6 +84,19 @@ When two or more failures share a cause, the Failures tab lists them above the f
 
 ---
 
+### Retry and history status
+
+Each test is also compared with its own earlier runs in `target/metrics-history/` (the last `flakiness.historyRuns`, the same window the Flakiness Radar uses). A "Test status" card next to the Radar lists the tests that need a second look, and the status appears at the top of the failure's detail panel:
+
+| Status | Meaning |
+|---|---|
+| **Newly failing** | Failed now; every earlier run in the window passed. Listed first in the Failures tab, since a recent change most likely broke it. |
+| **Consistently failing** | Failed now and in at least two earlier runs, with no pass among them. |
+| **Intermittent** | Failed now; the earlier runs contain both passes and failures. |
+| **Passed on retry** | Failed an attempt in this run, then passed on a retry. |
+
+A test that passed on its first attempt gets no status, and a test with no history gets none either (except passed on retry, which needs no history). Statuses are written to the metrics JSON as `testStatus`. The Radar's STABLE / WATCH / HIGH thresholds and the `failOnHighFlakiness` gate are unchanged.
+
 ## Self-contained format
 
 All screenshots are Base64-encoded and embedded inline. The report is a single file you can:

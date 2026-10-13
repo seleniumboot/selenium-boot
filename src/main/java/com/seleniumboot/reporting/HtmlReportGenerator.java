@@ -232,7 +232,7 @@ public final class HtmlReportGenerator {
 
         String retrySection     = buildRetrySection(flakyTests, recoveredTests);
         String slowestSection   = tests != null ? buildSlowestTests(tests) : "";
-        String flakinessSection = buildFlakinessSection();
+        String flakinessSection = buildFlakinessSection() + buildTestStatusSection(tests);
         String failureRows    = buildFailureRows(tests, isMatrixRun);
         String failureGroups  = buildFailureGroups(tests);
         String failureBadge   = failedTests > 0
@@ -339,10 +339,11 @@ public final class HtmlReportGenerator {
 
         String stepsHtml   = buildStepTimeline(test);
         boolean hasDetail  = errorMsg != null || stackTrace != null || test.has("failureCategory") || !stepsHtml.isEmpty()
-                             || recordingPath != null || aiAnalysis != null || perfNode != null;
+                             || recordingPath != null || aiAnalysis != null || perfNode != null || test.has("testStatus");
         String detailRow   = "";
         if (hasDetail) {
-            String whyHtml       = test.has("failureCategory") ? buildFailureWhy(test) : "";
+            String whyHtml       = buildTestStatusBadge(test)
+                    + (test.has("failureCategory") ? buildFailureWhy(test) : "");
             String errorHtml     = whyHtml + (errorMsg != null ? "<div class=\"error-msg\">" + escapeHtml(errorMsg) + "</div>" : "");
             String traceHtml     = stackTrace    != null ? "<pre class=\"stack-trace\">"    + escapeHtml(stackTrace) + "</pre>" : "";
             String recordingHtml = recordingPath != null ? buildRecordingCell(recordingPath) : "";
@@ -400,14 +401,71 @@ public final class HtmlReportGenerator {
                 + escapeHtml(evidence) + "</div>";
     }
 
+    private static String testStatusOf(JsonNode test) {
+        return test.has("testStatus") ? test.get("testStatus").asText() : "";
+    }
+
+    private static String testStatusLabel(String status) {
+        try {
+            return com.seleniumboot.flakiness.TestStatus.valueOf(status).label();
+        } catch (IllegalArgumentException e) {
+            return status;
+        }
+    }
+
+    private static String buildTestStatusBadge(JsonNode test) {
+        String status = testStatusOf(test);
+        if (status.isEmpty()) return "";
+        return "<div class=\"failure-why\"><span class=\"failure-badge\">"
+                + escapeHtml(testStatusLabel(status)) + "</span></div>";
+    }
+
+    /** Tests flagged by retries or history, next to the Flakiness Radar. Empty when none are. */
+    private static String buildTestStatusSection(JsonNode tests) {
+        if (tests == null) return "";
+        java.util.List<JsonNode> flagged = new java.util.ArrayList<>();
+        for (JsonNode t : tests) {
+            if (!testStatusOf(t).isEmpty()) flagged.add(t);
+        }
+        if (flagged.isEmpty()) return "";
+        String[] order = {"NEWLY_FAILING", "CONSISTENTLY_FAILING", "INTERMITTENT", "PASSED_ON_RETRY"};
+        flagged.sort(java.util.Comparator.comparingInt(t -> java.util.Arrays.asList(order).indexOf(testStatusOf(t))));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<div class=\"card section-mb\">\n");
+        sb.append("  <div class=\"card-header\">&#x26A0; Test status (this run vs history)</div>\n");
+        sb.append("  <div class=\"card-body flakiness-section\">\n");
+        for (JsonNode t : flagged) {
+            String status = testStatusOf(t);
+            String cls = "NEWLY_FAILING".equals(status) || "CONSISTENTLY_FAILING".equals(status)
+                    ? "risk-high" : "risk-watch";
+            String id = t.has("testId") ? t.get("testId").asText() : "";
+            int lastDot = id.lastIndexOf('.');
+            String shortName = lastDot >= 0 ? id.substring(lastDot + 1) : id;
+            sb.append("    <div class=\"flakiness-item\">\n");
+            sb.append("      <span class=\"").append(cls).append("\">")
+              .append(escapeHtml(testStatusLabel(status))).append("</span>\n");
+            sb.append("      <span class=\"flakiness-name\" title=\"").append(escapeHtml(id)).append("\">")
+              .append(escapeHtml(shortName)).append("</span>\n");
+            sb.append("    </div>\n");
+        }
+        sb.append("  </div>\n</div>\n");
+        return sb.toString();
+    }
+
     private static String buildFailureRows(JsonNode tests) {
         return buildFailureRows(tests, false);
     }
 
     private static String buildFailureRows(JsonNode tests, boolean showBrowser) {
         if (tests == null) return noFailuresRow();
+        // Newly failing first: it is the one a recent change most likely broke. The sort is
+        // stable, so the classes and tests keep their order otherwise.
+        java.util.List<JsonNode> ordered = new java.util.ArrayList<>();
+        tests.forEach(ordered::add);
+        ordered.sort(java.util.Comparator.comparingInt(t -> "NEWLY_FAILING".equals(testStatusOf(t)) ? 0 : 1));
         java.util.Map<String, java.util.List<JsonNode>> byClass = new java.util.LinkedHashMap<>();
-        for (JsonNode test : tests) {
+        for (JsonNode test : ordered) {
             if (!"FAILED".equals(test.has("status") ? test.get("status").asText() : "")) continue;
             String cls = test.has("testClassName") ? test.get("testClassName").asText() : "";
             if (cls.isEmpty()) cls = "Unknown";

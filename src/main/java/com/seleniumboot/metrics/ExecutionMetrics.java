@@ -14,6 +14,9 @@ public final class ExecutionMetrics {
     private static final ConcurrentHashMap<String, Long> START_TIMES =
             new ConcurrentHashMap<>();
 
+    /** History copies written by this JVM; excluded when comparing against earlier runs. */
+    private static final Set<String> WRITTEN_HISTORY = ConcurrentHashMap.newKeySet();
+
     private static final ConcurrentHashMap<String, TestTiming> TIMINGS =
             new ConcurrentHashMap<>();
 
@@ -263,6 +266,20 @@ public final class ExecutionMetrics {
     // JSON Export
     // ==========================================================
 
+    /** Per-test status from this run's retries and the history on disk; empty if it can't be read. */
+    private static Map<String, com.seleniumboot.flakiness.TestStatus> testStatuses() {
+        try {
+            Map<String, com.seleniumboot.flakiness.TestStatusAnalyzer.Outcome> current = new LinkedHashMap<>();
+            for (TestTiming t : TIMINGS.values()) {
+                current.put(t.getTestId(), new com.seleniumboot.flakiness.TestStatusAnalyzer.Outcome(
+                        t.getStatus(), t.getRetryCount()));
+            }
+            return com.seleniumboot.flakiness.TestStatusAnalyzer.forRun(current, WRITTEN_HISTORY);
+        } catch (RuntimeException e) {
+            return Collections.emptyMap();
+        }
+    }
+
     public static void exportToJson() {
 
         Map<String, Object> report = new LinkedHashMap<>();
@@ -323,6 +340,8 @@ public final class ExecutionMetrics {
 
         List<Map<String, Object>> testList = new ArrayList<>();
 
+        Map<String, com.seleniumboot.flakiness.TestStatus> testStatuses = testStatuses();
+
         for (TestTiming timing : TIMINGS.values()) {
 
             Map<String, Object> testEntry =
@@ -333,6 +352,10 @@ public final class ExecutionMetrics {
             testEntry.put("thread",        timing.getThreadName());
             testEntry.put("status",        timing.getStatus() != null ? timing.getStatus() : "UNKNOWN");
             testEntry.put("retryCount",    timing.getRetryCount());
+            com.seleniumboot.flakiness.TestStatus testStatus = testStatuses.get(timing.getTestId());
+            if (testStatus != null) {
+                testEntry.put("testStatus", testStatus.name());
+            }
             testEntry.put("driverStartupMs", timing.getDriverStartupTime());
             testEntry.put("testLogicMs",   timing.getTestExecutionTime());
             testEntry.put("totalMs",       timing.getTotalTime());
@@ -415,10 +438,9 @@ public final class ExecutionMetrics {
             if (!historyDir.exists()) {
                 historyDir.mkdirs();
             }
-            mapper.writeValue(
-                    new File(historyDir, "selenium-boot-metrics-" + timestamp + ".json"),
-                    report
-            );
+            String historyName = "selenium-boot-metrics-" + timestamp + ".json";
+            mapper.writeValue(new File(historyDir, historyName), report);
+            WRITTEN_HISTORY.add(historyName);
 
             System.out.println("[Selenium Boot] Metrics exported → " + primary.getPath());
             System.out.println("[Selenium Boot] History copy     → "
@@ -438,6 +460,7 @@ public final class ExecutionMetrics {
     public static void reset() {
         START_TIMES.clear();
         TIMINGS.clear();
+        WRITTEN_HISTORY.clear();
         TOTAL_DURATION.set(0);
         SUITE_START.set(0);
     }
