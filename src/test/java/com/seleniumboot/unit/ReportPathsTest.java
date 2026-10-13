@@ -18,6 +18,45 @@ public class ReportPathsTest {
     @AfterMethod
     public void clearOverride() {
         System.clearProperty("seleniumboot.reports.dir");
+        System.clearProperty("seleniumboot.history.dir");
+    }
+
+    @Test
+    public void historyDir_systemPropertyMovesHistoryOutOfBaseDir() {
+        System.setProperty("seleniumboot.reports.dir", "target/junit5");
+        System.setProperty("seleniumboot.history.dir", "/ci/cache/history");
+        assertEquals(ReportPaths.metricsHistoryDir().getPath(), new File("/ci/cache/history").getPath());
+    }
+
+    @Test
+    public void historyDir_configSettingIsUsedWhenNoSystemProperty() {
+        com.seleniumboot.config.SeleniumBootConfig cfg = new com.seleniumboot.config.SeleniumBootConfig();
+        com.seleniumboot.config.SeleniumBootConfig.Flakiness flakiness =
+                new com.seleniumboot.config.SeleniumBootConfig.Flakiness();
+        flakiness.setHistoryDir("  .sb-history ");
+        cfg.setFlakiness(flakiness);
+        try (org.mockito.MockedStatic<com.seleniumboot.internal.SeleniumBootContext> ctx =
+                     org.mockito.Mockito.mockStatic(com.seleniumboot.internal.SeleniumBootContext.class)) {
+            ctx.when(com.seleniumboot.internal.SeleniumBootContext::getConfig).thenReturn(cfg);
+            assertEquals(ReportPaths.metricsHistoryDir().getPath(), ".sb-history");
+
+            System.setProperty("seleniumboot.history.dir", "/from/property");
+            assertEquals(ReportPaths.metricsHistoryDir().getPath(), new File("/from/property").getPath(),
+                    "the system property wins over the config");
+        }
+    }
+
+    @Test
+    public void historyDir_blankConfigKeepsTheDefaultLocation() {
+        System.clearProperty("seleniumboot.reports.dir");
+        com.seleniumboot.config.SeleniumBootConfig cfg = new com.seleniumboot.config.SeleniumBootConfig();
+        cfg.setFlakiness(new com.seleniumboot.config.SeleniumBootConfig.Flakiness());
+        try (org.mockito.MockedStatic<com.seleniumboot.internal.SeleniumBootContext> ctx =
+                     org.mockito.Mockito.mockStatic(com.seleniumboot.internal.SeleniumBootContext.class)) {
+            ctx.when(com.seleniumboot.internal.SeleniumBootContext::getConfig).thenReturn(cfg);
+            assertEquals(ReportPaths.metricsHistoryDir().getPath(),
+                    "target/metrics-history".replace('/', File.separatorChar));
+        }
     }
 
     @Test

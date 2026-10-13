@@ -488,6 +488,7 @@ public final class SeleniumBootConfig {
         private int     historyRuns          = 20;
         private double  highRiskThreshold    = 33.0;
         private boolean failOnHighFlakiness  = false;
+        private String  historyDir           = "";
 
         public int     getHistoryRuns()                   { return historyRuns; }
         public void    setHistoryRuns(int v)              { this.historyRuns = v; }
@@ -497,6 +498,10 @@ public final class SeleniumBootConfig {
 
         public boolean isFailOnHighFlakiness()            { return failOnHighFlakiness; }
         public void    setFailOnHighFlakiness(boolean v)  { this.failOnHighFlakiness = v; }
+
+        /** Where metrics history is kept; blank means {@code <reports dir>/metrics-history}. */
+        public String  getHistoryDir()                    { return historyDir; }
+        public void    setHistoryDir(String v)            { this.historyDir = v == null ? "" : v; }
     }
 
     public static final class Tracing {

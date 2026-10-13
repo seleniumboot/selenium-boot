@@ -130,6 +130,17 @@ public class ConfigurationLoaderTest {
     }
 
     @Test
+    public void load_flakinessHistoryDir_isReadFromTheFile() throws IOException {
+        Path file = Files.createTempFile("sb-history", ".yml");
+        Files.writeString(file, "flakiness:\n  historyDir: .sb-history\n");
+        System.setProperty("selenium.boot.config", file.toString());
+
+        SeleniumBootConfig config = ConfigurationLoader.load();
+
+        assertEquals(config.getFlakiness().getHistoryDir(), ".sb-history");
+    }
+
+    @Test
     public void load_emptyFile_usesBuiltInDefaults() throws IOException {
         Path file = Files.createTempFile("sb-empty", ".yml");
         System.setProperty("selenium.boot.config", file.toString());

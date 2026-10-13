@@ -69,8 +69,29 @@ public final class ReportPaths {
         return new File(baseDir(), "selenium-boot-report.html");
     }
 
-    /** {@code <baseDir>/metrics-history} — timestamped metrics copies for flakiness analysis. */
+    /**
+     * Where timestamped metrics copies are kept for flakiness and test-status analysis.
+     * Resolution order: the {@code seleniumboot.history.dir} system property, then
+     * {@code flakiness.historyDir} in the config, then {@code <baseDir>/metrics-history}.
+     *
+     * <p>Point it outside {@code target/} (or restore it before the run) when the build
+     * directory is cleaned or the CI workspace is discarded between runs, otherwise there is
+     * no history to compare against.
+     */
     public static File metricsHistoryDir() {
+        String override = System.getProperty("seleniumboot.history.dir");
+        if (override != null && !override.isBlank()) {
+            return new File(override.trim());
+        }
+        try {
+            String configured = com.seleniumboot.internal.SeleniumBootContext.getConfig()
+                    .getFlakiness().getHistoryDir();
+            if (configured != null && !configured.isBlank()) {
+                return new File(configured.trim());
+            }
+        } catch (RuntimeException ignored) {
+            // no config loaded (or it has no flakiness block): use the default location
+        }
         return new File(baseDir(), "metrics-history");
     }
 }
