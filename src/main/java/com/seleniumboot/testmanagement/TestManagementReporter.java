@@ -53,6 +53,7 @@ public final class TestManagementReporter {
     private int  activeTestRailRunId  = 0;
     private boolean testRailEnabled   = false;
     private boolean xrayEnabled       = false;
+    private final java.util.concurrent.atomic.AtomicBoolean suiteStarted = new java.util.concurrent.atomic.AtomicBoolean(false);
 
     private TestManagementReporter() {}
 
@@ -67,6 +68,7 @@ public final class TestManagementReporter {
      * and optionally create a TestRail run.
      */
     public void onSuiteStart() {
+        if (!suiteStarted.compareAndSet(false, true)) return;
         SeleniumBootConfig.TestManagement cfg = loadConfig();
         if (cfg == null) return;
 
@@ -145,6 +147,7 @@ public final class TestManagementReporter {
         activeTestRailRunId = 0;
         testRailClient     = null;
         xrayClient         = null;
+        suiteStarted.set(false);
     }
 
     // ── internals ─────────────────────────────────────────────────────────────

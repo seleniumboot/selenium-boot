@@ -9,12 +9,16 @@ import com.seleniumboot.hooks.HookRegistry;
 import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.lifecycle.FrameworkBootstrap;
 import com.seleniumboot.metrics.ExecutionMetrics;
+import com.seleniumboot.precondition.ApiHealthChecker;
+import com.seleniumboot.precondition.PreConditionRegistry;
 import com.seleniumboot.reporting.JUnitXmlReporter;
 import com.seleniumboot.precondition.PreConditionRunner;
 import com.seleniumboot.reporting.ReportAdapterRegistry;
 import com.seleniumboot.testmanagement.TestManagementReporter;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestPlan;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * JUnit Platform launcher listener that generates Selenium Boot reports after
@@ -30,6 +34,8 @@ import org.junit.platform.launcher.TestPlan;
 @SeleniumBootApi(since = "1.9.0")
 public class SeleniumBootLauncherListener implements TestExecutionListener {
 
+    private static final AtomicBoolean suiteStarted = new AtomicBoolean(false);
+
     /**
      * Fires suite-start hooks once per test plan — the JUnit 5 equivalent of
      * {@code SuiteExecutionListener.onStart()}. Bootstrap is idempotent, so this is
@@ -38,9 +44,13 @@ public class SeleniumBootLauncherListener implements TestExecutionListener {
      */
     @Override
     public void testPlanExecutionStarted(TestPlan testPlan) {
+        if (!suiteStarted.compareAndSet(false, true)) return;
         try {
             FrameworkBootstrap.initialize();
+            ApiHealthChecker.clearCache();
+            PreConditionRegistry.loadAll();
             HookRegistry.onSuiteStart();
+            TestManagementReporter.getInstance().onSuiteStart();
         } catch (Exception e) {
             System.err.println("[Selenium Boot] Suite start hooks skipped: " + e.getMessage());
         }
@@ -70,6 +80,8 @@ public class SeleniumBootLauncherListener implements TestExecutionListener {
             throw e;  // re-throw CI gate failures (pass-rate / flakiness)
         } catch (Exception e) {
             System.err.println("[Selenium Boot] Report generation failed: " + e.getMessage());
+        } finally {
+            suiteStarted.set(false);
         }
     }
 }

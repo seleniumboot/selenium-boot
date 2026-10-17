@@ -13,25 +13,60 @@ Selenium Boot integrates with Cucumber 7 out of the box. Driver lifecycle, the H
 
 ## Setup
 
-Add Cucumber to your project alongside Selenium Boot:
+Add Cucumber to your project alongside Selenium Boot.
+
+### Option A: JUnit Platform Engine (Recommended)
 
 ```xml title="pom.xml"
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>1.11.0</version>
+    <version>3.8.0</version>
 </dependency>
 
 <dependency>
     <groupId>io.cucumber</groupId>
     <artifactId>cucumber-java</artifactId>
-    <version>7.20.1</version>
+    <version>8.0.3</version>
+    <scope>test</scope>
+</dependency>
+
+<dependency>
+    <groupId>io.cucumber</groupId>
+    <artifactId>cucumber-junit-platform-engine</artifactId>
+    <version>8.0.3</version>
+    <scope>test</scope>
+</dependency>
+
+<dependency>
+    <groupId>org.junit.platform</groupId>
+    <artifactId>junit-platform-suite</artifactId>
+    <version>6.1.3</version>
+    <scope>test</scope>
+</dependency>
+```
+
+### Option B: TestNG (Legacy / Backwards Compatible)
+
+```xml title="pom.xml"
+<dependency>
+    <groupId>io.github.seleniumboot</groupId>
+    <artifactId>selenium-boot</artifactId>
+    <version>3.8.0</version>
+</dependency>
+
+<dependency>
+    <groupId>io.cucumber</groupId>
+    <artifactId>cucumber-java</artifactId>
+    <version>8.0.3</version>
+    <scope>test</scope>
 </dependency>
 
 <dependency>
     <groupId>io.cucumber</groupId>
     <artifactId>cucumber-testng</artifactId>
-    <version>7.20.1</version>
+    <version>8.0.3</version>
+    <scope>test</scope>
 </dependency>
 ```
 
@@ -59,7 +94,38 @@ src/
 
 ## Runner class
 
-Annotate with `@CucumberOptions` and extend `BaseCucumberTest`. No other code needed:
+### Option A: JUnit Platform Suite (`@Suite` — Recommended)
+
+Use JUnit Platform's standard `@Suite` runner with `cucumber-junit-platform-engine`. No base class is needed:
+
+```java
+package com.yourcompany.bdd;
+
+import org.junit.platform.suite.api.ConfigurationParameter;
+import org.junit.platform.suite.api.IncludeEngines;
+import org.junit.platform.suite.api.SelectClasspathResource;
+import org.junit.platform.suite.api.Suite;
+
+import static io.cucumber.junit.platform.engine.Constants.GLUE_PROPERTY_NAME;
+import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
+
+@Suite
+@IncludeEngines("cucumber")
+@SelectClasspathResource("features")
+@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "com.yourcompany.bdd.steps, com.seleniumboot.cucumber")
+@ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "pretty, com.seleniumboot.cucumber.CucumberStepLogger")
+public class CucumberSuiteTest {}
+```
+
+Alternatively, configure glue and plugins in `src/test/resources/junit-platform.properties`:
+```properties title="junit-platform.properties"
+cucumber.glue=com.yourcompany.bdd.steps, com.seleniumboot.cucumber
+cucumber.plugin=pretty, com.seleniumboot.cucumber.CucumberStepLogger
+```
+
+### Option B: TestNG Runner (`BaseCucumberTest` — Deprecated in 3.9.0)
+
+Annotate with `@CucumberOptions` and extend `BaseCucumberTest`:
 
 ```java
 @CucumberOptions(
@@ -69,6 +135,10 @@ Annotate with `@CucumberOptions` and extend `BaseCucumberTest`. No other code ne
 )
 public class CucumberRunner extends BaseCucumberTest {}
 ```
+
+:::note Deprecation Notice
+`BaseCucumberTest` is deprecated as of Selenium Boot 3.9.0 because upstream `AbstractTestNGCucumberTests` has been deprecated for removal in Cucumber 8.x. `BaseCucumberTest` continues to function for all TestNG suites throughout the 3.x series and will be removed in 4.0.0.
+:::
 
 `"com.seleniumboot.cucumber"` in `glue` is required — it tells Cucumber where to find `CucumberHooks`, which manages the driver lifecycle.
 
