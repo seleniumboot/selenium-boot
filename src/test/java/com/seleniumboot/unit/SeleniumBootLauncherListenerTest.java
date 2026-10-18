@@ -3,7 +3,6 @@ package com.seleniumboot.unit;
 import com.seleniumboot.hooks.ExecutionHook;
 import com.seleniumboot.hooks.HookRegistry;
 import com.seleniumboot.junit5.SeleniumBootLauncherListener;
-import com.seleniumboot.precondition.BaseConditions;
 import com.seleniumboot.precondition.PreConditionRegistry;
 import com.seleniumboot.testmanagement.TestManagementReporter;
 import org.testng.annotations.AfterMethod;

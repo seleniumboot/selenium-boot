@@ -1,7 +1,6 @@
 package com.seleniumboot.unit;
 
 import com.seleniumboot.cucumber.CucumberHooks;
-import com.seleniumboot.internal.SeleniumBootContext;
 import com.seleniumboot.quarantine.QuarantineLoader;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
@@ -159,7 +158,6 @@ public class CucumberQuarantineTest {
     public static class QuarantineStepDefinitions {
         @Before("@quarantine")
         public void beforeScenario(Scenario scenario) {
-            CucumberHooks hooks = new CucumberHooks();
             // In a real run, Cucumber invokes hooks; here we directly invoke quarantine check
             try {
                 Method m = CucumberHooks.class.getDeclaredMethod("checkCucumberQuarantine", Scenario.class);

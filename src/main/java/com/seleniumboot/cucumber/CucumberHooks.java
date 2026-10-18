@@ -258,6 +258,7 @@ public class CucumberHooks {
         }
     }
 
+    /** Heuristic: a TestNG result is current only on a TestNG thread. Cucumber launched from inside a TestNG test is treated as TestNG. */
     private static boolean isTestNgExecution() {
         try {
             return org.testng.Reporter.getCurrentTestResult() != null;
