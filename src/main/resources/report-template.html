@@ -427,6 +427,18 @@
                 </div>
             </div>
 
+            <!-- Trend over runs (hidden until there are 2+ runs of history) -->
+            <div class="charts-row" id="trendRow" style="display:none">
+                <div class="card chart-card">
+                    <div class="card-header">Pass Rate Trend (%)</div>
+                    <div class="card-body"><canvas id="trendRateChart"></canvas></div>
+                </div>
+                <div class="card chart-card">
+                    <div class="card-header">Suite Duration Trend (s)</div>
+                    <div class="card-body"><canvas id="trendTimeChart"></canvas></div>
+                </div>
+            </div>
+
             <!-- Retry summary -->
             {{RETRY_SECTION}}
 
@@ -583,6 +595,23 @@ if (window.Chart) {
             plugins: { legend: { labels: { font: { family: 'Roboto', size: 13 } } } },
             scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
     });
+}
+
+// ── Trend over runs ──
+const trendData = {{TREND_DATA}};
+if (window.Chart && trendData.length >= 2) {
+    document.getElementById('trendRow').style.display = '';
+    const labels = trendData.map(r => r.label);
+    const line = (el, label, data, color, max) => new Chart(document.getElementById(el), {
+        type: 'line',
+        data: { labels, datasets: [{ label, data, borderColor: color, backgroundColor: color + '33',
+            fill: true, tension: .3, pointRadius: 3 }] },
+        options: { responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { grid: { display: false } }, y: { beginAtZero: true, max } } }
+    });
+    line('trendRateChart', 'Pass rate (%)', trendData.map(r => r.passRate), '#43a047', 100);
+    line('trendTimeChart', 'Duration (s)', trendData.map(r => r.durationSec), '#303f9f');
 }
 
 // ── Collapse / expand class groups ──

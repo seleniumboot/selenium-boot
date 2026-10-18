@@ -163,6 +163,37 @@ public final class HtmlReportGenerator {
         return String.format("%02d:%02d:%02d", totalSeconds / 3600, (totalSeconds % 3600) / 60, totalSeconds % 60);
     }
 
+    /**
+     * Pass-rate and duration of the last {@code maxRuns} runs from the metrics history, oldest
+     * first, as a JSON array for the trend charts. Empty array when there is no history.
+     */
+    static String buildTrendData(int maxRuns) {
+        File dir = ReportPaths.metricsHistoryDir();
+        File[] files = dir.isDirectory() ? dir.listFiles((d, n) -> n.endsWith(".json")) : null;
+        if (files == null || files.length == 0) return "[]";
+        java.util.Arrays.sort(files, java.util.Comparator.comparing(File::getName));
+        int from = Math.max(0, files.length - maxRuns);
+        ObjectMapper mapper = new ObjectMapper();
+        com.fasterxml.jackson.databind.node.ArrayNode out = mapper.createArrayNode();
+        for (int i = from; i < files.length; i++) {
+            try {
+                JsonNode n = mapper.readTree(files[i]);
+                com.fasterxml.jackson.databind.node.ObjectNode run = out.addObject();
+                String name = files[i].getName().replaceAll("^.*metrics-|\\.json$", "");
+                run.put("label", name.length() >= 13
+                        ? name.substring(4, 6) + "-" + name.substring(6, 8) + " " + name.substring(9, 11) + ":" + name.substring(11, 13)
+                        : name);
+                run.put("passRate", n.path("passRate").asDouble(0));
+                run.put("failed", n.path("failedTests").asInt(0));
+                long ms = n.path("suiteDurationMs").asLong(0);
+                run.put("durationSec", Math.round((ms > 0 ? ms : n.path("totalTimeMs").asLong(0)) / 100.0) / 10.0);
+            } catch (Exception ignored) {
+                // unreadable history file: skip it
+            }
+        }
+        return out.toString();
+    }
+
     static String buildHtml(JsonNode root) {
 
         String executionPercentiles =
@@ -264,6 +295,7 @@ public final class HtmlReportGenerator {
                 .replace("{{SLOWEST_TESTS}}", slowestSection)
                 .replace("{{FLAKINESS_SECTION}}", flakinessSection)
                 .replace("{{DONUT_DATA}}", donutData)
+                .replace("{{TREND_DATA}}", buildTrendData(20))
                 .replace("{{ROWS}}", rows.toString())
                 .replace("{{FAILURE_ROWS}}", failureRows)
                 .replace("{{FAILURE_GROUPS}}", failureGroups)
