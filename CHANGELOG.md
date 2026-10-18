@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Unreleased
 
+- **HTML report: pass-rate and duration trend charts** — the dashboard now shows two line charts under the donut and percentile row, built from the last 20 runs in the metrics history (the same `flakiness.historyDir` / `-Dseleniumboot.history.dir` location the Flakiness Radar reads). They appear once there are at least two runs of history and stay hidden otherwise. (#160)
+
+- **Cucumber on the JUnit Platform: quarantine and suite-lifecycle parity** — quarantined scenarios run under `cucumber-junit-platform-engine` are now reported as aborted instead of failed (`TestAbortedException`; TestNG still gets `SkipException`). `SeleniumBootLauncherListener` now also clears the API health cache, loads pre-conditions and starts test-management reporting at test-plan start, matching the TestNG path, and the suite-start work is idempotent. `docs-site/docs/cucumber.md` documents the JUnit Platform runner as the recommended option. (#155, #158)
+
 - **`BaseCucumberTest` deprecated** — `@Deprecated(since = "3.9.0")`, because `AbstractTestNGCucumberTests` is deprecated for removal upstream in Cucumber 8.x. Nothing changes at runtime and existing TestNG Cucumber suites keep working; subclasses now get a deprecation warning. Plan to remove it in 4.0.0, once Cucumber drops its TestNG runner, in favour of `cucumber-junit-platform-engine` (added as an optional dependency). `CucumberStepLogger` also moves off the deprecated `getStepText()`. (#155, #157)
 
 - **JUnit Platform: suite-start hooks now fire** — `ExecutionHook.onSuiteStart()` was never called on the JUnit 5 path (only TestNG), so hooks that open a run or start a clock silently did nothing. `SeleniumBootLauncherListener` now bootstraps the framework and fires `onSuiteStart()` once per test plan.

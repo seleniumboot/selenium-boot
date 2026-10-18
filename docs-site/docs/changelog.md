@@ -11,6 +11,10 @@ All notable changes to Selenium Boot are documented here.
 
 ## [Unreleased]
 
+- **HTML report: pass-rate and duration trend charts** — the dashboard now shows two line charts under the donut and percentile row, built from the last 20 runs in the metrics history (the same `flakiness.historyDir` / `-Dseleniumboot.history.dir` location the Flakiness Radar reads). They appear once there are at least two runs of history and stay hidden otherwise. (#160)
+
+- **Cucumber on the JUnit Platform: quarantine and suite-lifecycle parity** — quarantined scenarios run under `cucumber-junit-platform-engine` are now reported as aborted instead of failed (`TestAbortedException`; TestNG still gets `SkipException`). `SeleniumBootLauncherListener` now also clears the API health cache, loads pre-conditions and starts test-management reporting at test-plan start, matching the TestNG path, and the suite-start work is idempotent. `docs-site/docs/cucumber.md` documents the JUnit Platform runner as the recommended option. (#155, #158)
+
 - **JUnit Platform: suite-start hooks now fire** — `ExecutionHook.onSuiteStart()` was never called on the JUnit 5 path (only TestNG), so hooks that open a run or start a clock silently did nothing. `SeleniumBootLauncherListener` now bootstraps the framework and fires `onSuiteStart()` once per test plan.
 
 - **Failed tests with trace links in GitHub Actions job summary** — when running inside GitHub Actions and `tracing.enabled: true` is on, failed tests are automatically summarized in a Markdown table (test name, error message, and path to the HTML trace file) appended to `$GITHUB_STEP_SUMMARY`. Triage failures and locate trace paths directly from the Actions job summary without downloading artifact bundles; no-op outside Actions or when all tests pass. (#137)
