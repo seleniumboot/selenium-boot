@@ -273,11 +273,11 @@ public final class AiFailureAnalyzer {
     // Helpers
     // ------------------------------------------------------------------
 
-    private static SeleniumBootConfig.Ai config() {
+    static SeleniumBootConfig.Ai config() {
         try { return SeleniumBootContext.getConfig().getAi(); } catch (Exception e) { return null; }
     }
 
-    private static String resolveApiKey(String raw) {
+    static String resolveApiKey(String raw) {
         if (raw == null) return null;
         if (raw.startsWith("${") && raw.endsWith("}")) {
             String var = raw.substring(2, raw.length() - 1);

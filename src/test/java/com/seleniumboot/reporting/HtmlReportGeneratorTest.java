@@ -138,4 +138,15 @@ public class HtmlReportGeneratorTest {
             System.clearProperty("seleniumboot.history.dir");
         }
     }
+
+    @Test
+    public void aiRunSummary_rendersEscaped_andIsAbsentWithout() throws Exception {
+        assertFalse(html(1, 0).contains("AI Run Summary"));
+        JsonNode root = new ObjectMapper().readTree(
+                "{\"totalTests\":1,\"failedTests\":1,\"passRate\":0.0,\"tests\":[],"
+                + "\"aiRunSummary\":\"Most failures share <b>one</b> cause.\"}");
+        String html = HtmlReportGenerator.buildHtml(root);
+        assertTrue(html.contains("AI Run Summary"));
+        assertTrue(html.contains("Most failures share &lt;b&gt;one&lt;/b&gt; cause."), "summary text is HTML-escaped");
+    }
 }

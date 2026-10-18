@@ -261,6 +261,10 @@ public final class HtmlReportGenerator {
             }
         }
 
+        String aiRunSummary     = root.hasNonNull("aiRunSummary")
+                ? "<div class=\"card section-mb\"><div class=\"card-header\">&#x1F916; AI Run Summary</div>"
+                  + "<div class=\"card-body ai-analysis-body\">" + escapeHtml(root.get("aiRunSummary").asText()) + "</div></div>"
+                : "";
         String retrySection     = buildRetrySection(flakyTests, recoveredTests);
         String slowestSection   = tests != null ? buildSlowestTests(tests) : "";
         String flakinessSection = buildFlakinessSection() + buildTestStatusSection(tests);
@@ -291,6 +295,7 @@ public final class HtmlReportGenerator {
                 .replace("{{PASS_RATE_CLASS}}", passRateClass)
                 .replace("{{FLAKY_TESTS}}", String.valueOf(flakyTests))
                 .replace("{{RECOVERED_TESTS}}", String.valueOf(recoveredTests))
+                .replace("{{AI_RUN_SUMMARY}}", aiRunSummary)
                 .replace("{{RETRY_SECTION}}", retrySection)
                 .replace("{{SLOWEST_TESTS}}", slowestSection)
                 .replace("{{FLAKINESS_SECTION}}", flakinessSection)

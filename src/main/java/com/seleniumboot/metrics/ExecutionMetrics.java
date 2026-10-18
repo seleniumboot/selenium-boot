@@ -371,6 +371,8 @@ public final class ExecutionMetrics {
         report.put("suiteDurationMs", suiteStart == 0 ? 0 : System.currentTimeMillis() - suiteStart);
         report.put("averageTimeMs",
                 totalTests == 0 ? 0 : totalTime / totalTests);
+        String aiRunSummary = com.seleniumboot.ai.AiRunSummarizer.summarize(TIMINGS.values());
+        if (aiRunSummary != null) report.put("aiRunSummary", aiRunSummary);
 
         if (!totalDurations.isEmpty()) {
 

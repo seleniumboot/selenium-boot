@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Unreleased
 
+- **AI run summary (opt-in)** — `ai.runSummary: true` adds one short paragraph to the HTML dashboard summarising the run's failures: which same-cause groups account for most of them, which look like product bugs versus test or environment problems, and what to check first. One API call per run, independent of `ai.failureAnalysis`; only grouped error messages and test names are sent (see the data note in the HTML report docs). Absent when disabled, when nothing failed, or on any error; the suite result is never affected. The text is exported as `aiRunSummary` in the metrics JSON.
+
 - **HTML report: pass-rate and duration trend charts** — the dashboard now shows two line charts under the donut and percentile row, built from the last 20 runs in the metrics history (the same `flakiness.historyDir` / `-Dseleniumboot.history.dir` location the Flakiness Radar reads). They appear once there are at least two runs of history and stay hidden otherwise. (#160)
 
 - **Cucumber on the JUnit Platform: quarantine and suite-lifecycle parity** — quarantined scenarios run under `cucumber-junit-platform-engine` are now reported as aborted instead of failed (`TestAbortedException`; TestNG still gets `SkipException`). `SeleniumBootLauncherListener` now also clears the API health cache, loads pre-conditions and starts test-management reporting at test-plan start, matching the TestNG path, and the suite-start work is idempotent. `docs-site/docs/cucumber.md` documents the JUnit Platform runner as the recommended option. (#155, #158)

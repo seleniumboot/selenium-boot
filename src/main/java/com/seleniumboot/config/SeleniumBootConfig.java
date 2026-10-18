@@ -463,12 +463,16 @@ public final class SeleniumBootConfig {
 
     public static final class Ai {
         private boolean failureAnalysis = false;
+        private boolean runSummary      = false;
         private String  apiKey          = null;
         private String  model           = "claude-haiku-4-5-20251001";
         private int     timeoutSeconds  = 20;
 
         public boolean isFailureAnalysis()               { return failureAnalysis; }
         public void    setFailureAnalysis(boolean v)     { this.failureAnalysis = v; }
+
+        public boolean isRunSummary()                    { return runSummary; }
+        public void    setRunSummary(boolean v)          { this.runSummary = v; }
 
         public String  getApiKey()                       { return apiKey; }
         public void    setApiKey(String v)               { this.apiKey = v; }

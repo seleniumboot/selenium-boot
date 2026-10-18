@@ -97,6 +97,18 @@ The raw error and full stack trace remain directly below the record in the expan
 
 `ai.failureAnalysis` remains opt-in, bounded by `ai.timeoutSeconds`, and unable to change the suite result. When enabled, the request contains the bounded failure detail above, the rule-based failure category and evidence, the error message, the first 30 stack-trace lines, and the recorded step timeline. This can include application URLs, page titles, locator text, console output, test/class names, and artifact paths. It does not send screenshot or trace file contents. Tests in the same-cause group continue to reuse one analysis.
 
+#### AI run summary
+
+`ai.runSummary: true` (with `ai.apiKey`, independent of `ai.failureAnalysis`) adds one short paragraph to the top of the dashboard: which failure causes account for most failures, which look like product bugs versus test or environment problems, and what to investigate first. It is one API call per run, opt-in, bounded by `ai.timeoutSeconds`, and cannot change the suite result; with no key, no failures, or any error, the card is simply absent.
+
+```yaml
+ai:
+  runSummary: true
+  apiKey: ${CLAUDE_API_KEY}
+```
+
+The request contains only the run totals and, for the largest same-cause groups (at most 8 groups, 5 test names each), the rule-based category, the error message (first 300 characters) and the test names. It does not send stack traces, steps, page content, or screenshot/trace files. The text is stored in the metrics JSON as `aiRunSummary`.
+
 ---
 
 ### Same-cause groups
