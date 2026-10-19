@@ -107,6 +107,25 @@ ai:
   apiKey: ${CLAUDE_API_KEY}
 ```
 
+### Choosing an AI provider
+
+The AI features (`ai.failureAnalysis` and `ai.runSummary`) are not tied to one vendor. Set `ai.provider`:
+
+| `ai.provider` | Backend | Default `ai.model` |
+|---|---|---|
+| `anthropic` (default) | Claude Messages API | `claude-haiku-4-5-20251001` |
+| `gemini` | Google Gemini `generateContent` | `gemini-2.5-flash` |
+| `openai` | Any OpenAI-compatible `/chat/completions` endpoint | `gpt-4o-mini` |
+
+```yaml
+ai:
+  runSummary: true
+  provider: gemini
+  apiKey: ${GEMINI_API_KEY}
+```
+
+Use `ai.baseUrl` to point `openai` at another compatible server, for example a local Ollama (`http://localhost:11434/v1`) or Azure OpenAI. The same data-minimisation rules apply whichever provider you pick.
+
 The request contains only the run totals and, for the largest same-cause groups (at most 8 groups, 5 test names each), the rule-based category, the error message (first 300 characters) and the test names. It does not send stack traces, steps, page content, or screenshot/trace files. The text is stored in the metrics JSON as `aiRunSummary`.
 
 ---

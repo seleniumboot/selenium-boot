@@ -465,7 +465,9 @@ public final class SeleniumBootConfig {
         private boolean failureAnalysis = false;
         private boolean runSummary      = false;
         private String  apiKey          = null;
-        private String  model           = "claude-haiku-4-5-20251001";
+        private String  provider        = "anthropic";
+        private String  model           = null;
+        private String  baseUrl         = null;
         private int     timeoutSeconds  = 20;
 
         public boolean isFailureAnalysis()               { return failureAnalysis; }
@@ -477,8 +479,17 @@ public final class SeleniumBootConfig {
         public String  getApiKey()                       { return apiKey; }
         public void    setApiKey(String v)               { this.apiKey = v; }
 
+        /** {@code anthropic} (default), {@code gemini} or {@code openai} (any OpenAI-compatible endpoint). */
+        public String  getProvider()                     { return provider; }
+        public void    setProvider(String v)             { this.provider = v; }
+
+        /** Model name; {@code null} means the provider's default. */
         public String  getModel()                        { return model; }
         public void    setModel(String v)                { this.model = v; }
+
+        /** Optional endpoint override, e.g. a local Ollama or Azure OpenAI URL. */
+        public String  getBaseUrl()                      { return baseUrl; }
+        public void    setBaseUrl(String v)              { this.baseUrl = v; }
 
         public int     getTimeoutSeconds()               { return timeoutSeconds; }
         public void    setTimeoutSeconds(int v)          { this.timeoutSeconds = v; }

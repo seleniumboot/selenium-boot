@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * Calls the Claude API to generate a plain-English failure analysis for a failed test.
+ * Calls the configured LLM (Claude by default; see {@link AiProvider}) to generate a plain-English failure analysis for a failed test.
  *
  * <p>Activated when {@code ai.failureAnalysis: true} and {@code ai.apiKey} are set in
  * {@code selenium-boot.yml}. The analysis is stored in the test metrics and surfaced in the
@@ -37,8 +37,10 @@ import java.util.stream.Collectors;
  * # selenium-boot.yml
  * ai:
  *   failureAnalysis: true
+ *   provider: anthropic        # anthropic | gemini | openai
  *   apiKey: ${CLAUDE_API_KEY}
- *   model: claude-haiku-4-5-20251001
+ *   model: claude-haiku-4-5-20251001   # optional; defaults per provider
+ *   baseUrl:                   # optional endpoint override (OpenAI-compatible servers)
  *   timeoutSeconds: 20
  * </pre>
  */
@@ -46,8 +48,6 @@ import java.util.stream.Collectors;
 public final class AiFailureAnalyzer {
 
     private static final Logger LOG = Logger.getLogger(AiFailureAnalyzer.class.getName());
-    private static final String API_URL = "https://api.anthropic.com/v1/messages";
-    private static final String API_VERSION = "2023-06-01";
 
     /** Analysis per failure signature, so one cause costs one API call. */
     private static final ConcurrentHashMap<String, CompletableFuture<String>> BY_SIGNATURE =
@@ -99,8 +99,7 @@ public final class AiFailureAnalyzer {
             } else {
                 String result = null;
                 try {
-                    result = callApi(apiKey, aiCfg.getModel(), buildPrompt(timing, pageUrl, pageTitle),
-                            aiCfg.getTimeoutSeconds());
+                    result = callApi(aiCfg, apiKey, buildPrompt(timing, pageUrl, pageTitle));
                 } finally {
                     if (result == null || result.isBlank()) BY_SIGNATURE.remove(signature, mine);
                     mine.complete(result);
@@ -185,32 +184,29 @@ public final class AiFailureAnalyzer {
     // HTTP call to Claude API
     // ------------------------------------------------------------------
 
-    static String callApi(String apiKey, String model, String prompt, int timeoutSeconds) {
+    static String callApi(SeleniumBootConfig.Ai cfg, String apiKey, String prompt) {
+        AiProvider provider = AiProvider.parse(cfg.getProvider());
+        if (provider == null) {
+            LOG.warning("[AiFailureAnalyzer] Unknown ai.provider '" + cfg.getProvider()
+                    + "' (expected anthropic, gemini or openai). Skipping AI call.");
+            return null;
+        }
         try {
-            String body = buildRequestBody(model, prompt);
-
+            String model = provider.modelOrDefault(cfg.getModel());
+            int timeout = cfg.getTimeoutSeconds();
             HttpClient client = HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofSeconds(timeoutSeconds))
+                    .connectTimeout(Duration.ofSeconds(timeout))
                     .build();
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(API_URL))
-                    .header("x-api-key",          apiKey)
-                    .header("anthropic-version",  API_VERSION)
-                    .header("content-type",       "application/json")
-                    .timeout(Duration.ofSeconds(timeoutSeconds))
-                    .POST(HttpRequest.BodyPublishers.ofString(body))
-                    .build();
-
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = client.send(
+                    provider.request(cfg.getBaseUrl(), model, apiKey, prompt, timeout),
+                    HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
-                return extractContent(response.body());
-            } else {
-                LOG.warning("[AiFailureAnalyzer] API returned HTTP " + response.statusCode()
-                        + ": " + response.body().substring(0, Math.min(200, response.body().length())));
-                return null;
+                return provider.extract(response.body());
             }
+            LOG.warning("[AiFailureAnalyzer] " + provider + " API returned HTTP " + response.statusCode()
+                    + ": " + response.body().substring(0, Math.min(200, response.body().length())));
+            return null;
         } catch (Exception e) {
             LOG.warning("[AiFailureAnalyzer] HTTP call failed: " + e.getMessage());
             return null;
@@ -221,25 +217,15 @@ public final class AiFailureAnalyzer {
     // JSON helpers (no extra dependency — hand-rolled)
     // ------------------------------------------------------------------
 
-    private static String buildRequestBody(String model, String prompt) {
-        String escaped = prompt
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "")
-                .replace("\t", "\\t");
-        return "{"
-             + "\"model\":\"" + model + "\","
-             + "\"max_tokens\":512,"
-             + "\"messages\":[{\"role\":\"user\",\"content\":\"" + escaped + "\"}]"
-             + "}";
-    }
-
     /** Extracts {@code content[0].text} from a Claude API response JSON string. */
     public static String extractContent(String json) {
+        return extractField(json, "text");
+    }
+
+    /** Value of the first string field called {@code key} (Claude/Gemini: {@code text}; OpenAI: {@code content}). */
+    static String extractField(String json, String key) {
         // Simple extraction — avoids adding Jackson dependency to the hot path
-        // Pattern: "text": "..." (first occurrence in content array)
-        int textIdx = json.indexOf("\"text\"");
+        int textIdx = json.indexOf("\"" + key + "\"");
         if (textIdx < 0) return null;
         int colon = json.indexOf(':', textIdx);
         if (colon < 0) return null;

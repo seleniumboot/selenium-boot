@@ -40,7 +40,7 @@ public final class AiRunSummarizer {
             }
             String prompt = buildPrompt(timings);
             if (prompt == null) return null;
-            String result = AiFailureAnalyzer.callApi(apiKey, cfg.getModel(), prompt, cfg.getTimeoutSeconds());
+            String result = AiFailureAnalyzer.callApi(cfg, apiKey, prompt);
             return result == null || result.isBlank() ? null : result.strip();
         } catch (Exception e) {
             LOG.warning("[AiRunSummarizer] Run summary failed (non-critical): " + e.getMessage());
