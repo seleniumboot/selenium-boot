@@ -114,7 +114,7 @@ The AI features (`ai.failureAnalysis` and `ai.runSummary`) are not tied to one v
 | `ai.provider` | Backend | Default `ai.model` |
 |---|---|---|
 | `anthropic` (default) | Claude Messages API | `claude-haiku-4-5-20251001` |
-| `gemini` | Google Gemini `generateContent` | `gemini-2.5-flash` |
+| `gemini` | Google Gemini `generateContent` | `gemini-3.8-flash` |
 | `openai` | Any OpenAI-compatible `/chat/completions` endpoint | `gpt-4o-mini` |
 
 ```yaml
