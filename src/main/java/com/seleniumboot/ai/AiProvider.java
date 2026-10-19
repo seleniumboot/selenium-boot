@@ -18,7 +18,7 @@ import java.time.Duration;
 enum AiProvider {
 
     ANTHROPIC("https://api.anthropic.com/v1", "claude-haiku-4-5-20251001"),
-    GEMINI("https://generativelanguage.googleapis.com/v1beta", "gemini-3.8-flash"),
+    GEMINI("https://generativelanguage.googleapis.com/v1beta", "gemini-flash-latest"),
     OPENAI("https://api.openai.com/v1", "gpt-4o-mini");
 
     final String defaultBaseUrl;

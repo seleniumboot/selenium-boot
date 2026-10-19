@@ -79,6 +79,13 @@ public class AiProviderTest {
     }
 
     @Test
+    public void geminiDefaultModelIsTheLatestAlias() {
+        reply = "{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"ok\"}]}}]}";
+        Assert.assertEquals(AiFailureAnalyzer.callApi(cfg("gemini", null), "g1", "ping"), "ok");
+        Assert.assertEquals(path.get(), "/api/models/gemini-flash-latest:generateContent");
+    }
+
+    @Test
     public void openAiCompatibleUsesChatCompletionsAndBearerAuth() {
         reply = "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"gpt says hi\"}}]}";
         SeleniumBootConfig.Ai ai = cfg("openai", null);
