@@ -531,19 +531,7 @@ function showTab(tabId, el) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('tab-' + tabId).classList.add('active');
     if (el) el.classList.add('active');
-    try { localStorage.setItem('sb-tab', tabId); } catch(e) {}
 }
-// Restore last active tab on load
-(function() {
-    try {
-        const last = localStorage.getItem('sb-tab');
-        if (last && document.getElementById('tab-' + last)) {
-            const el = document.querySelector('.nav-item[onclick*="\'' + last + '\'"]');
-            showTab(last, el);
-        }
-    } catch(e) {}
-})();
-
 // ── Lightbox ──
 function openLightbox(src) {
     document.getElementById('lightbox-img').src = src;

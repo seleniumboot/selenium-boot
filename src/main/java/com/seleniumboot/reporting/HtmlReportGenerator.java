@@ -341,6 +341,15 @@ public final class HtmlReportGenerator {
     }
 
     private static String buildRow(JsonNode test, int rowIndex, String groupId, boolean collapsed, boolean showBrowser) {
+        return buildRow(test, rowIndex, groupId, collapsed, collapsed, showBrowser);
+    }
+
+    /**
+     * @param collapsed    hide the test row itself (its class group is collapsed)
+     * @param detailHidden hide the expandable detail row under it
+     */
+    private static String buildRow(JsonNode test, int rowIndex, String groupId, boolean collapsed,
+                                   boolean detailHidden, boolean showBrowser) {
         String status      = test.has("status")      ? test.get("status").asText()      : "UNKNOWN";
         String statusClass = "status-" + status.toLowerCase();
         String rawTestId   = test.has("testId")      ? test.get("testId").asText()      : "";
@@ -394,7 +403,7 @@ public final class HtmlReportGenerator {
                     ? "<div class=\"step-timeline-section\"><div class=\"step-timeline-header\">Steps (" + test.get("steps").size() + ")</div>"
                       + "<div class=\"step-timeline\">" + stepsHtml + "</div></div>"
                     : "";
-            String detailDisplay = collapsed ? " style=\"display:none\"" : "";
+            String detailDisplay = detailHidden ? " style=\"display:none\"" : "";
             detailRow = "<tr class=\"detail-row group-member\" data-group=\"" + groupKey + "\" id=\"detail-" + rowIndex + "\"" + detailDisplay + ">"
                     + "<td colspan=\"" + colspan + "\"><div class=\"detail-panel\">"
                     + failureDetail + perfHtml + sessionLink + traceLink + stepsSection + recordingHtml + aiHtml + errorHtml + traceHtml
@@ -405,7 +414,7 @@ public final class HtmlReportGenerator {
         String rowClass    = "group-member" + (hasDetail ? " expandable" : "");
         String clickAttr   = hasDetail ? " onclick=\"toggleDetail(" + rowIndex + ")\"" : "";
         String memberStyle = collapsed ? " style=\"display:none\"" : "";
-        String iconOpen    = (!collapsed && hasDetail) ? " open" : "";
+        String iconOpen    = (!detailHidden && hasDetail) ? " open" : "";
 
         String browserCell = showBrowser ? "<td class=\"browser-cell\">" + escapeHtml(browser) + "</td>" : "";
 
@@ -588,7 +597,9 @@ public final class HtmlReportGenerator {
                     + "<span class=\"group-count\"> &mdash; " + total + " failure" + (total != 1 ? "s" : "") + "</span>"
                     + "</td></tr>");
             for (JsonNode test : entry.getValue()) {
-                rows.append(buildRow(test, rowIndex++, entry.getKey(), false, showBrowser));
+                // The "failures:" prefix keeps these rows out of the Test Cases tab's group toggle,
+                // which selects by data-group. Details start collapsed; the row stays visible.
+                rows.append(buildRow(test, rowIndex++, "failures:" + entry.getKey(), false, true, showBrowser));
             }
         }
         return rows.toString();
