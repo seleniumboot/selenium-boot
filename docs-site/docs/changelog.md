@@ -9,9 +9,18 @@ sidebar_position: 99
 
 All notable changes to Selenium Boot are documented here.
 
-## [Unreleased]
+## [3.9.0] — 2026-10-21
 
-- **`Locator` keyboard and pointer actions: `press(Keys...)`, `focus()`, `doubleClick()`, `rightClick()`** — send keys without clearing the value, focus without clicking, or perform native double/context clicks directly on a locator. Each action re-resolves on every poll and retries stale or not-yet-present elements until `timeouts.explicit` elapses. (#134)
+- **`Locator` keyboard and pointer actions: `press(Keys...)`, `focus()`, `doubleClick()`, `rightClick()`** — send keys without clearing the value, focus without clicking, or perform native double/context clicks directly on a locator. Each action re-resolves on every poll and retries stale or not-yet-present elements until `timeouts.explicit` elapses. (#134, #188)
+
+- **HTML report: flaky-test trend line** — the dashboard gains a third "Flaky Test Trend" line chart (flaky tests per run) next to the pass-rate and duration charts. (#185)
+
+- **Fix: Cucumber quarantine check no longer silently skipped** — `checkCucumberQuarantine` threw when the framework context was not yet initialised and the error was swallowed, so quarantined scenarios ran instead of being skipped. It now guards on initialisation. (#186)
+
+- **Fix: Gemini default model** — `ai.provider: gemini` now defaults to the `gemini-flash-latest` alias; the previously pinned `gemini-2.5-flash` returned 404 for new API keys. (#171)
+
+- **Dependency updates** — selenium-java 4.51.0, cucumber-testng 8.0.4, cucumber-junit-platform-engine, jackson-databind, mockito-core 5.24.0, jakarta.mail 2.0.2.
+
 
 - **Failure Intelligence: high-level triage and suggested actions** — each failure is classified as `Product bug`, `Test bug`, `Environment`, `Flaky` or `Unknown` (flaky keeps its cause, e.g. `Flaky (Locator not found)`), with a rule-based suggested action. Shown in the HTML report, as `failureType` / `suggestedAction` in the metrics JSON, and in the JUnit XML; opt-in AI analysis uses it as a baseline. No API key needed. (#138)
 
@@ -42,10 +51,6 @@ All notable changes to Selenium Boot are documented here.
 - **Failure grouping** — the report's Failures tab now opens with a "N tests, same cause" panel: failed tests are grouped by a signature of category, exception type, normalised message (ids, numbers and quoted values stripped) and top application stack frame. The flat per-class list is unchanged below it. With `ai.failureAnalysis` on, one Claude call is made per group; the other tests in the group reuse its analysis. The metrics JSON gains `failureSignature`. (#140)
 
 - **`Locator` form actions: `clear()`, `check()`, `uncheck()`, `isChecked()`, `selectOption(text)`, `selectOptionByValue(value)`, `inputValue()`** — form controls can now be manipulated and inspected directly on `Locator` without falling back to `BasePage` helpers or raw `WebElement`s. `check()` and `uncheck()` are idempotent (no click if already in the target state), `isChecked()` queries checked state without waiting, and terminal actions (`clear`, `check`, `uncheck`, `selectOption`, `selectOptionByValue`, `inputValue`) auto-wait, re-resolving from scratch on every poll to survive stale or late-appearing elements. (#133)
-
----
-
-## [Unreleased]
 
 - **Failure classification** — every failed test is tagged with a category (`LOCATOR_NOT_FOUND`, `ELEMENT_NOT_INTERACTABLE`, `STALE_ELEMENT`, `TIMEOUT`, `ASSERTION_MISMATCH`, `NAVIGATION_ERROR`, `BROWSER_CRASH`, or `UNKNOWN`) and the evidence for it, from the exception class chain and message alone. No AI, no API key, no network. Shown as a badge in the HTML report's failure panel, as `failureCategory` / `failureEvidence` in the metrics JSON, and as the `type` of `<failure>` in the JUnit XML. The raw error and stack trace are unchanged. (#139)
 

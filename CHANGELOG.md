@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-### Unreleased
+### v3.9.0 — 2026-10-21
+
+- **`Locator` keyboard and pointer actions: `press(Keys...)`, `focus()`, `doubleClick()`, `rightClick()`** — send keys without clearing the value, focus without clicking, or perform native double/context clicks directly on a locator. Each action re-resolves on every poll and retries stale or not-yet-present elements until `timeouts.explicit` elapses. (#134, #188)
+
+- **HTML report: flaky-test trend line** — the dashboard gains a third "Flaky Test Trend" line chart (flaky tests per run) next to the pass-rate and duration charts. (#185)
+
+- **Fix: Cucumber quarantine check no longer silently skipped** — `checkCucumberQuarantine` threw when the framework context was not yet initialised and the error was swallowed, so quarantined scenarios ran instead of being skipped. It now guards on initialisation. (#186)
+
+- **Fix: Gemini default model** — `ai.provider: gemini` now defaults to the `gemini-flash-latest` alias; the previously pinned `gemini-2.5-flash` returned 404 for new API keys. (#171)
+
+- **Dependency updates** — selenium-java 4.51.0, cucumber-testng 8.0.4, cucumber-junit-platform-engine, jackson-databind, mockito-core 5.24.0, jakarta.mail 2.0.2.
 
 - **HTML report: tab and failure fixes** — the report always opens on the Dashboard (it no longer restores the last-open tab), failure details start collapsed, and the Failures tab no longer goes empty after you expand or collapse a class in Test Cases (both tabs shared one group id).
 
