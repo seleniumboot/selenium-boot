@@ -219,7 +219,7 @@ public class CucumberHooks {
     static void checkCucumberQuarantine(Scenario scenario) {
         try {
             com.seleniumboot.config.SeleniumBootConfig.Quarantine cfg =
-                    SeleniumBootContext.getConfig().getQuarantine();
+                    SeleniumBootContext.isInitialized() ? SeleniumBootContext.getConfig().getQuarantine() : null;
             if (cfg != null && !cfg.isEnabled()) return;
 
             // ── 1. In-file tag check (user adds @quarantine to the scenario) ──
