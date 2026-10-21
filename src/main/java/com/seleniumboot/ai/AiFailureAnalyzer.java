@@ -73,8 +73,12 @@ public final class AiFailureAnalyzer {
      * @param pageTitle current page title (may be null)
      */
     public static void analyze(String testId, String pageUrl, String pageTitle) {
+        analyze(config(), testId, pageUrl, pageTitle);
+    }
+
+    /** Test seam: same as {@link #analyze(String, String, String)} with the AI config supplied. */
+    static void analyze(SeleniumBootConfig.Ai aiCfg, String testId, String pageUrl, String pageTitle) {
         try {
-            SeleniumBootConfig.Ai aiCfg = config();
             if (aiCfg == null || !aiCfg.isFailureAnalysis()) return;
 
             String apiKey = resolveApiKey(aiCfg.getApiKey());
