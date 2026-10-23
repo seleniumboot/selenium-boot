@@ -61,3 +61,13 @@ When running in GitHub Actions and `tracing.enabled: true` is on, failed tests a
 
 This lets teams triage failures and locate the corresponding HTML trace file directly on the Actions job summary page without downloading and extracting artifact archives.
 
+The summary also links to the workflow run page, where artifacts are listed. Upload the traces in your workflow so the link leads somewhere:
+
+```yaml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: traces
+          path: target/traces/
+```
+

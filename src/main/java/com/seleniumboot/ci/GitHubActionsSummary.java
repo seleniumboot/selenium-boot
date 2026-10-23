@@ -28,6 +28,14 @@ public final class GitHubActionsSummary {
      * Returns an empty string if {@code timings} is null or contains no failed tests.
      */
     public static String buildMarkdown(Collection<TestTiming> timings) {
+        return buildMarkdown(timings, null);
+    }
+
+    /**
+     * Same as {@link #buildMarkdown(Collection)}, and when {@code runUrl} is set, adds a line
+     * under the table linking to the workflow run page where uploaded trace artifacts live.
+     */
+    public static String buildMarkdown(Collection<TestTiming> timings, String runUrl) {
         if (timings == null || timings.isEmpty()) {
             return "";
         }
@@ -58,7 +66,35 @@ public final class GitHubActionsSummary {
               .append(" |\n");
         }
 
+        if (runUrl != null && !runUrl.isBlank()) {
+            sb.append("\nTraces are in this run's [artifacts](").append(runUrl.trim())
+              .append(") if `").append(base(baseDir)).append("/traces/` is uploaded with `actions/upload-artifact`.\n");
+        }
+
         return sb.toString();
+    }
+
+    /**
+     * Builds the workflow run page URL from the GitHub Actions environment, or {@code null}
+     * when any of the three values is missing.
+     */
+    public static String runUrl(String serverUrl, String repository, String runId) {
+        if (isBlank(serverUrl) || isBlank(repository) || isBlank(runId)) {
+            return null;
+        }
+        String server = serverUrl.trim();
+        if (server.endsWith("/")) {
+            server = server.substring(0, server.length() - 1);
+        }
+        return server + "/" + repository.trim() + "/actions/runs/" + runId.trim();
+    }
+
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
+    }
+
+    private static String base(String baseDir) {
+        return isBlank(baseDir) ? "target" : baseDir.replace('\\', '/').trim().replaceAll("/+$", "");
     }
 
     /**
@@ -87,7 +123,8 @@ public final class GitHubActionsSummary {
             return false;
         }
 
-        String markdown = buildMarkdown(timings);
+        String markdown = buildMarkdown(timings,
+                runUrl(System.getenv("GITHUB_SERVER_URL"), System.getenv("GITHUB_REPOSITORY"), System.getenv("GITHUB_RUN_ID")));
         if (markdown.isEmpty()) {
             return false;
         }

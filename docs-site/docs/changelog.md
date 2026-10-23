@@ -11,6 +11,8 @@ All notable changes to Selenium Boot are documented here.
 
 ## [3.9.0] — 2026-10-21
 
+- **GitHub Actions job summary: link to the run's artifacts** — the failed-tests summary now adds a line linking to the workflow run page (built from `GITHUB_SERVER_URL`, `GITHUB_REPOSITORY` and `GITHUB_RUN_ID`, no config) where uploaded `target/traces/` artifacts live, so a reviewer can get from a red PR to the trace in one click. Omitted when those variables are missing. (#130)
+
 - **`Locator` keyboard and pointer actions: `press(Keys...)`, `focus()`, `doubleClick()`, `rightClick()`** — send keys without clearing the value, focus without clicking, or perform native double/context clicks directly on a locator. Each action re-resolves on every poll and retries stale or not-yet-present elements until `timeouts.explicit` elapses. (#134, #188)
 
 - **HTML report: flaky-test trend line** — the dashboard gains a third "Flaky Test Trend" line chart (flaky tests per run) next to the pass-rate and duration charts. (#185)

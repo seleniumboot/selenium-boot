@@ -96,6 +96,35 @@ public class GitHubActionsSummaryTest {
     }
 
     @Test
+    public void buildMarkdown_withRunUrl_linksToRunArtifacts() {
+        TestTiming failed = timing("t1", "LoginTest", "FAILED", "boom", "traces/LoginTest/t1-trace.html");
+
+        String markdown = GitHubActionsSummary.buildMarkdown(List.of(failed),
+                "https://github.com/acme/app/actions/runs/42");
+
+        assertTrue(markdown.contains("[artifacts](https://github.com/acme/app/actions/runs/42)"),
+                "Must link to the workflow run page");
+        assertTrue(markdown.contains("actions/upload-artifact"), "Must hint how traces get there");
+    }
+
+    @Test
+    public void buildMarkdown_withoutRunUrl_hasNoArtifactsLine() {
+        TestTiming failed = timing("t1", "LoginTest", "FAILED", "boom", "traces/LoginTest/t1-trace.html");
+
+        assertFalse(GitHubActionsSummary.buildMarkdown(List.of(failed)).contains("artifacts"));
+        assertFalse(GitHubActionsSummary.buildMarkdown(List.of(failed), " ").contains("artifacts"));
+    }
+
+    @Test
+    public void runUrl_buildsFromEnvironmentValues() {
+        assertEquals(GitHubActionsSummary.runUrl("https://github.com/", "acme/app", "42"),
+                "https://github.com/acme/app/actions/runs/42");
+        assertNull(GitHubActionsSummary.runUrl(null, "acme/app", "42"));
+        assertNull(GitHubActionsSummary.runUrl("https://github.com", "", "42"));
+        assertNull(GitHubActionsSummary.runUrl("https://github.com", "acme/app", null));
+    }
+
+    @Test
     public void buildMarkdown_multipleFailedTests_generatesMultipleRows() {
         List<TestTiming> timings = List.of(
                 timing("t1", "TestA", "PASSED", null, null),

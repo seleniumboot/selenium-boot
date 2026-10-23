@@ -73,7 +73,7 @@ When `tracing.enabled: true` is enabled in `selenium-boot.yml` and tests fail, S
 | --- | --- | --- |
 | `com.example.LoginTest#testInvalidLogin` | Expected [Dashboard] but found [401 Unauthorized] | target/traces/LoginTest/testInvalidLogin-trace.html |
 
-This lists every failing test, its error message, and the path to its trace file directly in the GitHub Actions run summary page. If no tests fail or outside GitHub Actions, nothing is written.
+This lists every failing test, its error message, and the path to its trace file directly in the GitHub Actions run summary page. It also adds a link to the workflow run page, where artifacts are listed; upload `target/traces/` with `actions/upload-artifact` (see the [Trace Viewer guide](../guides/trace-viewer.md#in-github-actions)). If no tests fail or outside GitHub Actions, nothing is written.
 
 ---
 
