@@ -76,4 +76,24 @@ public final class StubBuilder {
         this.delayMs = ms;
         return this;
     }
+
+    public String getPattern() {
+        return pattern;
+    }
+
+    public String getResponseBody() {
+        return responseBody;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public long getDelayMs() {
+        return delayMs;
+    }
 }

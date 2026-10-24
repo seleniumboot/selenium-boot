@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+### Unreleased
+
+- **Network mocking on Firefox via WebDriver BiDi** — `networkMock().stub(...)` now uses WebDriver BiDi network interception under the hood when supported by the driver (including Firefox and BiDi-enabled drivers), falling back to Chrome DevTools Protocol (CDP) for Chromium-based drivers. The existing stubbing API (`returnJson`, `returnBody`, `returnStatus`, `delay`, `clear`) works identically across Chrome and Firefox. (#196)
+
+---
+
 ### v3.9.0 — 2026-10-21
 
 - **GitHub Actions job summary: link to the run's artifacts** — the failed-tests summary now adds a line linking to the workflow run page (built from `GITHUB_SERVER_URL`, `GITHUB_REPOSITORY` and `GITHUB_RUN_ID`, no config) where uploaded `target/traces/` artifacts live, so a reviewer can get from a red PR to the trace in one click. Omitted when those variables are missing. (#130)
