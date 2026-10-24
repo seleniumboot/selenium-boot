@@ -268,6 +268,7 @@ public final class HtmlReportGenerator {
                 : "";
         String retrySection     = buildRetrySection(flakyTests, recoveredTests);
         String slowestSection   = tests != null ? buildSlowestTests(tests) : "";
+        String timelineSection  = buildTimelineSection(tests);
         String tagResults       = tests != null ? buildTagResultsSection(tests) : "";
         String flakinessSection = buildFlakinessSection() + buildTestStatusSection(tests);
         String failureRows    = buildFailureRows(tests, isMatrixRun);
@@ -304,6 +305,7 @@ public final class HtmlReportGenerator {
                 .replace("{{AI_RUN_SUMMARY}}", aiRunSummary)
                 .replace("{{RETRY_SECTION}}", retrySection)
                 .replace("{{SLOWEST_TESTS}}", slowestSection)
+                .replace("{{TIMELINE_SECTION}}", timelineSection)
                 .replace("{{TAG_RESULTS}}", tagResults)
                 .replace("{{FLAKINESS_SECTION}}", flakinessSection)
                 .replace("{{DONUT_DATA}}", donutData)
@@ -759,6 +761,189 @@ public final class HtmlReportGenerator {
               .append("</div>");
         }
         return sb.toString();
+    }
+
+    /** Minimum bar width in percent, so very short tests stay visible. */
+    private static final double MIN_TIMELINE_BAR_PCT = 0.4;
+
+    private static final class TimelineEntry {
+        String testId;
+        String shortName;
+        String thread;
+        String status;
+        long start;
+        long end;
+        long duration;
+    }
+
+    /**
+     * Gantt-style timeline: one lane per thread, one bar per test laid out by its real
+     * start/end times. When the metrics JSON only has durations (runs recorded before
+     * timestamps were exported), bars are packed sequentially per lane and the card says so.
+     * When no test has usable timing, an empty state is rendered instead.
+     */
+    static String buildTimelineSection(JsonNode tests) {
+        if (tests == null || !tests.isArray() || tests.size() == 0) return "";
+
+        java.util.List<TimelineEntry> entries = new java.util.ArrayList<>();
+        for (JsonNode test : tests) {
+            long totalMs = test.has("totalMs") ? test.get("totalMs").asLong() : 0L;
+            long start   = test.has("startTimeMs") ? test.get("startTimeMs").asLong() : 0L;
+            long end     = test.has("endTimeMs") ? test.get("endTimeMs").asLong() : 0L;
+            long duration = (start > 0 && end >= start) ? end - start : Math.max(totalMs, 0L);
+            // A zero-length bar conveys nothing (and older/odd metrics can report start == end),
+            // so treat it as missing timing instead of drawing an invisible sliver.
+            if (duration <= 0) continue;
+
+            TimelineEntry e = new TimelineEntry();
+            String rawId = test.has("testId") ? test.get("testId").asText() : "unknown";
+            int dot = rawId.lastIndexOf('.');
+            e.testId    = rawId;
+            e.shortName = dot >= 0 ? rawId.substring(dot + 1) : rawId;
+            String thread = test.hasNonNull("thread") ? test.get("thread").asText("") : "";
+            e.thread = thread.isBlank() ? "unknown" : thread;
+            e.status = test.has("status") ? test.get("status").asText() : "UNKNOWN";
+            e.duration = duration;
+            e.start = start;
+            e.end = start > 0 ? (end >= start ? end : start + duration) : 0L;
+            entries.add(e);
+        }
+
+        if (entries.isEmpty()) return buildTimelineEmptyCard();
+
+        // Only use absolute positioning when every bar has a start time; otherwise the
+        // axis would mix real and synthetic offsets.
+        boolean absolute = entries.stream().allMatch(e -> e.start > 0);
+
+        java.util.Map<String, java.util.List<TimelineEntry>> lanes =
+                new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (TimelineEntry e : entries) {
+            lanes.computeIfAbsent(e.thread, k -> new java.util.ArrayList<>()).add(e);
+        }
+
+        if (absolute) {
+            for (java.util.List<TimelineEntry> lane : lanes.values()) {
+                lane.sort(java.util.Comparator.comparingLong(e -> e.start));
+            }
+        } else {
+            // No timestamps: lay tests out back-to-back inside each lane.
+            for (java.util.List<TimelineEntry> lane : lanes.values()) {
+                lane.sort(java.util.Comparator.comparing(e -> e.testId));
+                long cursor = 0;
+                for (TimelineEntry e : lane) {
+                    e.start = cursor;
+                    e.end = cursor + e.duration;
+                    cursor = e.end;
+                }
+            }
+        }
+
+        long t0 = Long.MAX_VALUE;
+        long t1 = Long.MIN_VALUE;
+        for (TimelineEntry e : entries) {
+            t0 = Math.min(t0, e.start);
+            t1 = Math.max(t1, e.end);
+        }
+        long span = Math.max(1L, t1 - t0);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<div class=\"card section-mb timeline-card\">\n");
+        sb.append("  <div class=\"card-header timeline-header\"><span>Timeline</span>")
+          .append("<span class=\"timeline-legend\">")
+          .append("<span class=\"tl-key tl-key-passed\">Passed</span>")
+          .append("<span class=\"tl-key tl-key-failed\">Failed</span>")
+          .append("<span class=\"tl-key tl-key-skipped\">Skipped</span>")
+          .append("</span></div>\n");
+        sb.append("  <div class=\"card-body timeline-body\">\n");
+        sb.append("    <div class=\"gantt-wrap\"><div class=\"gantt\">\n");
+
+        // Time axis (0..100% of the run span)
+        sb.append("      <div class=\"gantt-row gantt-axis-row\">")
+          .append("<div class=\"gantt-lane-name\"></div>")
+          .append("<div class=\"gantt-track gantt-axis-track\">");
+        for (int i = 0; i <= 4; i++) {
+            long offset = Math.round(span * i / 4.0);
+            sb.append("<span class=\"gantt-tick\" style=\"left:").append(timelinePct(i * 25.0)).append("%\">")
+              .append(escapeHtml(formatTimelineTick(offset)))
+              .append("</span>");
+        }
+        sb.append("</div></div>\n");
+
+        // One lane per thread
+        for (java.util.Map.Entry<String, java.util.List<TimelineEntry>> lane : lanes.entrySet()) {
+            sb.append("      <div class=\"gantt-row gantt-lane\">")
+              .append("<div class=\"gantt-lane-name\" title=\"").append(escapeHtml(lane.getKey())).append("\">")
+              .append(escapeHtml(lane.getKey())).append("</div>")
+              .append("<div class=\"gantt-track\">");
+
+            for (TimelineEntry e : lane.getValue()) {
+                double leftPct  = (e.start - t0) * 100.0 / span;
+                double widthPct = e.duration * 100.0 / span;
+                if (widthPct < MIN_TIMELINE_BAR_PCT) widthPct = MIN_TIMELINE_BAR_PCT;
+                if (leftPct < 0) leftPct = 0;
+                if (leftPct + widthPct > 100) leftPct = Math.max(0, 100 - widthPct);
+
+                String title = escapeHtml(e.testId)
+                        + "&#10;Thread: " + escapeHtml(e.thread)
+                        + "&#10;Status: " + escapeHtml(e.status)
+                        + "&#10;Duration: " + formatTimelineDuration(e.duration)
+                        + (absolute ? "&#10;Started: +" + formatTimelineDuration(Math.max(0, e.start - t0)) : "");
+
+                sb.append("<div class=\"gantt-bar gantt-bar-").append(timelineStatusSlug(e.status))
+                  .append("\" style=\"left:").append(timelinePct(leftPct))
+                  .append("%;width:").append(timelinePct(widthPct))
+                  .append("%\" title=\"").append(title).append("\">")
+                  .append("<span class=\"gantt-bar-label\">").append(escapeHtml(e.shortName)).append("</span>")
+                  .append("</div>");
+            }
+            sb.append("</div></div>\n");
+        }
+
+        sb.append("    </div></div>\n");
+        if (!absolute) {
+            sb.append("    <div class=\"timeline-note\">Start times were not recorded for this run, ")
+              .append("so bars show a sequential estimate per thread.</div>\n");
+        }
+        sb.append("  </div>\n</div>\n");
+        return sb.toString();
+    }
+
+    private static String buildTimelineEmptyCard() {
+        return "<div class=\"card section-mb timeline-card\">"
+                + "<div class=\"card-header timeline-header\"><span>Timeline</span></div>"
+                + "<div class=\"card-body timeline-body\"><div class=\"timeline-empty\">"
+                + "No timing data available for this run.</div></div></div>\n";
+    }
+
+    private static String timelineStatusSlug(String status) {
+        if (status == null) return "unknown";
+        switch (status.toUpperCase(java.util.Locale.ROOT)) {
+            case "PASSED":  return "passed";
+            case "FAILED":  return "failed";
+            case "SKIPPED": return "skipped";
+            default:        return "unknown";
+        }
+    }
+
+    private static String timelinePct(double value) {
+        return String.format(java.util.Locale.ROOT, "%.3f", Math.max(0, value));
+    }
+
+    private static String formatTimelineTick(long ms) {
+        if (ms <= 0) return "0s";
+        if (ms < 1000) return ms + "ms";
+        if (ms < 60_000) return String.format(java.util.Locale.ROOT, "%.1fs", ms / 1000.0);
+        long totalSeconds = ms / 1000;
+        return (totalSeconds / 60) + "m "
+                + String.format(java.util.Locale.ROOT, "%02d", totalSeconds % 60) + "s";
+    }
+
+    private static String formatTimelineDuration(long ms) {
+        if (ms < 1000) return ms + " ms";
+        if (ms < 60_000) return String.format(java.util.Locale.ROOT, "%.1f s", ms / 1000.0);
+        long totalSeconds = ms / 1000;
+        return (totalSeconds / 60) + "m "
+                + String.format(java.util.Locale.ROOT, "%02d", totalSeconds % 60) + "s";
     }
 
     private static String buildRecordingCell(String recordingPath) {
