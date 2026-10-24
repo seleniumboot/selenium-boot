@@ -212,7 +212,7 @@ public class ExecutionMetricsTest {
     @Test
     public void exportToJson_includesStartAndEndTimestamps() throws Exception {
         ExecutionMetrics.markStart("timing-test");
-        Thread.sleep(20);
+        Thread.sleep(30);
         ExecutionMetrics.markEnd("timing-test");
         ExecutionMetrics.recordStatus("timing-test", "PASSED");
         ExecutionMetrics.exportToJson();
@@ -223,7 +223,10 @@ public class ExecutionMetricsTest {
         assertTrue(test.has("startedAtMs"), "per-test export must include startedAtMs");
         long start = test.get("startedAtMs").asLong();
         assertTrue(start > 0, "start timestamp must be an absolute epoch value");
-        assertEquals(start + test.get("totalMs").asLong(), test.path("startedAtMs").asLong() + test.get("totalMs").asLong());
+        long total = test.get("totalMs").asLong();
+        assertTrue(total >= 0, "totalMs must be recorded");
+        assertTrue(System.currentTimeMillis() >= start, "startedAtMs must be <= current time");
+        assertTrue(total <= 10_000, "test duration should be reasonable for this test");
     }
 
     @Test

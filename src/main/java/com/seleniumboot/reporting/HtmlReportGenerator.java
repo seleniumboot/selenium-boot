@@ -887,13 +887,6 @@ public final class HtmlReportGenerator {
         return sb.toString();
     }
 
-    private static String buildTimelineEmptyCard() {
-        return "<div class=\"card section-mb timeline-card\">"
-                + "<div class=\"card-header timeline-header\"><span>Timeline</span></div>"
-                + "<div class=\"card-body timeline-body\"><div class=\"timeline-empty\">"
-                + "No timing data available for this run.</div></div></div>\n";
-    }
-
     private static String timelineStatusSlug(String status) {
         if (status == null) return "unknown";
         switch (status.toUpperCase(java.util.Locale.ROOT)) {
