@@ -32,15 +32,15 @@ public class TimelineReportTest {
     }
 
     @Test
-    public void rendersOneLanePerThreadUsingRealTimestamps() throws Exception {
+    public void rendersOneLanePerThreadUsingStartedAtMs() throws Exception {
         String html = timeline("""
                 [
                   {"testId":"com.x.A.fast","thread":"pool-1-thread-1","status":"PASSED",
-                   "totalMs":100,"startTimeMs":1000,"endTimeMs":1100},
+                   "totalMs":100,"startedAtMs":1000},
                   {"testId":"com.x.A.slow","thread":"pool-1-thread-1","status":"FAILED",
-                   "totalMs":400,"startTimeMs":1100,"endTimeMs":1500},
+                   "totalMs":400,"startedAtMs":1100},
                   {"testId":"com.x.B.other","thread":"pool-1-thread-2","status":"PASSED",
-                   "totalMs":250,"startTimeMs":1050,"endTimeMs":1300}
+                   "totalMs":250,"startedAtMs":1050}
                 ]
                 """);
 
@@ -52,16 +52,15 @@ public class TimelineReportTest {
         Assert.assertTrue(html.contains("gantt-bar-failed"), html);
         Assert.assertTrue(html.contains("left:"), html);
         Assert.assertTrue(html.contains("width:"), html);
-        Assert.assertFalse(html.contains("timeline-note"),
-                "real timestamps must not trigger the estimate note: " + html);
+        Assert.assertFalse(html.contains("timeline-note"), html);
     }
 
     @Test
     public void overlappingThreadsArePositionedOnTheSameAxis() throws Exception {
         String html = timeline("""
                 [
-                  {"testId":"a","thread":"t1","status":"PASSED","totalMs":100,"startTimeMs":1000,"endTimeMs":1100},
-                  {"testId":"b","thread":"t2","status":"PASSED","totalMs":100,"startTimeMs":1000,"endTimeMs":1100}
+                  {"testId":"a","thread":"t1","status":"PASSED","totalMs":100,"startedAtMs":1000},
+                  {"testId":"b","thread":"t2","status":"PASSED","totalMs":100,"startedAtMs":1000}
                 ]
                 """);
         // Both start at the same instant, so both bars sit at the left edge.
@@ -69,7 +68,7 @@ public class TimelineReportTest {
     }
 
     @Test
-    public void fallsBackToSequentialEstimateWithoutStartTimes() throws Exception {
+    public void oldHistoryWithoutStartedAtMs_hidesCard() throws Exception {
         String html = timeline("""
                 [
                   {"testId":"a","thread":"main","status":"PASSED","totalMs":100},
@@ -77,19 +76,15 @@ public class TimelineReportTest {
                 ]
                 """);
 
-        Assert.assertTrue(html.contains("timeline-note"), html);
-        Assert.assertTrue(html.contains("gantt-bar-passed"), html);
-        // a: 0-100 of a 400ms lane -> second bar starts at 25%
-        Assert.assertTrue(html.contains("left:25.000%"), html);
-        Assert.assertTrue(html.contains("width:75.000%"), html);
+        Assert.assertEquals(html, "");
     }
 
     @Test
     public void handlesSingleThreadRun() throws Exception {
         String html = timeline("""
                 [
-                  {"testId":"a","thread":"main","status":"PASSED","totalMs":100,"startTimeMs":1000,"endTimeMs":1100},
-                  {"testId":"b","thread":"main","status":"PASSED","totalMs":200,"startTimeMs":1100,"endTimeMs":1300}
+                  {"testId":"a","thread":"main","status":"PASSED","totalMs":100,"startedAtMs":1000},
+                  {"testId":"b","thread":"main","status":"PASSED","totalMs":200,"startedAtMs":1100}
                 ]
                 """);
 
@@ -102,20 +97,18 @@ public class TimelineReportTest {
     public void emptyStateWhenNoTimingData() throws Exception {
         String html = timeline("""
                 [
-                  {"testId":"a","status":"PASSED","totalMs":0},
-                  {"testId":"b","thread":"main","status":"SKIPPED"}
+                  {"testId":"a","status":"PASSED","totalMs":0,"startedAtMs":1000},
+                  {"testId":"b","thread":"main","status":"SKIPPED","startedAtMs":1000}
                 ]
                 """);
 
-        Assert.assertTrue(html.contains("timeline-empty"), html);
-        Assert.assertTrue(html.contains("No timing data available"), html);
-        Assert.assertFalse(html.contains("gantt-bar "), html);
+        Assert.assertEquals(html, "");
     }
 
     @Test
     public void missingThreadUsesUnknownLane() throws Exception {
         String html = timeline("""
-                [{"testId":"a","status":"PASSED","totalMs":100,"startTimeMs":1000,"endTimeMs":1100}]
+                [{"testId":"a","status":"PASSED","totalMs":100,"startedAtMs":1000}]
                 """);
 
         Assert.assertTrue(html.contains(">unknown<"), html);

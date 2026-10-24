@@ -220,14 +220,10 @@ public class ExecutionMetricsTest {
         com.fasterxml.jackson.databind.JsonNode test = new com.fasterxml.jackson.databind.ObjectMapper()
                 .readTree(new File("target/selenium-boot-metrics.json"))
                 .path("tests").get(0);
-        assertTrue(test.has("startTimeMs"), "per-test export must include startTimeMs");
-        assertTrue(test.has("endTimeMs"), "per-test export must include endTimeMs");
-        long start = test.get("startTimeMs").asLong();
-        long end = test.get("endTimeMs").asLong();
+        assertTrue(test.has("startedAtMs"), "per-test export must include startedAtMs");
+        long start = test.get("startedAtMs").asLong();
         assertTrue(start > 0, "start timestamp must be an absolute epoch value");
-        assertTrue(end >= start, "end must not precede start");
-        assertTrue(end - start >= test.get("totalMs").asLong(),
-                "timestamp span must cover the reported duration");
+        assertEquals(start + test.get("totalMs").asLong(), test.path("startedAtMs").asLong() + test.get("totalMs").asLong());
     }
 
     @Test
@@ -238,8 +234,7 @@ public class ExecutionMetricsTest {
         com.fasterxml.jackson.databind.JsonNode test = new com.fasterxml.jackson.databind.ObjectMapper()
                 .readTree(new File("target/selenium-boot-metrics.json"))
                 .path("tests").get(0);
-        assertFalse(test.has("startTimeMs"), "unstarted test must omit startTimeMs");
-        assertFalse(test.has("endTimeMs"), "unstarted test must omit endTimeMs");
+        assertFalse(test.has("startedAtMs"), "unstarted test must omit startedAtMs");
     }
 
     @Test
