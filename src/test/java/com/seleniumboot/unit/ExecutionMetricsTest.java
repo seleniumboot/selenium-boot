@@ -210,6 +210,39 @@ public class ExecutionMetricsTest {
     }
 
     @Test
+    public void exportToJson_includesStartAndEndTimestamps() throws Exception {
+        ExecutionMetrics.markStart("timing-test");
+        Thread.sleep(20);
+        ExecutionMetrics.markEnd("timing-test");
+        ExecutionMetrics.recordStatus("timing-test", "PASSED");
+        ExecutionMetrics.exportToJson();
+
+        com.fasterxml.jackson.databind.JsonNode test = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readTree(new File("target/selenium-boot-metrics.json"))
+                .path("tests").get(0);
+        assertTrue(test.has("startTimeMs"), "per-test export must include startTimeMs");
+        assertTrue(test.has("endTimeMs"), "per-test export must include endTimeMs");
+        long start = test.get("startTimeMs").asLong();
+        long end = test.get("endTimeMs").asLong();
+        assertTrue(start > 0, "start timestamp must be an absolute epoch value");
+        assertTrue(end >= start, "end must not precede start");
+        assertTrue(end - start >= test.get("totalMs").asLong(),
+                "timestamp span must cover the reported duration");
+    }
+
+    @Test
+    public void exportToJson_omitsTimestampsWhenTestNeverStarted() throws Exception {
+        ExecutionMetrics.recordStatus("no-start", "SKIPPED");
+        ExecutionMetrics.exportToJson();
+
+        com.fasterxml.jackson.databind.JsonNode test = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readTree(new File("target/selenium-boot-metrics.json"))
+                .path("tests").get(0);
+        assertFalse(test.has("startTimeMs"), "unstarted test must omit startTimeMs");
+        assertFalse(test.has("endTimeMs"), "unstarted test must omit endTimeMs");
+    }
+
+    @Test
     public void exportToJson_suiteDurationIsWallClockNotSumOfTests() throws Exception {
         // two tests running in parallel for ~300ms: summed test time ~600ms, wall-clock ~300ms
         ExecutionMetrics.markStart("a");
