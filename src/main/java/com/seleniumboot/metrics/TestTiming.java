@@ -5,6 +5,7 @@ public class TestTiming {
     private final String threadName;
     private long testExecutionTime;
     private long totalTime;
+    private long startedAtMs;
     private String status;
     private String screenshotPath;
 
@@ -49,6 +50,15 @@ public class TestTiming {
 
     public void setTotalTime(long totalTime) {
         this.totalTime = totalTime;
+    }
+
+    /** Wall-clock start of the test (epoch ms); 0 when not recorded. */
+    public long getStartedAtMs() {
+        return startedAtMs;
+    }
+
+    public void setStartedAtMs(long startedAtMs) {
+        this.startedAtMs = startedAtMs;
     }
 
     public String getStatus() {

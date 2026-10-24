@@ -4,16 +4,218 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Selenium Boot Report</title>
-
-    <script>
-{{CHART_JS}}
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" onerror="window.Chart=function(){this.destroy=function(){}};Chart.prototype={};"></script>
     <style>
 {{REPORT_CSS}}
     </style>
 </head>
 <body>
-{{REPORT_MARKUP}}
+
+<div class="app-bar">
+    <div class="app-bar-left">
+        <h1>Selenium Boot Report</h1>
+        <p>Execution Metrics &amp; Performance Analysis</p>
+    </div>
+    <button type="button" class="dark-toggle" onclick="toggleDark()">&#9790; Dark Mode</button>
+</div>
+
+<!-- Lightbox modal -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+    <img id="lightbox-img" src="" alt="Screenshot">
+</div>
+
+<div class="layout">
+
+    <!-- ── Left sidebar ── -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">&#9889; Selenium Boot</div>
+        <ul class="nav-list">
+            <li class="nav-item active" onclick="showTab('dashboard', this)">
+                <span class="nav-icon">&#128200;</span>
+                <span class="nav-label">Dashboard</span>
+            </li>
+            <li class="nav-item" onclick="showTab('tests', this)">
+                <span class="nav-icon">&#9635;</span>
+                <span class="nav-label">Test Cases</span>
+                <span class="nav-count">{{TOTAL_TESTS}}</span>
+            </li>
+            <li class="nav-item" onclick="showTab('failures', this)">
+                <span class="nav-icon">&#10005;</span>
+                <span class="nav-label">Failures</span>
+                {{FAILURE_BADGE}}
+            </li>
+        </ul>
+        <div class="sidebar-stats">
+            <div>Duration: <strong>{{SUITE_DURATION}}</strong></div>
+            <div>Pass rate: <strong class="{{PASS_RATE_CLASS}}">{{PASS_RATE}}%</strong></div>
+        </div>
+    </nav>
+
+    <!-- ── Main content ── -->
+    <main class="main-content">
+
+        <!-- ═══════════════ DASHBOARD TAB ═══════════════ -->
+        <div id="tab-dashboard" class="tab-pane active">
+            <div class="tab-heading">Dashboard</div>
+
+            {{RUN_SUMMARY}}
+
+            <!-- Stat cards -->
+            <div class="summary-row">
+                <div class="card stat-card passed-card">
+                    <div class="stat-value">{{PASSED}}</div>
+                    <div class="stat-label">Passed</div>
+                </div>
+                <div class="card stat-card failed-card">
+                    <div class="stat-value">{{FAILED}}</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+                <div class="card stat-card skipped-card">
+                    <div class="stat-value">{{SKIPPED}}</div>
+                    <div class="stat-label">Skipped</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-value">{{TOTAL_TESTS}}</div>
+                    <div class="stat-label">Total Tests</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-value {{PASS_RATE_CLASS}}">{{PASS_RATE}}%</div>
+                    <div class="stat-label">Pass Rate</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-value">{{SUITE_DURATION}}</div>
+                    <div class="stat-label">Suite Time (hh:mm:ss)</div>
+                </div>
+            </div>
+
+            {{FAILURES_SHORTCUT}}
+
+            {{AI_RUN_SUMMARY}}
+
+            <!-- Charts -->
+            <div class="charts-row">
+                <div class="card chart-card">
+                    <div class="card-header">Pass / Fail / Skip</div>
+                    <div class="card-body-centered">
+                        <canvas id="donutChart" class="donut-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="card chart-card">
+                    <div class="card-header">Execution Time Percentiles (ms)</div>
+                    <div class="card-body"><canvas id="executionChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Trend over runs (hidden until there are 2+ runs of history) -->
+            <div class="charts-row" id="trendRow" style="display:none">
+                <div class="card chart-card">
+                    <div class="card-header">Pass Rate Trend (%)</div>
+                    <div class="card-body"><canvas id="trendRateChart"></canvas></div>
+                </div>
+                <div class="card chart-card">
+                    <div class="card-header">Suite Duration Trend (s)</div>
+                    <div class="card-body"><canvas id="trendTimeChart"></canvas></div>
+                </div>
+                <div class="card chart-card">
+                    <div class="card-header">Flaky Test Trend</div>
+                    <div class="card-body"><canvas id="trendFlakyChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Timeline: one lane per thread -->
+            {{TIMELINE_SECTION}}
+
+            <!-- Retry summary -->
+            {{RETRY_SECTION}}
+
+            <!-- Slowest 5 -->
+            <div class="card section-mb">
+                <div class="card-header">Slowest 5 Tests</div>
+                <div class="card-body">{{SLOWEST_TESTS}}</div>
+            </div>
+
+            {{TAG_RESULTS}}
+
+            <!-- Flakiness Radar -->
+            {{FLAKINESS_SECTION}}
+
+            <!-- Run configuration (collapsed) -->
+            {{METADATA}}
+
+            <div class="footer">Report generated by <strong>Selenium Boot</strong> &mdash; suite ran {{SUITE_DURATION}} (hh:mm:ss)</div>
+        </div>
+
+        <!-- ═══════════════ TEST CASES TAB ═══════════════ -->
+        <div id="tab-tests" class="tab-pane">
+            <div class="tab-heading">Test Cases</div>
+            <div class="card table-card">
+                <div class="filter-bar">
+                    <button type="button" class="filter-btn active" onclick="setFilter('ALL', this)">All</button>
+                    <button type="button" class="filter-btn" onclick="setFilter('PASSED', this)">Passed</button>
+                    <button type="button" class="filter-btn" onclick="setFilter('FAILED', this)">Failed</button>
+                    <button type="button" class="filter-btn" onclick="setFilter('SKIPPED', this)">Skipped</button>
+                    <button type="button" class="filter-btn" onclick="setFilter('FLAKY', this)">Flaky</button>
+                    <span id="activeTagPill" class="active-tag-pill" style="display:none;">
+                        <span id="activeTagName"></span>
+                        <button type="button" class="tag-clear-btn" onclick="clearTagFilter()" title="Clear tag filter">&times;</button>
+                    </span>
+                    <div class="search-wrap">
+                        <span class="search-icon">&#128269;</span>
+                        <input type="text" id="searchInput" placeholder="Search by test, class, or tag..." oninput="applySearch()">
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table id="testTable">
+                        <thead>
+                            <tr>
+                                <th>Test</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Logic (ms)</th>
+                                <th>Total (ms)</th>
+                                <th>Screenshot</th>
+                                <th>Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ROWS}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════ FAILURES TAB ═══════════════ -->
+        <div id="tab-failures" class="tab-pane">
+            <div class="tab-heading">Failures <span style="font-size:14px;font-weight:400;color:var(--text-secondary)">({{FAILED}} failed)</span></div>
+            {{FAILURE_GROUPS}}
+            <div class="card table-card">
+                <div class="table-wrap">
+                    <table id="failureTable">
+                        <thead>
+                            <tr>
+                                <th>Test</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Logic (ms)</th>
+                                <th>Total (ms)</th>
+                                <th>Screenshot</th>
+                                <th>Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{FAILURE_ROWS}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
 <script>
 {{REPORT_JS}}
 </script>

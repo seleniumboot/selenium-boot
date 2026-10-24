@@ -244,6 +244,7 @@ public final class ExecutionMetrics {
         );
 
         timing.setTotalTime(total);
+        timing.setStartedAtMs(start);
 
         long logicTime = total - timing.getDriverStartupTime();
         timing.setTestExecutionTime(Math.max(logicTime, 0));
@@ -425,6 +426,9 @@ public final class ExecutionMetrics {
             testEntry.put("driverStartupMs", timing.getDriverStartupTime());
             testEntry.put("testLogicMs",   timing.getTestExecutionTime());
             testEntry.put("totalMs",       timing.getTotalTime());
+            if (timing.getStartedAtMs() > 0) {
+                testEntry.put("startedAtMs", timing.getStartedAtMs());
+            }
             if (timing.getScreenshotPath() != null) {
                 testEntry.put("screenshotPath", timing.getScreenshotPath());
             }
