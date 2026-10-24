@@ -5,6 +5,8 @@ public class TestTiming {
     private final String threadName;
     private long testExecutionTime;
     private long totalTime;
+    private long startTimeMs;
+    private long endTimeMs;
     private String status;
     private String screenshotPath;
 
@@ -49,6 +51,24 @@ public class TestTiming {
 
     public void setTotalTime(long totalTime) {
         this.totalTime = totalTime;
+    }
+
+    /** Wall-clock start of the test (epoch ms); 0 when not recorded. */
+    public long getStartTimeMs() {
+        return startTimeMs;
+    }
+
+    public void setStartTimeMs(long startTimeMs) {
+        this.startTimeMs = startTimeMs;
+    }
+
+    /** Wall-clock end of the test (epoch ms); 0 when not recorded. */
+    public long getEndTimeMs() {
+        return endTimeMs;
+    }
+
+    public void setEndTimeMs(long endTimeMs) {
+        this.endTimeMs = endTimeMs;
     }
 
     public String getStatus() {
