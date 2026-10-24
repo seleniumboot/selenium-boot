@@ -777,23 +777,23 @@ public final class HtmlReportGenerator {
     }
 
     /**
-     * Gantt-style timeline: one lane per thread, one bar per test laid out by its real
-     * start/end times. When the metrics JSON only has durations (runs recorded before
-     * timestamps were exported), bars are packed sequentially per lane and the card says so.
-     * When no test has usable timing, an empty state is rendered instead.
+     * Gantt-style timeline: one lane per thread, one bar per test positioned by
+     * {@code startedAtMs} offset from the earliest start. {@code end = startedAtMs + totalMs}.
+     * The card is hidden entirely when {@code startedAtMs} is missing (e.g. old history files).
+     * Handles single-thread runs and degrades cleanly.
      */
     static String buildTimelineSection(JsonNode tests) {
         if (tests == null || !tests.isArray() || tests.size() == 0) return "";
 
         java.util.List<TimelineEntry> entries = new java.util.ArrayList<>();
         for (JsonNode test : tests) {
+            if (!test.has("startedAtMs") || test.get("startedAtMs").isNull()) {
+                return "";
+            }
+            long startedAt = test.get("startedAtMs").asLong();
+            if (startedAt <= 0) return "";
             long totalMs = test.has("totalMs") ? test.get("totalMs").asLong() : 0L;
-            long start   = test.has("startTimeMs") ? test.get("startTimeMs").asLong() : 0L;
-            long end     = test.has("endTimeMs") ? test.get("endTimeMs").asLong() : 0L;
-            long duration = (start > 0 && end >= start) ? end - start : Math.max(totalMs, 0L);
-            // A zero-length bar conveys nothing (and older/odd metrics can report start == end),
-            // so treat it as missing timing instead of drawing an invisible sliver.
-            if (duration <= 0) continue;
+            if (totalMs <= 0) continue;
 
             TimelineEntry e = new TimelineEntry();
             String rawId = test.has("testId") ? test.get("testId").asText() : "unknown";
@@ -803,39 +803,22 @@ public final class HtmlReportGenerator {
             String thread = test.hasNonNull("thread") ? test.get("thread").asText("") : "";
             e.thread = thread.isBlank() ? "unknown" : thread;
             e.status = test.has("status") ? test.get("status").asText() : "UNKNOWN";
-            e.duration = duration;
-            e.start = start;
-            e.end = start > 0 ? (end >= start ? end : start + duration) : 0L;
+            e.duration = totalMs;
+            e.start = startedAt;
+            e.end = startedAt + totalMs;
             entries.add(e);
         }
 
-        if (entries.isEmpty()) return buildTimelineEmptyCard();
+        if (entries.isEmpty()) return "";
 
-        // Only use absolute positioning when every bar has a start time; otherwise the
-        // axis would mix real and synthetic offsets.
-        boolean absolute = entries.stream().allMatch(e -> e.start > 0);
-
+        // Group by thread name; one lane per thread
         java.util.Map<String, java.util.List<TimelineEntry>> lanes =
-                new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+                new java.util.LinkedHashMap<>();
         for (TimelineEntry e : entries) {
             lanes.computeIfAbsent(e.thread, k -> new java.util.ArrayList<>()).add(e);
         }
-
-        if (absolute) {
-            for (java.util.List<TimelineEntry> lane : lanes.values()) {
-                lane.sort(java.util.Comparator.comparingLong(e -> e.start));
-            }
-        } else {
-            // No timestamps: lay tests out back-to-back inside each lane.
-            for (java.util.List<TimelineEntry> lane : lanes.values()) {
-                lane.sort(java.util.Comparator.comparing(e -> e.testId));
-                long cursor = 0;
-                for (TimelineEntry e : lane) {
-                    e.start = cursor;
-                    e.end = cursor + e.duration;
-                    cursor = e.end;
-                }
-            }
+        for (java.util.List<TimelineEntry> lane : lanes.values()) {
+            lane.sort(java.util.Comparator.comparingLong(e -> e.start));
         }
 
         long t0 = Long.MAX_VALUE;
@@ -887,7 +870,7 @@ public final class HtmlReportGenerator {
                         + "&#10;Thread: " + escapeHtml(e.thread)
                         + "&#10;Status: " + escapeHtml(e.status)
                         + "&#10;Duration: " + formatTimelineDuration(e.duration)
-                        + (absolute ? "&#10;Started: +" + formatTimelineDuration(Math.max(0, e.start - t0)) : "");
+                        + "&#10;Started: +" + formatTimelineDuration(Math.max(0, e.start - t0));
 
                 sb.append("<div class=\"gantt-bar gantt-bar-").append(timelineStatusSlug(e.status))
                   .append("\" style=\"left:").append(timelinePct(leftPct))
@@ -900,10 +883,6 @@ public final class HtmlReportGenerator {
         }
 
         sb.append("    </div></div>\n");
-        if (!absolute) {
-            sb.append("    <div class=\"timeline-note\">Start times were not recorded for this run, ")
-              .append("so bars show a sequential estimate per thread.</div>\n");
-        }
         sb.append("  </div>\n</div>\n");
         return sb.toString();
     }
