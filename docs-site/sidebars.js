@@ -87,17 +87,15 @@ const sidebars = {
         'extensibility/report-adapters',
       ],
     },
-
-	{
-	  type: 'category',
-	  label: 'Reporting',
-	  items: [
-	    'reporting/html-report',
-	    'reporting/junit-xml',
-	    'reporting/dashboard-trends',
-	  ],
-	},
-
+    {
+      type: 'category',
+      label: 'Reporting',
+      items: [
+        'reporting/html-report',
+        'reporting/junit-xml',
+        'reporting/dashboard-trends',
+      ],
+    },
     'junit5',
     'cucumber',
     'email-verification',

@@ -1,3 +1,11 @@
+---
+description: "Pass-rate and duration trend charts in the Selenium Boot HTML report: where the history comes from, the 20-run window, and how to keep it across CI runs."
+id: dashboard-trends
+title: Dashboard Trend Charts
+sidebar_label: Trend Charts
+sidebar_position: 3
+---
+
 # Dashboard Trend Charts
 
 Selenium Boot's HTML report includes pass-rate and test-duration trend charts to help you understand how your test suite changes across runs.
