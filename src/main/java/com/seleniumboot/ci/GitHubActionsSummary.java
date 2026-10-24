@@ -110,7 +110,7 @@ public final class GitHubActionsSummary {
             return false;
         }
         SeleniumBootConfig.Tracing tracing = config.getTracing();
-        if (tracing == null || !tracing.isEnabled()) {
+        if (tracing == null || !tracing.isEffectivelyEnabled()) {
             return false;
         }
         if (timings == null || timings.isEmpty() || summaryFile == null) {

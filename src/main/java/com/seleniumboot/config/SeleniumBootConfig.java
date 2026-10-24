@@ -520,11 +520,17 @@ public final class SeleniumBootConfig {
     }
 
     public static final class Tracing {
-        private boolean enabled       = false;
+        /** null = not set in selenium-boot.yml; resolved by {@link #isEffectivelyEnabled(boolean)}. */
+        private Boolean enabled       = null;
         private boolean captureOnPass = false;
 
-        public boolean isEnabled()              { return enabled; }
+        /** The value set in selenium-boot.yml; false when unset. Prefer {@link #isEffectivelyEnabled()}. */
+        public boolean isEnabled()              { return Boolean.TRUE.equals(enabled); }
         public void    setEnabled(boolean v)    { this.enabled = v; }
+
+        /** An explicit {@code tracing.enabled} wins; when unset, tracing is on in CI and off locally. */
+        public boolean isEffectivelyEnabled()   { return isEffectivelyEnabled(com.seleniumboot.ci.CiEnvironmentDetector.isCI()); }
+        public boolean isEffectivelyEnabled(boolean ci) { return enabled != null ? enabled : ci; }
 
         public boolean isCaptureOnPass()           { return captureOnPass; }
         public void    setCaptureOnPass(boolean v) { this.captureOnPass = v; }

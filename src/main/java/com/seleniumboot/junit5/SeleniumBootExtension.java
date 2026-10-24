@@ -306,7 +306,7 @@ public class SeleniumBootExtension
     private void saveTraceIfEnabled(String testId, String testName, boolean isPassing) {
         try {
             SeleniumBootConfig.Tracing tracing = SeleniumBootContext.getConfig().getTracing();
-            if (tracing == null || !tracing.isEnabled()) return;
+            if (tracing == null || !tracing.isEffectivelyEnabled()) return;
             if (isPassing && !tracing.isCaptureOnPass()) return;
             TraceRecorder.save(testId, testName);
         } catch (Exception ignored) {}

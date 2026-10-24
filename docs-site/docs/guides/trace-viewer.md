@@ -14,7 +14,7 @@ Selenium Boot generates a standalone, self-contained HTML trace viewer per test 
 
 ## Enabling Trace Recording
 
-Trace recording is opt-in and configured in `selenium-boot.yml`:
+Trace recording is configured in `selenium-boot.yml`. When `tracing.enabled` is not set, traces for **failed tests are recorded automatically in CI** (detected from `CI`, `GITHUB_ACTIONS`, `JENKINS_URL` and similar) and stay off on your machine. An explicit `enabled: true` or `enabled: false` always wins.
 
 ```yaml title="selenium-boot.yml"
 tracing:
