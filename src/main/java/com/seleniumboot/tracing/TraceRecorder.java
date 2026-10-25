@@ -29,6 +29,7 @@ import java.util.logging.Logger;
  *   <li>Named step timeline — each step logged via {@code StepLogger} as a clickable block</li>
  *   <li>Per-step screenshots — click a step to reveal its screenshot</li>
  *   <li>Final-state screenshot — taken at the moment of failure</li>
+ *   <li>Browser console errors — when {@code browser.captureConsoleErrors} is on</li>
  *   <li>Locators used — each terminal {@code Locator} action, grouped under the step it ran in</li>
  *   <li>Error message + full stack trace</li>
  * </ul>
@@ -196,6 +197,17 @@ public final class TraceRecorder {
             sb.append("    <img class=\"final-screenshot\" src=\"data:image/png;base64,")
               .append(finalScreenshotBase64).append("\" alt=\"Final state\" />\n");
             sb.append("  </div>\n</div>\n");
+        }
+
+        // ── Console errors ──
+        List<String> consoleErrors = timing.getConsoleErrors();
+        if (!consoleErrors.isEmpty()) {
+            sb.append("<div class=\"section\">\n");
+            sb.append("  <div class=\"section-title\">Console Errors");
+            sb.append("  <span class=\"step-count\">(").append(consoleErrors.size()).append(")</span></div>\n");
+            sb.append("  <pre class=\"stack-trace console-errors\">");
+            for (String e : consoleErrors) sb.append(escHtml(e)).append('\n');
+            sb.append("</pre>\n</div>\n");
         }
 
         // ── Locators used, grouped under the step they ran in ──
