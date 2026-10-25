@@ -186,6 +186,23 @@ public class TraceRecorderTest {
     // Helper
     // ------------------------------------------------------------------
 
+    @Test
+    public void buildHtml_rendersConsoleErrors_escaped() {
+        TestTiming t = timing("jsErrTest");
+        t.setConsoleErrors(List.of("TypeError: x is undefined", "<script>alert(1)</script>"));
+        String html = TraceRecorder.buildHtml(t, "jsErrTest", null);
+        Assert.assertTrue(html.contains("Console Errors"), "console section expected");
+        Assert.assertTrue(html.contains("TypeError: x is undefined"));
+        Assert.assertTrue(html.contains("&lt;script&gt;alert(1)&lt;/script&gt;"), "must be HTML-escaped");
+        Assert.assertFalse(html.contains("<script>alert(1)</script>"));
+    }
+
+    @Test
+    public void buildHtml_omitsConsoleSection_whenNoErrors() {
+        String html = TraceRecorder.buildHtml(timing("cleanJs"), "cleanJs", null);
+        Assert.assertFalse(html.contains("Console Errors"));
+    }
+
     private static TestTiming timing(String testName) {
         TestTiming t = new TestTiming(testName, "test-thread");
         t.setStatus("FAILED");
