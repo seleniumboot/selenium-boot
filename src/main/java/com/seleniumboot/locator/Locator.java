@@ -1151,6 +1151,8 @@ public final class Locator {
         } catch (TimeoutException e) {
             ExecutionMetrics.recordFailingLocator(
                     SeleniumBootContext.getCurrentTestId(), describe());
+            ExecutionMetrics.recordLocatorUse(
+                    SeleniumBootContext.getCurrentTestId(), describe(), false);
             // A locator that never matched still surfaces as LocatorException, as it did before
             // the wait existed, so callers catching it keep working.
             if (e.getCause() instanceof LocatorException le) {
@@ -1158,6 +1160,7 @@ public final class Locator {
             }
             throw e;
         }
+        ExecutionMetrics.recordLocatorUse(SeleniumBootContext.getCurrentTestId(), describe(), true);
         if (debug.getSlowMoMs() > 0) slowMo(debug.getSlowMoMs());
         return result.get();
     }

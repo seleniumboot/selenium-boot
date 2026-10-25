@@ -13,6 +13,9 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.seleniumboot.metrics.ExecutionMetrics;
+import com.seleniumboot.metrics.TestTiming;
+
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -117,5 +120,17 @@ public class LocatorDebugTest {
     public void negativeSlowMo_clampsToZero() {
         config.getDebug().setSlowMoMs(-5);
         assertEquals(config.getDebug().getSlowMoMs(), 0L);
+    }
+
+    @Test
+    public void terminalAction_recordsTheLocatorUsedForTheTrace() {
+        contextMock.when(SeleniumBootContext::getCurrentTestId).thenReturn("loc.use.test");
+        ExecutionMetrics.markStart("loc.use.test");
+        Locator.of(By.id("go")).click();
+
+        TestTiming t = ExecutionMetrics.getTiming("loc.use.test");
+        assertEquals(t.getLocatorUses().size(), 1);
+        assertTrue(t.getLocatorUses().get(0).getLocator().contains("go"));
+        assertTrue(t.getLocatorUses().get(0).isFound());
     }
 }

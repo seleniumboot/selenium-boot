@@ -5,6 +5,7 @@ import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.metrics.ExecutionMetrics;
 import com.seleniumboot.metrics.TestTiming;
 import com.seleniumboot.reporting.ScreenshotManager;
+import com.seleniumboot.steps.LocatorUse;
 import com.seleniumboot.steps.StepRecord;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -28,6 +29,7 @@ import java.util.logging.Logger;
  *   <li>Named step timeline — each step logged via {@code StepLogger} as a clickable block</li>
  *   <li>Per-step screenshots — click a step to reveal its screenshot</li>
  *   <li>Final-state screenshot — taken at the moment of failure</li>
+ *   <li>Locators used — each terminal {@code Locator} action, grouped under the step it ran in</li>
  *   <li>Error message + full stack trace</li>
  * </ul>
  *
@@ -196,6 +198,32 @@ public final class TraceRecorder {
             sb.append("  </div>\n</div>\n");
         }
 
+        // ── Locators used, grouped under the step they ran in ──
+        List<LocatorUse> uses = timing.getLocatorUses();
+        if (!uses.isEmpty()) {
+            sb.append("<div class=\"section\">\n");
+            sb.append("  <div class=\"section-title\">Locators Used");
+            sb.append("  <span class=\"step-count\">(").append(uses.size()).append(")</span></div>\n");
+            sb.append("  <div class=\"locator-list\">\n");
+            int current = -2;
+            for (LocatorUse u : uses) {
+                int owner = -1;
+                for (int i = 0; i < steps.size(); i++) {
+                    if (steps.get(i).getOffsetMs() <= u.getOffsetMs()) owner = i;
+                }
+                if (owner != current) {
+                    current = owner;
+                    String label = owner < 0 ? "Before first step" : steps.get(owner).getName();
+                    sb.append("    <div class=\"locator-step\">").append(escHtml(label)).append("</div>\n");
+                }
+                sb.append("    <div class=\"locator-row").append(u.isFound() ? "" : " locator-fail").append("\">")
+                  .append("<code>").append(escHtml(u.getLocator())).append("</code>")
+                  .append("<span class=\"step-meta\">+").append(u.getOffsetMs()).append("ms")
+                  .append(u.isFound() ? "" : " &middot; not found").append("</span></div>\n");
+            }
+            sb.append("  </div>\n</div>\n");
+        }
+
         // ── Error section ──
         if (errorMsg != null || stackTrace != null) {
             sb.append("<div class=\"section error-section\">\n");
@@ -308,6 +336,13 @@ public final class TraceRecorder {
         ".final-screenshot-wrap { padding: 16px 20px; }\n" +
         ".final-screenshot { max-width: 100%; border-radius: 4px;\n" +
         "                    border: 1px solid #30363d; display: block; }\n" +
+        ".locator-list { padding: 8px 20px 14px; }\n" +
+        ".locator-step { margin-top: 10px; color: #e6edf3; font-weight: 600; font-size: 13px; }\n" +
+        ".locator-row { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0 3px 12px;\n" +
+        "               border-left: 2px solid #30363d; font-size: 12px; }\n" +
+        ".locator-row code { font-family: 'SFMono-Regular', Consolas, monospace; color: #c9d1d9; word-break: break-all; }\n" +
+        ".locator-fail { border-left-color: #f85149; }\n" +
+        ".locator-fail code { color: #f85149; }\n" +
         ".error-section { }\n" +
         ".error-title { color: #f85149 !important; }\n" +
         ".error-msg { padding: 14px 20px; color: #f85149; font-weight: 600;\n" +

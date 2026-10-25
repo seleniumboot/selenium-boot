@@ -53,6 +53,15 @@ public final class ExecutionMetrics {
                .addStep(step);
     }
 
+    public static void recordLocatorUse(String testId, String locator, boolean found) {
+        if (testId == null || locator == null) return;
+        long start = getTestStartTime(testId);
+        long offsetMs = start > 0 ? System.currentTimeMillis() - start : 0L;
+        TIMINGS.computeIfAbsent(testId,
+                id -> new TestTiming(id, Thread.currentThread().getName()))
+               .addLocatorUse(new com.seleniumboot.steps.LocatorUse(locator, offsetMs, found));
+    }
+
     public static void clearSteps(String testId) {
         TestTiming t = TIMINGS.get(testId);
         if (t != null) t.clearSteps();

@@ -13,6 +13,8 @@ All notable changes to Selenium Boot are documented here.
 
 - **Network mocking on Firefox via WebDriver BiDi** — `networkMock().stub(...)` now uses WebDriver BiDi network interception under the hood when supported by the driver (including Firefox and BiDi-enabled drivers), falling back to Chrome DevTools Protocol (CDP) for Chromium-based drivers. The existing stubbing API (`returnJson`, `returnBody`, `returnStatus`, `delay`, `clear`) works identically across Chrome and Firefox. (#196)
 
+- **Trace shows the locators each step used** — every terminal `Locator` action (click, type, getText, …) is now recorded with its time offset and listed in the trace file under "Locators Used", grouped beneath the step it ran in. A lookup that timed out is marked "not found". Collected automatically, no config. (#130)
+
 ---
 
 ## [3.9.0] — 2026-10-21

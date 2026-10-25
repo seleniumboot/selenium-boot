@@ -141,7 +141,17 @@ public class TestTiming {
             new java.util.concurrent.CopyOnWriteArrayList<>();
 
     public void addStep(com.seleniumboot.steps.StepRecord step) { steps.add(step); }
-    public void clearSteps() { steps.clear(); }
+    public void clearSteps() { steps.clear(); locatorUses.clear(); }
+
+    private static final int MAX_LOCATOR_USES = 1000;
+    private final java.util.List<com.seleniumboot.steps.LocatorUse> locatorUses =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+    public void addLocatorUse(com.seleniumboot.steps.LocatorUse use) {
+        if (locatorUses.size() < MAX_LOCATOR_USES) locatorUses.add(use);
+    }
+    public java.util.List<com.seleniumboot.steps.LocatorUse> getLocatorUses() {
+        return java.util.Collections.unmodifiableList(locatorUses);
+    }
     public java.util.List<com.seleniumboot.steps.StepRecord> getSteps() {
         return java.util.Collections.unmodifiableList(steps);
     }

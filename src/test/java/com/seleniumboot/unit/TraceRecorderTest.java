@@ -1,6 +1,7 @@
 package com.seleniumboot.unit;
 
 import com.seleniumboot.metrics.TestTiming;
+import com.seleniumboot.steps.LocatorUse;
 import com.seleniumboot.steps.StepRecord;
 import com.seleniumboot.tracing.TraceRecorder;
 import org.testng.Assert;
@@ -185,6 +186,37 @@ public class TraceRecorderTest {
     // ------------------------------------------------------------------
     // Helper
     // ------------------------------------------------------------------
+
+    @Test
+    public void buildHtml_groupsLocatorsUnderTheStepTheyRanIn() {
+        TestTiming t = timing("locTest");
+        t.addStep(new StepRecord("Open login", 0, "INFO", null));
+        t.addStep(new StepRecord("Submit form", 500, "INFO", null));
+        t.addLocatorUse(new LocatorUse("getByLabel(\"User\")", 100, true));
+        t.addLocatorUse(new LocatorUse("getByRole(BUTTON).withName(\"Go\")", 600, false));
+        String html = TraceRecorder.buildHtml(t, "locTest", null);
+        int open = html.indexOf("Locators Used");
+        Assert.assertTrue(open > 0, "locators section expected");
+        String section = html.substring(open);
+        int s1 = section.indexOf("Open login"), l1 = section.indexOf("getByLabel(&quot;User&quot;)");
+        int s2 = section.indexOf("Submit form"), l2 = section.indexOf("getByRole(BUTTON).withName(&quot;Go&quot;)");
+        Assert.assertTrue(s1 >= 0 && s1 < l1 && l1 < s2 && s2 < l2, section);
+        Assert.assertTrue(section.contains("locator-fail"), "failed lookup must be marked");
+    }
+
+    @Test
+    public void buildHtml_locatorBeforeFirstStep_isListedUnderPreamble() {
+        TestTiming t = timing("preTest");
+        t.addStep(new StepRecord("Later step", 400, "INFO", null));
+        t.addLocatorUse(new LocatorUse("css(#a)", 10, true));
+        String html = TraceRecorder.buildHtml(t, "preTest", null);
+        Assert.assertTrue(html.contains("Before first step"));
+    }
+
+    @Test
+    public void buildHtml_omitsLocatorSection_whenNoneRecorded() {
+        Assert.assertFalse(TraceRecorder.buildHtml(timing("noLoc"), "noLoc", null).contains("Locators Used"));
+    }
 
     private static TestTiming timing(String testName) {
         TestTiming t = new TestTiming(testName, "test-thread");
