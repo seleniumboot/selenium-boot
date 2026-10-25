@@ -5,7 +5,9 @@ import com.seleniumboot.driver.DriverManager;
 import com.seleniumboot.metrics.ExecutionMetrics;
 import com.seleniumboot.metrics.TestTiming;
 import com.seleniumboot.reporting.ScreenshotManager;
+import com.seleniumboot.steps.ConsoleEntry;
 import com.seleniumboot.steps.LocatorUse;
+import com.seleniumboot.steps.NetworkFailure;
 import com.seleniumboot.steps.StepRecord;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -29,7 +31,8 @@ import java.util.logging.Logger;
  *   <li>Named step timeline — each step logged via {@code StepLogger} as a clickable block</li>
  *   <li>Per-step screenshots — click a step to reveal its screenshot</li>
  *   <li>Final-state screenshot — taken at the moment of failure</li>
- *   <li>Browser console errors — when {@code browser.captureConsoleErrors} is on</li>
+ *   <li>Browser console errors, under the step they happened in — when {@code browser.captureConsoleErrors} is on</li>
+ *   <li>Failed requests (4xx/5xx, network errors), under their step — when {@code tracing.captureNetwork} is on</li>
  *   <li>Locators used — each terminal {@code Locator} action, grouped under the step it ran in</li>
  *   <li>Error message + full stack trace</li>
  * </ul>
@@ -199,15 +202,32 @@ public final class TraceRecorder {
             sb.append("  </div>\n</div>\n");
         }
 
-        // ── Console errors ──
+        // ── Console errors, grouped under the step they happened in ──
         List<String> consoleErrors = timing.getConsoleErrors();
-        if (!consoleErrors.isEmpty()) {
+        List<ConsoleEntry> consoleEntries = timing.getConsoleEntries();
+        if (!consoleErrors.isEmpty() || !consoleEntries.isEmpty()) {
+            java.util.Set<String> timed = new java.util.HashSet<>();
+            for (ConsoleEntry c : consoleEntries) timed.add(c.getMessage());
+            List<String> untimed = new java.util.ArrayList<>();
+            for (String e : consoleErrors) if (!timed.contains(e)) untimed.add(e);
+
             sb.append("<div class=\"section\">\n");
             sb.append("  <div class=\"section-title\">Console Errors");
-            sb.append("  <span class=\"step-count\">(").append(consoleErrors.size()).append(")</span></div>\n");
-            sb.append("  <pre class=\"stack-trace console-errors\">");
-            for (String e : consoleErrors) sb.append(escHtml(e)).append('\n');
-            sb.append("</pre>\n</div>\n");
+            sb.append("  <span class=\"step-count\">(").append(consoleEntries.size() + untimed.size()).append(")</span></div>\n");
+            sb.append("  <div class=\"locator-list\">\n");
+            int current = -2;
+            for (ConsoleEntry c : consoleEntries) {
+                current = appendStepHeading(sb, steps, c.getOffsetMs(), current);
+                sb.append("    <div class=\"locator-row locator-fail\"><code>").append(escHtml(c.getMessage()))
+                  .append("</code><span class=\"step-meta\">+").append(c.getOffsetMs()).append("ms</span></div>\n");
+            }
+            if (!untimed.isEmpty()) {
+                if (!consoleEntries.isEmpty()) sb.append("    <div class=\"locator-step\">Other</div>\n");
+                for (String e : untimed) {
+                    sb.append("    <div class=\"locator-row locator-fail\"><code>").append(escHtml(e)).append("</code></div>\n");
+                }
+            }
+            sb.append("  </div>\n</div>\n");
         }
 
         // ── Locators used, grouped under the step they ran in ──
@@ -219,19 +239,29 @@ public final class TraceRecorder {
             sb.append("  <div class=\"locator-list\">\n");
             int current = -2;
             for (LocatorUse u : uses) {
-                int owner = -1;
-                for (int i = 0; i < steps.size(); i++) {
-                    if (steps.get(i).getOffsetMs() <= u.getOffsetMs()) owner = i;
-                }
-                if (owner != current) {
-                    current = owner;
-                    String label = owner < 0 ? "Before first step" : steps.get(owner).getName();
-                    sb.append("    <div class=\"locator-step\">").append(escHtml(label)).append("</div>\n");
-                }
+                current = appendStepHeading(sb, steps, u.getOffsetMs(), current);
                 sb.append("    <div class=\"locator-row").append(u.isFound() ? "" : " locator-fail").append("\">")
                   .append("<code>").append(escHtml(u.getLocator())).append("</code>")
                   .append("<span class=\"step-meta\">+").append(u.getOffsetMs()).append("ms")
                   .append(u.isFound() ? "" : " &middot; not found").append("</span></div>\n");
+            }
+            sb.append("  </div>\n</div>\n");
+        }
+
+        // ── Failed requests, grouped under the step they happened in ──
+        List<NetworkFailure> failures = timing.getNetworkFailures();
+        if (!failures.isEmpty()) {
+            sb.append("<div class=\"section\">\n");
+            sb.append("  <div class=\"section-title\">Failed Requests");
+            sb.append("  <span class=\"step-count\">(").append(failures.size()).append(")</span></div>\n");
+            sb.append("  <div class=\"locator-list\">\n");
+            int current = -2;
+            for (NetworkFailure f : failures) {
+                current = appendStepHeading(sb, steps, f.getOffsetMs(), current);
+                String what = f.getStatus() > 0 ? String.valueOf(f.getStatus()) : nvl(f.getError(), "failed");
+                sb.append("    <div class=\"locator-row locator-fail\"><code>")
+                  .append(escHtml(nvl(f.getMethod(), "GET") + " " + f.getUrl() + " \u2192 " + what))
+                  .append("</code><span class=\"step-meta\">+").append(f.getOffsetMs()).append("ms</span></div>\n");
             }
             sb.append("  </div>\n</div>\n");
         }
@@ -257,6 +287,22 @@ public final class TraceRecorder {
     // ------------------------------------------------------------------
     // Helpers
     // ------------------------------------------------------------------
+
+    /**
+     * Writes the step heading when {@code offsetMs} falls under a different step than the previous row;
+     * a row belongs to the latest step that started at or before it. Returns the step index in effect.
+     */
+    private static int appendStepHeading(StringBuilder sb, List<StepRecord> steps, long offsetMs, int current) {
+        int owner = -1;
+        for (int i = 0; i < steps.size(); i++) {
+            if (steps.get(i).getOffsetMs() <= offsetMs) owner = i;
+        }
+        if (owner != current) {
+            String label = owner < 0 ? "Before first step" : steps.get(owner).getName();
+            sb.append("    <div class=\"locator-step\">").append(escHtml(label)).append("</div>\n");
+        }
+        return owner;
+    }
 
     private static File traceFile(String className, String testName) {
         return com.seleniumboot.reporting.ReportPaths.resolve("traces/" + className + "/" + sanitize(testName) + "-trace.html");

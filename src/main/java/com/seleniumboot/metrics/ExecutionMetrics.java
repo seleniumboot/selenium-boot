@@ -62,6 +62,26 @@ public final class ExecutionMetrics {
                .addLocatorUse(new com.seleniumboot.steps.LocatorUse(locator, offsetMs, found));
     }
 
+    /** Stores a console error with its offset from test start; {@code timestampMs} is epoch millis. */
+    public static void recordConsoleEntry(String testId, String message, long timestampMs) {
+        if (testId == null || message == null) return;
+        long start = getTestStartTime(testId);
+        long offsetMs = start > 0 ? Math.max(0L, timestampMs - start) : 0L;
+        TIMINGS.computeIfAbsent(testId,
+                id -> new TestTiming(id, Thread.currentThread().getName()))
+               .addConsoleEntry(new com.seleniumboot.steps.ConsoleEntry(message, offsetMs));
+    }
+
+    /** Stores a failed request ({@code status} 0 plus {@code error} when no response arrived). */
+    public static void recordNetworkFailure(String testId, String method, String url, int status, String error) {
+        if (testId == null || url == null) return;
+        long start = getTestStartTime(testId);
+        long offsetMs = start > 0 ? System.currentTimeMillis() - start : 0L;
+        TIMINGS.computeIfAbsent(testId,
+                id -> new TestTiming(id, Thread.currentThread().getName()))
+               .addNetworkFailure(new com.seleniumboot.steps.NetworkFailure(method, url, status, error, offsetMs));
+    }
+
     public static void clearSteps(String testId) {
         TestTiming t = TIMINGS.get(testId);
         if (t != null) t.clearSteps();
@@ -241,6 +261,7 @@ public final class ExecutionMetrics {
     // ==========================================================
 
     public static void markEnd(String testId) {
+        com.seleniumboot.tracing.NetworkFailureRecorder.stop(testId);
 
         Long start = START_TIMES.remove(testId);
         if (start == null) return;

@@ -1,7 +1,9 @@
 package com.seleniumboot.unit;
 
 import com.seleniumboot.metrics.TestTiming;
+import com.seleniumboot.steps.ConsoleEntry;
 import com.seleniumboot.steps.LocatorUse;
+import com.seleniumboot.steps.NetworkFailure;
 import com.seleniumboot.steps.StepRecord;
 import com.seleniumboot.tracing.TraceRecorder;
 import org.testng.Assert;
@@ -233,6 +235,54 @@ public class TraceRecorderTest {
     @Test
     public void buildHtml_omitsLocatorSection_whenNoneRecorded() {
         Assert.assertFalse(TraceRecorder.buildHtml(timing("noLoc"), "noLoc", null).contains("Locators Used"));
+    }
+
+    @Test
+    public void buildHtml_groupsConsoleEntriesUnderTheStepTheyHappenedIn() {
+        TestTiming t = timing("consoleStepTest");
+        t.addStep(new StepRecord("Open page", 0, "INFO", null));
+        t.addStep(new StepRecord("Click save", 500, "INFO", null));
+        t.setConsoleErrors(List.of("early error", "late error"));
+        t.addConsoleEntry(new ConsoleEntry("early error", 100));
+        t.addConsoleEntry(new ConsoleEntry("late error", 700));
+        String section = sectionFrom(TraceRecorder.buildHtml(t, "consoleStepTest", null), "Console Errors");
+        int s1 = section.indexOf("Open page"), e1 = section.indexOf("early error");
+        int s2 = section.indexOf("Click save"), e2 = section.indexOf("late error");
+        Assert.assertTrue(s1 >= 0 && s1 < e1 && e1 < s2 && s2 < e2, section);
+        Assert.assertEquals(section.split("early error", -1).length, 2, "must not be listed twice");
+    }
+
+    @Test
+    public void buildHtml_consoleErrorsWithoutTimestamps_stillListedFlat() {
+        TestTiming t = timing("shimOnly");
+        t.setConsoleErrors(List.of("shim error"));
+        String html = TraceRecorder.buildHtml(t, "shimOnly", null);
+        Assert.assertTrue(html.contains("shim error"));
+    }
+
+    @Test
+    public void buildHtml_groupsNetworkFailuresUnderStep_andEscapes() {
+        TestTiming t = timing("netTest");
+        t.addStep(new StepRecord("Submit order", 0, "INFO", null));
+        t.addNetworkFailure(new NetworkFailure("POST", "http://x/api/orders?a=<b>", 500, null, 250));
+        t.addNetworkFailure(new NetworkFailure("GET", "http://x/img.png", 0, "net::ERR_CONNECTION_REFUSED", 300));
+        String html = TraceRecorder.buildHtml(t, "netTest", null);
+        String section = sectionFrom(html, "Failed Requests");
+        Assert.assertTrue(section.contains("Submit order"), section);
+        Assert.assertTrue(section.contains("POST") && section.contains("500"), section);
+        Assert.assertTrue(section.contains("net::ERR_CONNECTION_REFUSED"), section);
+        Assert.assertTrue(section.contains("a=&lt;b&gt;"), "url must be escaped");
+    }
+
+    @Test
+    public void buildHtml_omitsNetworkSection_whenNone() {
+        Assert.assertFalse(TraceRecorder.buildHtml(timing("noNet"), "noNet", null).contains("Failed Requests"));
+    }
+
+    private static String sectionFrom(String html, String title) {
+        int i = html.indexOf(">" + title);
+        Assert.assertTrue(i > 0, title + " section expected");
+        return html.substring(i);
     }
 
     private static TestTiming timing(String testName) {

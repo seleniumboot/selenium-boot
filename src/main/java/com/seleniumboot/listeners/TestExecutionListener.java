@@ -72,6 +72,7 @@ public final class TestExecutionListener implements ITestListener {
         SeleniumBootContext.setCurrentTestId(testId);
         ExecutionMetrics.clearSteps(testId);   // discard stale steps from prior retry attempt
         ExecutionMetrics.markStart(testId);
+        com.seleniumboot.tracing.NetworkFailureRecorder.startIfEnabled(testId);
         ExecutionMetrics.recordTestClass(testId, result.getTestClass().getRealClass().getSimpleName());
         ExecutionMetrics.recordDescription(testId, result.getMethod().getDescription());
         String[] groups = result.getMethod().getGroups();

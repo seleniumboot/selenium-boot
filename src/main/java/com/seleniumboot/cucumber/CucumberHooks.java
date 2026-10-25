@@ -73,6 +73,7 @@ public class CucumberHooks {
         }
         ExecutionMetrics.clearSteps(testId);
         ExecutionMetrics.markStart(testId);
+        com.seleniumboot.tracing.NetworkFailureRecorder.startIfEnabled(testId);
         ExecutionMetrics.recordTestClass(testId, featureTitle(scenario.getUri()));
         ExecutionMetrics.recordDescription(testId, scenario.getName());
         java.util.Collection<String> scenarioTags = scenario.getSourceTagNames();

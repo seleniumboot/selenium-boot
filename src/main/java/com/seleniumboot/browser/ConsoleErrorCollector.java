@@ -60,8 +60,10 @@ public final class ConsoleErrorCollector {
         try {
             driver.manage().logs().get(LogType.BROWSER).getAll().stream()
                 .filter(e -> e.getLevel().intValue() >= Level.SEVERE.intValue())
-                .map(LogEntry::getMessage)
-                .forEach(errors::add);
+                .forEach(e -> {
+                    errors.add(e.getMessage());
+                    recordForTrace(e);
+                });
         } catch (Exception ignored) {
             // Firefox and some drivers don't support browser logs
         }
@@ -78,6 +80,16 @@ public final class ConsoleErrorCollector {
         }
 
         return Collections.unmodifiableList(errors);
+    }
+
+    /** Keeps the entry's timestamp so the trace can show it under the step it happened in. */
+    private static void recordForTrace(LogEntry e) {
+        try {
+            com.seleniumboot.metrics.ExecutionMetrics.recordConsoleEntry(
+                    SeleniumBootContext.getCurrentTestId(), e.getMessage(), e.getTimestamp());
+        } catch (RuntimeException ignored) {
+            // trace detail only — never let it break console collection
+        }
     }
 
     /**

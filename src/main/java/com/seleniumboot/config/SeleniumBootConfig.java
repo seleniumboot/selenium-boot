@@ -523,6 +523,7 @@ public final class SeleniumBootConfig {
         /** null = not set in selenium-boot.yml; resolved by {@link #isEffectivelyEnabled(boolean)}. */
         private Boolean enabled       = null;
         private boolean captureOnPass = false;
+        private boolean captureNetwork = false;
 
         /** The value set in selenium-boot.yml; false when unset. Prefer {@link #isEffectivelyEnabled()}. */
         public boolean isEnabled()              { return Boolean.TRUE.equals(enabled); }
@@ -534,6 +535,10 @@ public final class SeleniumBootConfig {
 
         public boolean isCaptureOnPass()           { return captureOnPass; }
         public void    setCaptureOnPass(boolean v) { this.captureOnPass = v; }
+
+        /** Opt-in: listen for failed requests (4xx/5xx, network errors) for the whole test and list them in the trace. */
+        public boolean isCaptureNetwork()           { return captureNetwork; }
+        public void    setCaptureNetwork(boolean v) { this.captureNetwork = v; }
     }
 
     public static final class Visual {

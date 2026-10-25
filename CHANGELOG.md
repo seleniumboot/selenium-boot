@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - **Trace shows the locators each step used** — every terminal `Locator` action (click, type, getText, …) is now recorded with its time offset and listed in the trace file under "Locators Used", grouped beneath the step it ran in. A lookup that timed out is marked "not found". Collected automatically, no config. (#130)
 
+- **Trace: console errors and failed requests under the step they happened in** — console errors (Chrome) now carry their timestamp and are listed beneath the step they occurred in. New opt-in `tracing.captureNetwork: true` records requests that returned 4xx/5xx or failed outright (CDP on Chrome/Edge, WebDriver BiDi on Firefox) and lists them the same way, so a trace shows the `500` behind a failed step. Off by default; successful requests are never recorded and at most 200 are kept per test. (#130)
+
 ---
 
 ### v3.9.0 — 2026-10-21

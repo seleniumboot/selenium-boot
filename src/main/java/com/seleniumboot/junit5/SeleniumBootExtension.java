@@ -93,6 +93,7 @@ public class SeleniumBootExtension
         SeleniumBootContext.setCurrentTestId(testId);
         ExecutionMetrics.clearSteps(testId);
         ExecutionMetrics.markStart(testId);
+        com.seleniumboot.tracing.NetworkFailureRecorder.startIfEnabled(testId);
         ExecutionMetrics.recordTestClass(testId, context.getRequiredTestClass().getSimpleName());
         ExecutionMetrics.recordDescription(testId, context.getDisplayName());
         java.util.Set<String> tags = context.getTags();

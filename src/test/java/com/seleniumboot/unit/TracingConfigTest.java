@@ -33,4 +33,9 @@ public class TracingConfigTest {
     public void captureOnPassStaysOffByDefault() {
         assertFalse(new SeleniumBootConfig.Tracing().isCaptureOnPass());
     }
+
+    @Test
+    public void captureNetworkStaysOffByDefault() {
+        assertFalse(new SeleniumBootConfig.Tracing().isCaptureNetwork());
+    }
 }

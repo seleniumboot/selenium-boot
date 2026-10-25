@@ -141,7 +141,7 @@ public class TestTiming {
             new java.util.concurrent.CopyOnWriteArrayList<>();
 
     public void addStep(com.seleniumboot.steps.StepRecord step) { steps.add(step); }
-    public void clearSteps() { steps.clear(); locatorUses.clear(); }
+    public void clearSteps() { steps.clear(); locatorUses.clear(); consoleEntries.clear(); networkFailures.clear(); }
 
     private static final int MAX_LOCATOR_USES = 1000;
     private final java.util.List<com.seleniumboot.steps.LocatorUse> locatorUses =
@@ -149,6 +149,26 @@ public class TestTiming {
     public void addLocatorUse(com.seleniumboot.steps.LocatorUse use) {
         if (locatorUses.size() < MAX_LOCATOR_USES) locatorUses.add(use);
     }
+
+    private static final int MAX_CONSOLE_ENTRIES = 500;
+    private static final int MAX_NETWORK_FAILURES = 200;
+    private final java.util.List<com.seleniumboot.steps.ConsoleEntry> consoleEntries =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+    private final java.util.List<com.seleniumboot.steps.NetworkFailure> networkFailures =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+    public void addConsoleEntry(com.seleniumboot.steps.ConsoleEntry e) {
+        if (consoleEntries.size() < MAX_CONSOLE_ENTRIES) consoleEntries.add(e);
+    }
+    public java.util.List<com.seleniumboot.steps.ConsoleEntry> getConsoleEntries() {
+        return java.util.Collections.unmodifiableList(consoleEntries);
+    }
+    public void addNetworkFailure(com.seleniumboot.steps.NetworkFailure f) {
+        if (networkFailures.size() < MAX_NETWORK_FAILURES) networkFailures.add(f);
+    }
+    public java.util.List<com.seleniumboot.steps.NetworkFailure> getNetworkFailures() {
+        return java.util.Collections.unmodifiableList(networkFailures);
+    }
+
     public java.util.List<com.seleniumboot.steps.LocatorUse> getLocatorUses() {
         return java.util.Collections.unmodifiableList(locatorUses);
     }
