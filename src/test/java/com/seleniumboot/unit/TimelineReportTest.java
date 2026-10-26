@@ -80,7 +80,6 @@ public class TimelineReportTest {
     }
 
     @Test
-<<<<<<< HEAD
     public void testWithoutStartedAtMs_isSkippedButOthersStillRender() throws Exception {
         String html = timeline("""
                 [
@@ -90,7 +89,9 @@ public class TimelineReportTest {
                 """);
         Assert.assertTrue(html.contains("timeline-card"), html);
         Assert.assertEquals(count(html, "gantt-bar "), 1, html);
-=======
+    }
+
+    @Test
     public void skippedTestWithoutStartedAtMs_doesNotHideTimeline() throws Exception {
         String html = timeline("""
                 [
@@ -101,9 +102,8 @@ public class TimelineReportTest {
 
         Assert.assertTrue(html.contains("timeline-card"), html);
         Assert.assertTrue(html.contains("ran"), html);
-        Assert.assertFalse(html.contains("skipped"), html);
+        Assert.assertFalse(html.contains("com.x.B.skipped"), html);
         Assert.assertEquals(count(html, "gantt-row gantt-lane\""), 1, html);
->>>>>>> 025c20a (fix(report): skip tests without startedAtMs in timeline instead of hiding it)
     }
 
     @Test
