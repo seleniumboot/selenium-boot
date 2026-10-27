@@ -32,6 +32,19 @@ public class TimelineReportTest {
     }
 
     @Test
+    public void laneLabelDropsSharedTestNgThreadPrefixButKeepsFullNameInTitle() throws Exception {
+        String html = timeline("""
+                [
+                  {"testId":"com.x.A.one","thread":"TestNG-test-StorageDemo-3","status":"PASSED",
+                   "totalMs":100,"startedAtMs":1000}
+                ]
+                """);
+
+        Assert.assertTrue(html.contains(">StorageDemo-3</div>"), html);
+        Assert.assertTrue(html.contains("title=\"TestNG-test-StorageDemo-3\""), html);
+    }
+
+    @Test
     public void rendersOneLanePerThreadUsingStartedAtMs() throws Exception {
         String html = timeline("""
                 [

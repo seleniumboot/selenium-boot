@@ -169,7 +169,7 @@
         .timeline-legend { display: inline-flex; align-items: center; gap: 12px; font-size: 11px; font-weight: 500; color: var(--text-secondary); }
         .gantt-wrap { overflow-x: auto; }
         .gantt { min-width: 640px; padding: 4px 0; }
-        .gantt-row { display: grid; grid-template-columns: 130px 1fr; align-items: center; }
+        .gantt-row { display: grid; grid-template-columns: 170px 1fr; align-items: center; }
         .gantt-axis-row { margin-bottom: 6px; }
         .gantt-lane-name {
             font-size: 12px; color: var(--text-secondary); padding-right: 12px;

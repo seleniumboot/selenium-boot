@@ -854,7 +854,7 @@ public final class HtmlReportGenerator {
         for (java.util.Map.Entry<String, java.util.List<TimelineEntry>> lane : lanes.entrySet()) {
             sb.append("      <div class=\"gantt-row gantt-lane\">")
               .append("<div class=\"gantt-lane-name\" title=\"").append(escapeHtml(lane.getKey())).append("\">")
-              .append(escapeHtml(lane.getKey())).append("</div>")
+              .append(escapeHtml(timelineLaneLabel(lane.getKey()))).append("</div>")
               .append("<div class=\"gantt-track\">");
 
             for (TimelineEntry e : lane.getValue()) {
@@ -883,6 +883,12 @@ public final class HtmlReportGenerator {
         sb.append("    </div></div>\n");
         sb.append("  </div>\n</div>\n");
         return sb.toString();
+    }
+
+    /** Drops TestNG's shared "TestNG-test-" thread prefix so the distinguishing part of the name fits the lane. */
+    static String timelineLaneLabel(String thread) {
+        return thread.startsWith("TestNG-test-") && thread.length() > "TestNG-test-".length()
+                ? thread.substring("TestNG-test-".length()) : thread;
     }
 
     private static String timelineStatusSlug(String status) {
