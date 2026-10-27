@@ -167,6 +167,11 @@
         /* ── Timeline (Gantt) ── */
         .timeline-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
         .timeline-legend { display: inline-flex; align-items: center; gap: 12px; font-size: 11px; font-weight: 500; color: var(--text-secondary); }
+        .tl-key { display: inline-flex; align-items: center; gap: 6px; }
+        .tl-key::before { content: ''; width: 10px; height: 10px; border-radius: 2px; background: var(--text-secondary); }
+        .tl-key-passed::before  { background: var(--good); }
+        .tl-key-failed::before  { background: var(--bad); }
+        .tl-key-skipped::before { background: var(--warn); }
         .gantt-wrap { overflow-x: auto; }
         .gantt { min-width: 640px; padding: 4px 0; }
         .gantt-row { display: grid; grid-template-columns: 130px 1fr; align-items: center; }
