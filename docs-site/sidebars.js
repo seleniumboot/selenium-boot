@@ -64,6 +64,7 @@ const sidebars = {
         'recipes/handle-iframes',
         'recipes/handle-new-windows',
         'recipes/handle-javascript-alerts',
+        'recipes/scroll-to-load-more',
         'recipes/drag-and-drop',
         'recipes/handle-shadow-dom',
         'recipes/read-table-rows',
