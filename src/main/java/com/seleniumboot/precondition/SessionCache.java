@@ -20,10 +20,12 @@ final class SessionCache {
     static final class SavedSession {
         final Set<Cookie> cookies;
         final Map<String, String> localStorage;
+        final String origin;   // scheme://host[:port] the session was captured on
 
-        SavedSession(Set<Cookie> cookies, Map<String, String> localStorage) {
+        SavedSession(Set<Cookie> cookies, Map<String, String> localStorage, String origin) {
             this.cookies = cookies;
             this.localStorage = localStorage;
+            this.origin = origin;
         }
 
         boolean isEmpty() {
@@ -40,16 +42,22 @@ final class SessionCache {
     static void store(String conditionName, WebDriver driver) {
         Set<Cookie> cookies = driver.manage().getCookies();
         Map<String, String> localStorage = captureLocalStorage(driver);
-        cache.get().put(conditionName, new SavedSession(cookies, localStorage));
+        cache.get().put(conditionName, new SavedSession(cookies, localStorage, originOf(driver.getCurrentUrl())));
     }
 
     /**
      * Restores cookies and localStorage from cache into the current browser session.
-     * Navigates to the current URL to apply cookies before restoring localStorage.
+     * A browser can only accept cookies and localStorage for the origin it is on, and a fresh
+     * session starts on {@code about:blank}, so it first navigates to the origin the session
+     * was captured on.
      */
     static void restore(String conditionName, WebDriver driver) {
         SavedSession session = cache.get().get(conditionName);
         if (session == null) return;
+
+        if (session.origin != null && !session.origin.equals(originOf(driver.getCurrentUrl()))) {
+            driver.get(session.origin);
+        }
 
         driver.manage().deleteAllCookies();
         for (Cookie cookie : session.cookies) {
@@ -103,6 +111,18 @@ final class SessionCache {
             );
             ((JavascriptExecutor) driver).executeScript(js.toString());
         } catch (Exception ignored) {}
+    }
+
+    /** Returns scheme://host[:port] of an http(s) URL, or null for anything else (about:blank, data:). */
+    private static String originOf(String url) {
+        try {
+            java.net.URI u = java.net.URI.create(url);
+            if (u.getScheme() == null || u.getHost() == null
+                    || !(u.getScheme().equals("http") || u.getScheme().equals("https"))) return null;
+            return u.getScheme() + "://" + u.getHost() + (u.getPort() == -1 ? "" : ":" + u.getPort());
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private static String jsString(String value) {

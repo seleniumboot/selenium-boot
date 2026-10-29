@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Unreleased
 
+- **Fix: `@PreCondition` session restore on a fresh browser** — the cached cookies and localStorage were silently dropped when the next test started on `about:blank`, so only the first test per thread was logged in. Restore now navigates to the origin the session was captured on first.
+
 - **Trace shows browser console errors** — when `browser.captureConsoleErrors: true`, the JS errors collected for a test now appear in its trace file under "Console Errors", next to the steps and failure details, so a shared trace includes what the browser logged. No change when the option is off. (#130)
 
 - **Network mocking on Firefox via WebDriver BiDi** — `networkMock().stub(...)` now uses WebDriver BiDi network interception under the hood when supported by the driver (including Firefox and BiDi-enabled drivers), falling back to Chrome DevTools Protocol (CDP) for Chromium-based drivers. The existing stubbing API (`returnJson`, `returnBody`, `returnStatus`, `delay`, `clear`) works identically across Chrome and Firefox. (#196)
