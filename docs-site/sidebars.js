@@ -68,6 +68,7 @@ const sidebars = {
         'recipes/drag-and-drop',
         'recipes/handle-shadow-dom',
         'recipes/read-table-rows',
+        'recipes/log-in-once-with-sso',
       ],
     },
     {
