@@ -24,6 +24,7 @@ const sidebars = {
         'migration/from-webdrivermanager',
         'migration/coming-from-playwright',
         'migration/from-selenide',
+        'migration/from-serenity',
       ],
     },
     {
