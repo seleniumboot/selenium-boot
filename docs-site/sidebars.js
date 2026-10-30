@@ -23,6 +23,7 @@ const sidebars = {
         'migration/from-selenium-testng',
         'migration/from-webdrivermanager',
         'migration/coming-from-playwright',
+        'migration/from-selenide',
       ],
     },
     {
