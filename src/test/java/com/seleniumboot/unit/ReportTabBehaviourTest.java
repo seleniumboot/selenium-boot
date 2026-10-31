@@ -1,5 +1,6 @@
 package com.seleniumboot.unit;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.testng.Assert;
@@ -44,8 +45,18 @@ public class ReportTabBehaviourTest {
     @Test
     public void reportAlwaysOpensOnDashboard() throws Exception {
         try (var in = getClass().getResourceAsStream("/report-template.html")) {
+            Assert.assertNotNull(in, "report-template.html must be present");
             String t = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             Assert.assertFalse(t.contains("sb-tab"), "report must not restore the last-open tab");
+        }
+    }
+
+    @Test
+    public void reportJsDoesNotContainSbTabKey() throws Exception {
+        try (var in = getClass().getResourceAsStream("/report/report.js")) {
+            Assert.assertNotNull(in, "report.js must be present");
+            String js = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            Assert.assertFalse(js.contains("sb-tab"), "report.js must not restore the last-open tab");
         }
     }
 }

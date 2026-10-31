@@ -1,5 +1,6 @@
 package com.seleniumboot.reporting;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seleniumboot.config.SeleniumBootConfig;
@@ -165,7 +166,7 @@ public class HtmlReportGeneratorTest {
                 java.nio.file.Files.createTempDirectory("sb-empty").toString());
         try {
             assertEquals(HtmlReportGenerator.buildTrendData(20), "[]");
-            assertTrue(html(1, 0).contains("const trendData = [];"));
+            assertTrue(html(1, 0).contains("const trendData = JSON.parse('[]');"));
         } finally {
             System.clearProperty("seleniumboot.history.dir");
         }
@@ -282,5 +283,115 @@ public class HtmlReportGeneratorTest {
         // Must NOT interpolate quotes into inline JavaScript calls
         assertFalse(reportHtml.contains("filterByTag('it's'"));
         assertFalse(reportHtml.contains("filterByTag('x');alert(1);//'"));
+    }
+
+    @Test
+    public void buildHtml_statusFilterPersistence_persistsAndRestoresFilter() throws Exception {
+        String reportHtml = html(1, 0);
+
+        // 1. Canonical storage key
+        assertTrue(reportHtml.contains("sb-status-filter"),
+                "Report must use the canonical 'sb-status-filter' storage key");
+
+        // 2. setFilter persistence and removal on 'ALL'
+        assertTrue(reportHtml.contains("localStorage.setItem('sb-status-filter'"),
+                "setFilter must persist non-ALL status filter to localStorage");
+        assertTrue(reportHtml.contains("localStorage.removeItem('sb-status-filter'"),
+                "setFilter must remove stored status filter when 'ALL' is selected");
+
+        // 3. Status filter restoration on page load
+        assertTrue(reportHtml.contains("localStorage.getItem('sb-status-filter'"),
+                "Report initialization must retrieve persisted status from localStorage");
+        assertTrue(reportHtml.contains("['PASSED', 'FAILED', 'SKIPPED', 'FLAKY']"),
+                "Status restoration must validate against allowed status values");
+        assertTrue(reportHtml.contains(".filter-btn"),
+                "Status restoration must update the active class on filter buttons");
+        assertTrue(reportHtml.contains("activeFilter"),
+                "Status restoration must set activeFilter variable");
+    }
+
+    @Test
+    public void buildHtml_tagFilterPersistence_persistsAndClearsFilter() throws Exception {
+        String reportHtml = html(1, 0);
+
+        // 1. Canonical storage key
+        assertTrue(reportHtml.contains("sb-tag-filter"),
+                "Report must use the canonical 'sb-tag-filter' storage key");
+
+        // 2. filterByTag persistence & clearTagFilter removal
+        assertTrue(reportHtml.contains("localStorage.setItem('sb-tag-filter'"),
+                "filterByTag must persist selected tag to localStorage");
+        assertTrue(reportHtml.contains("localStorage.removeItem('sb-tag-filter'"),
+                "clearTagFilter must remove stored tag filter from localStorage");
+
+        // 3. Tag filter restoration on page load
+        assertTrue(reportHtml.contains("localStorage.getItem('sb-tag-filter'"),
+                "Report initialization must retrieve persisted tag from localStorage");
+        assertTrue(reportHtml.contains("activeTagPill"),
+                "Tag restoration must manage activeTagPill visibility");
+        assertTrue(reportHtml.contains("activeTagName"),
+                "Tag restoration must update activeTagName display");
+    }
+
+    @Test
+    public void buildHtml_tagFilterRestoration_guardsAgainstMissingTags() throws Exception {
+        String reportHtml = html(1, 0);
+
+        // Verify missing tag validation inspects table rows before applying filter
+        assertTrue(reportHtml.contains("#testTable tbody tr.group-member"),
+                "Tag restoration must query test table member rows to locate matching tags");
+        assertTrue(reportHtml.contains("data-tags"),
+                "Tag restoration must inspect data-tags on table rows before activating filter");
+        assertTrue(reportHtml.contains("tagFound"),
+                "Tag restoration must track whether the stored tag actually exists in the report");
+    }
+
+    @Test
+    public void buildHtml_filterStorageAccess_isGuardedByTryCatch() throws Exception {
+        String reportHtml = html(1, 0);
+
+        int scriptStart = reportHtml.lastIndexOf("<script>");
+        int scriptEnd = reportHtml.lastIndexOf("</script>");
+        assertTrue(scriptStart > 0 && scriptEnd > scriptStart, "Generated HTML must contain embedded script block");
+        String js = reportHtml.substring(scriptStart, scriptEnd);
+
+        // General error guarding
+        assertTrue(js.contains("try {") || js.contains("try{"), "Storage access must use try blocks");
+        assertTrue(js.contains("catch (e)") || js.contains("catch(e)") || js.contains("catch (err)"),
+                "Storage access must catch storage exceptions");
+
+        // Specific function error handling checks
+        assertTrue(js.matches("(?s).*function setFilter[^{]*\\{.*?try\\s*\\{.*?localStorage\\.(setItem|removeItem)\\('sb-status-filter'.*?\\}\\s*catch.*"),
+                "setFilter localStorage writes must be enclosed in try/catch");
+        assertTrue(js.matches("(?s).*function filterByTag[^{]*\\{.*?try\\s*\\{.*?localStorage\\.(setItem|removeItem)\\('sb-tag-filter'.*?\\}\\s*catch.*"),
+                "filterByTag localStorage writes must be enclosed in try/catch");
+        assertTrue(js.matches("(?s).*function clearTagFilter[^{]*\\{.*?try\\s*\\{.*?localStorage\\.removeItem\\('sb-tag-filter'.*?\\}\\s*catch.*"),
+                "clearTagFilter localStorage removal must be enclosed in try/catch");
+        assertTrue(js.matches("(?s).*\\(function\\(\\)\\s*\\{.*?try\\s*\\{.*?sb-status-filter.*?sb-tag-filter.*?\\}\\s*catch.*"),
+                "Filter restoration routine on load must be enclosed in try/catch");
+    }
+
+    @Test
+    public void buildHtml_filterRestoration_preservesDashboardTabWithoutTabPersistence() throws Exception {
+        String reportHtml = html(1, 0);
+
+        // Default markup states
+        assertTrue(reportHtml.contains("id=\"tab-dashboard\" class=\"tab-pane active\""),
+                "Dashboard tab pane must be active by default");
+        assertTrue(reportHtml.contains("nav-item active\" onclick=\"showTab('dashboard', this)\""),
+                "Dashboard navigation item must be active by default");
+
+        // Must not introduce any tab persistence key
+        assertFalse(reportHtml.contains("sb-tab"),
+                "Generated report must not introduce sb-tab persistence keys");
+
+        // Filter restoration block must not switch tabs
+        int scriptStart = reportHtml.lastIndexOf("<script>");
+        String js = reportHtml.substring(scriptStart);
+        int restoreBlock = js.indexOf("sb-status-filter");
+        assertTrue(restoreBlock > 0, "Filter restoration script must exist");
+        String restorationScript = js.substring(restoreBlock);
+        assertFalse(restorationScript.contains("showTab('tests'"),
+                "Filter restoration must not call showTab('tests') on load");
     }
 }

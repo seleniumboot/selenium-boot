@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Unreleased
 
+- **HTML report: status and tag filter persistence** — the active status filter (All, Passed, Failed, Skipped, Flaky) and tag filter in the Test Cases tab are now persisted across page reloads and reopens using `localStorage` (`sb-status-filter` and `sb-tag-filter`). Storage reads and writes are safely guarded against restricted environments (private browsing, disabled storage, quota limits); if a previously stored tag is not present in the current report, it is gracefully ignored without restricting rows, and restoring filters preserves the default Dashboard tab view. (#215)
+
 - **Fix: `@PreCondition` session restore on a fresh browser** — the cached cookies and localStorage were silently dropped when the next test started on `about:blank`, so only the first test per thread was logged in. Restore now navigates to the origin the session was captured on first.
 
 - **LambdaTest cloud provider** — `execution.mode: lambdatest` now creates W3C

@@ -32,7 +32,7 @@ function toggleDark() {
 
 // ── Charts ──
 const executionData = JSON.parse('{{EXECUTION_PERCENTILES}}');
-const donutData     = {{DONUT_DATA}};
+const donutData     = JSON.parse('{{DONUT_DATA}}');
 const themeColors = getComputedStyle(document.documentElement);
 const color = name => themeColors.getPropertyValue(name).trim();
 const chartFontFamily = 'Roboto, "Segoe UI", Arial, sans-serif';
@@ -66,7 +66,7 @@ if (window.Chart) {
 }
 
 // ── Trend over runs ──
-const trendData = {{TREND_DATA}};
+const trendData = JSON.parse('{{TREND_DATA}}');
 if (window.Chart && trendData.length >= 2) {
     document.getElementById('trendRow').style.display = '';
     const labels = trendData.map(r => r.label);
@@ -118,12 +118,22 @@ function filterByTag(tagName, event) {
             pill.style.display = 'none';
         }
     }
+    try {
+        if (activeTagFilter) {
+            localStorage.setItem('sb-tag-filter', tagName);
+        } else {
+            localStorage.removeItem('sb-tag-filter');
+        }
+    } catch (e) {}
     applySearch();
 }
 function clearTagFilter() {
     activeTagFilter = '';
     const pill = document.getElementById('activeTagPill');
     if (pill) pill.style.display = 'none';
+    try {
+        localStorage.removeItem('sb-tag-filter');
+    } catch (e) {}
     applySearch();
 }
 
@@ -133,6 +143,13 @@ function setFilter(status, btn) {
     activeFilter = status;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    try {
+        if (status === 'ALL') {
+            localStorage.removeItem('sb-status-filter');
+        } else {
+            localStorage.setItem('sb-status-filter', status);
+        }
+    } catch (e) {}
     applySearch();
 }
 function applySearch() {
@@ -164,3 +181,61 @@ function applySearch() {
         hdr.style.display = visibleGroups.has(groupId) ? '' : 'none';
     });
 }
+
+// ── Filter restoration on load ──
+(function() {
+    try {
+        // Restore status filter
+        const savedStatus = localStorage.getItem('sb-status-filter');
+        if (savedStatus && ['PASSED', 'FAILED', 'SKIPPED', 'FLAKY'].includes(savedStatus)) {
+            const btn = document.querySelector(".filter-btn[onclick*=\"'" + savedStatus + "'\"]");
+            if (btn) {
+                activeFilter = savedStatus;
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+        } else if (savedStatus === 'ALL') {
+            const btn = document.querySelector(".filter-btn[onclick*=\"'ALL'\"]");
+            if (btn) {
+                activeFilter = 'ALL';
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+        }
+
+        // Restore tag filter
+        const savedTag = localStorage.getItem('sb-tag-filter');
+        if (savedTag) {
+            const tagToMatch = savedTag.toLowerCase().trim();
+            if (tagToMatch) {
+                const rows = document.querySelectorAll('#testTable tbody tr.group-member');
+                let tagFound = false;
+                for (let i = 0; i < rows.length; i++) {
+                    const rawTags = rows[i].getAttribute('data-tags');
+                    if (rawTags) {
+                        const tags = rawTags.split(',').map(t => t.trim().toLowerCase());
+                        if (tags.includes(tagToMatch)) {
+                            tagFound = true;
+                            break;
+                        }
+                    }
+                }
+                if (tagFound) {
+                    activeTagFilter = tagToMatch;
+                    const pill = document.getElementById('activeTagPill');
+                    const nameSpan = document.getElementById('activeTagName');
+                    if (pill && nameSpan) {
+                        nameSpan.textContent = 'Tag: ' + savedTag;
+                        pill.style.display = 'inline-flex';
+                    }
+                }
+            }
+        }
+
+        // Apply filters to table if any restored
+        if (activeFilter !== 'ALL' || activeTagFilter) {
+            applySearch();
+        }
+    } catch (e) {}
+})();
+

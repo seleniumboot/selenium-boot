@@ -309,7 +309,7 @@ public final class HtmlReportGenerator {
                 .replace("{{TAG_RESULTS}}", tagResults)
                 .replace("{{FLAKINESS_SECTION}}", flakinessSection)
                 .replace("{{DONUT_DATA}}", donutData)
-                .replace("{{TREND_DATA}}", buildTrendData(20))
+                .replace("{{TREND_DATA}}", buildTrendData(20).replace("'", "\\'"))
                 .replace("{{ROWS}}", rows.toString())
                 .replace("{{FAILURE_ROWS}}", failureRows)
                 .replace("{{FAILURE_GROUPS}}", failureGroups)
