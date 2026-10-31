@@ -137,6 +137,7 @@ a bump there advertises a stale release on seleniumboot.com:
 | Repo / File | Location |
 |---|---|
 | `seleniumboot/website` → `src/data/content.ts` | `LATEST_VERSION` — feeds the copy-to-clipboard Maven snippet in the homepage CTA |
+| `selenium-boot-migrator` → `Migrator.java` | `SELENIUM_BOOT_VERSION` — the version `migrate` writes into users' build files (also asserted in `CliTest`/`MigratorTest`, and the README). Was stuck on 3.5.0 until 3.9.0 |
 
 Also add a new changelog entry in `CHANGELOG.md` and `docs-site/docs/changelog.md` describing what changed. The full version history lives in `CHANGELOG.md` (extracted from the README); the README only keeps a one-line "Current release" pointer.
 
