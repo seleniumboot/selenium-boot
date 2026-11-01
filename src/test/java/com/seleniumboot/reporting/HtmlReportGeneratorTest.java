@@ -283,4 +283,21 @@ public class HtmlReportGeneratorTest {
         assertFalse(reportHtml.contains("filterByTag('it's'"));
         assertFalse(reportHtml.contains("filterByTag('x');alert(1);//'"));
     }
+
+    @Test
+    public void copyFailureButton_onlyOnFailedTestsWithErrorDetail() throws Exception {
+        String json = """
+        {"totalTests":3,"passedTests":1,"failedTests":1,"skippedTests":1,"passRate":33.3,"tests":[
+          {"testId":"a.A.ok","status":"PASSED","testLogicMs":1,"totalMs":1,"stepsNote":"x","description":"d","performanceMetrics":{"pageLoadMs":1}},
+          {"testId":"a.A.bad<x>","status":"FAILED","testLogicMs":1,"totalMs":1,"errorMessage":"boom","stackTrace":"at a.b"},
+          {"testId":"a.A.skip","status":"SKIPPED","testLogicMs":1,"totalMs":1,"errorMessage":"skipped because"}
+        ]}""";
+        String reportHtml = HtmlReportGenerator.buildHtml(new ObjectMapper().readTree(json));
+        String body = reportHtml.substring(reportHtml.indexOf("<tbody"));
+        assertFalse(body.contains("data-test-id=\"a.A.ok\""), "no button on passed tests");
+        assertFalse(body.contains("data-test-id=\"a.A.skip\""), "no button on skipped tests");
+        assertTrue(body.contains("data-test-id=\"a.A.bad&lt;x&gt;\""), "test id is escaped in the attribute");
+        assertTrue(reportHtml.contains("function copyFailure("));
+        assertTrue(reportHtml.contains("document.execCommand('copy')"), "file:// fallback present");
+    }
 }

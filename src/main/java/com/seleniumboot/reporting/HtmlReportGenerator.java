@@ -402,6 +402,10 @@ public final class HtmlReportGenerator {
                     + (test.has("failureCategory") ? buildFailureWhy(test) : "");
             String errorHtml     = whyHtml + (errorMsg != null ? "<div class=\"error-msg\">" + escapeHtml(errorMsg) + "</div>" : "");
             String traceHtml     = stackTrace    != null ? "<pre class=\"stack-trace\">"    + escapeHtml(stackTrace) + "</pre>" : "";
+            String copyBtn       = "FAILED".equals(status) && (errorMsg != null || stackTrace != null)
+                    ? "<button type=\"button\" class=\"copy-failure-btn\" data-test-id=\"" + escapeHtml(rawTestId)
+                      + "\" onclick=\"copyFailure(this, event)\">Copy failure details</button>"
+                    : "";
             String recordingHtml = recordingPath != null ? buildRecordingCell(recordingPath) : "";
             String traceLink     = tracePath     != null ? buildTraceLink(tracePath) : "";
             String sessionLink   = sessionUrl    != null ? buildSessionLink(sessionUrl) : "";
@@ -415,7 +419,7 @@ public final class HtmlReportGenerator {
             String detailDisplay = detailHidden ? " style=\"display:none\"" : "";
             detailRow = "<tr class=\"detail-row group-member\" data-group=\"" + groupKey + "\" id=\"detail-" + rowIndex + "\"" + detailDisplay + ">"
                     + "<td colspan=\"" + colspan + "\"><div class=\"detail-panel\">"
-                    + failureDetail + perfHtml + sessionLink + traceLink + stepsSection + recordingHtml + aiHtml + errorHtml + traceHtml
+                    + copyBtn + failureDetail + perfHtml + sessionLink + traceLink + stepsSection + recordingHtml + aiHtml + errorHtml + traceHtml
                     + "</div></td>"
                     + "</tr>";
         }

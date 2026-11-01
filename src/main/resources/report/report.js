@@ -164,3 +164,39 @@ function applySearch() {
         hdr.style.display = visibleGroups.has(groupId) ? '' : 'none';
     });
 }
+
+// ── Copy failure details ──
+function copyFailure(btn, event) {
+    if (event) event.stopPropagation();
+    const panel = btn.closest('.detail-panel');
+    const err   = panel.querySelector('.error-msg');
+    const trace = panel.querySelector('.stack-trace');
+    const text  = [
+        'Test: ' + btn.getAttribute('data-test-id'),
+        err   ? 'Error: ' + err.textContent : '',
+        trace ? '\n' + trace.textContent : ''
+    ].filter(Boolean).join('\n');
+    const done = ok => {
+        const label = btn.getAttribute('data-label') || btn.textContent;
+        btn.setAttribute('data-label', label);
+        btn.textContent = ok ? 'Copied' : 'Copy failed';
+        setTimeout(() => { btn.textContent = label; }, 1500);
+    };
+    const fallback = () => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+        done(ok);
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => done(true), fallback);
+    } else {
+        fallback();
+    }
+}
