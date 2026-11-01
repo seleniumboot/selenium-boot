@@ -298,6 +298,8 @@
         /* ── Detail / error panel ── */
         .detail-row td { padding: 0; }
         .detail-panel { padding: 16px 24px; background: var(--surface2); border-top: 2px solid var(--bad); }
+        .copy-failure-btn { float: right; margin: 0 0 8px 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); border-radius: 12px; padding: 2px 12px; font-size: 12px; cursor: pointer; }
+        .copy-failure-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
         .error-msg { font-size: 13px; font-weight: 600; color: var(--bad); margin-bottom: 10px; }
         .failure-group { padding: 10px 0; border-bottom: 1px solid var(--border); }
         .failure-group:last-child { border-bottom: 0; }

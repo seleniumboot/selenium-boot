@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Unreleased
 
+- **HTML report: "Copy failure details" button** — failed tests with an error now have a button in the expanded detail row (and on the Failures tab) that copies the test id, error message and stack trace to the clipboard, with brief "Copied" feedback. Falls back to `execCommand('copy')` when `navigator.clipboard` is unavailable (e.g. some `file://` setups). (#216)
+
 - **Fix: `@PreCondition` session restore on a fresh browser** — the cached cookies and localStorage were silently dropped when the next test started on `about:blank`, so only the first test per thread was logged in. Restore now navigates to the origin the session was captured on first.
 
 - **LambdaTest cloud provider** — `execution.mode: lambdatest` now creates W3C
