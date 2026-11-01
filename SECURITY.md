@@ -19,7 +19,7 @@ Please give us a reasonable window to release a fix before any public disclosure
 
 ## Supported versions
 
-Selenium Boot is pre-1.0 and moving quickly. Security fixes are applied to the **latest
+Selenium Boot is on the 3.x release line. Security fixes are applied to the **latest
 released version** on [Maven Central](https://central.sonatype.com/artifact/io.github.seleniumboot/selenium-boot).
 Please make sure you're on the latest release before reporting.
 
