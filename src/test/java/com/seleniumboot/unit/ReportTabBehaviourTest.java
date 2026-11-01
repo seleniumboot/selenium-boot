@@ -48,4 +48,12 @@ public class ReportTabBehaviourTest {
             Assert.assertFalse(t.contains("sb-tab"), "report must not restore the last-open tab");
         }
     }
+
+    @Test
+    public void reportJsDoesNotContainSbTabKey() throws Exception {
+        try (var in = getClass().getResourceAsStream("/report/report.js")) {
+            String js = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            Assert.assertFalse(js.contains("sb-tab"), "report.js must not restore the last-open tab");
+        }
+    }
 }
