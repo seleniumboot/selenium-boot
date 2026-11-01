@@ -3,6 +3,8 @@
 **The Spring Boot of Selenium — Playwright-inspired APIs, zero setup, and enterprise features, without hiding Selenium**
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.seleniumboot/selenium-boot)](https://central.sonatype.com/artifact/io.github.seleniumboot/selenium-boot)
+[![CI](https://github.com/seleniumboot/selenium-boot/actions/workflows/selenium-boot.yml/badge.svg)](https://github.com/seleniumboot/selenium-boot/actions/workflows/selenium-boot.yml)
+[![Java 17+](https://img.shields.io/badge/Java-17%2B-orange.svg)](#quickstart--a-green-test-in-60-seconds)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Good first issues](https://img.shields.io/github/issues/seleniumboot/selenium-boot/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/seleniumboot/selenium-boot/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
@@ -13,13 +15,15 @@
 
 *The same login flow against a real page, written both ways. Both tests pass.*
 
+**Who it's for:** Java and TestNG teams already on Selenium who want accessibility-first locators, auto-waiting and web-first assertions, with the same Selenium underneath, Grid and team skills intact. It adds to Selenium; it does not replace it.
+
 ---
 
 ## Quickstart — a green test in 60 seconds
 
 Three files. Copy them as-is and `mvn test` goes green against a real Chrome.
 
-**Prerequisites:** Java 17+, Maven 3.8+, Chrome installed. No WebDriver binaries — Selenium Manager fetches them.
+**Prerequisites:** Java 17+, Maven 3.8+, Chrome installed. No WebDriver binaries — Selenium Manager fetches them. Prefer to skip the three files? Clone the [starter template](https://github.com/seleniumboot/selenium-boot-starter).
 
 **1. `pom.xml`**
 
@@ -275,12 +279,8 @@ java -jar selenium-boot-migrator.jar analyze path/to/your-project
 
 Grab the jar from the [latest release](https://github.com/seleniumboot/selenium-boot-migrator/releases/latest). Requires Java 17+.
 
-> **Let an AI assistant drive a real browser and write the tests**
-> **seleniumboot-mcp** is a standalone MCP server for Claude / GitHub Copilot: it controls Chrome, records your session, and generates ready-to-run test code (Java TestNG / JUnit 5 / Gherkin, Python, C#, Playwright) — Selenium Boot-native when the dependency is present. Its `migrate` tool runs the analysis above for you.
-> ```
-> pip install seleniumboot-mcp
-> ```
-> [PyPI](https://pypi.org/project/seleniumboot-mcp/) · [GitHub](https://github.com/seleniumboot/selenium-mcp) · 43 tools by default (77 total) · self-healing locators
+> **Let an AI assistant drive a real browser and write the tests.**
+> `seleniumboot-mcp` is a standalone MCP server for Claude / GitHub Copilot that generates ready-to-run tests (Java TestNG / JUnit 5 / Gherkin, Python, C#, Playwright), Selenium Boot-native when the dependency is present. `pip install seleniumboot-mcp` · [PyPI](https://pypi.org/project/seleniumboot-mcp/) · [GitHub](https://github.com/seleniumboot/selenium-mcp)
 
 ---
 
