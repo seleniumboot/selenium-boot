@@ -165,7 +165,7 @@ Per-page SEO descriptions · Why pages (Selenium Boot / plain Selenium / Playwri
 **Goal:** Establish Selenium Boot as a stable ecosystem
 
 ### Features
-- ✅ Official documentation website — live at https://seleniumboot.github.io/selenium-boot/
+- ✅ Official documentation website — live at https://docs.seleniumboot.com
 - ~~Sample reference projects~~ — replaced by the consumer test project at https://github.com/seleniumboot/selenium-boot-test
 - ✅ Community contribution guidelines — see CONTRIBUTING.md
 - ✅ Versioned plugin ecosystem — `FrameworkVersion`, `minFrameworkVersion()`, `IncompatiblePluginException`

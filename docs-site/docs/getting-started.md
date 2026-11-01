@@ -50,7 +50,7 @@ config, a page object and passing tests, ready for `mvn test`.
 
 ```groovy title="build.gradle"
 dependencies {
-    testImplementation 'io.github.seleniumboot:selenium-boot:3.5.0'
+    testImplementation 'io.github.seleniumboot:selenium-boot:3.9.0'
 }
 
 test {
@@ -64,7 +64,7 @@ test {
 
 ```kotlin title="build.gradle.kts"
 dependencies {
-    testImplementation("io.github.seleniumboot:selenium-boot:3.5.0")
+    testImplementation("io.github.seleniumboot:selenium-boot:3.9.0")
 }
 
 tasks.test {

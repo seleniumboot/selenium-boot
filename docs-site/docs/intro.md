@@ -85,7 +85,7 @@ generate Selenium Boot test code — TestNG, JUnit 5, Page Object, Gherkin, C# N
 pip install seleniumboot-mcp
 ```
 
-84 tools · self-healing locators · mobile emulation · codegen for Java / Python / C# / Playwright
+77 tools total (43 in the default profile) · self-healing locators · mobile emulation · codegen for Java / Python / C# / Playwright
 
 [PyPI](https://pypi.org/project/seleniumboot-mcp/) · [GitHub](https://github.com/seleniumboot/selenium-mcp)
 :::

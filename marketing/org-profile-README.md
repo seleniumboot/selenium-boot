@@ -15,7 +15,7 @@ Write less. Ship faster. Let an agent draft the test.
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.seleniumboot/selenium-boot?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.seleniumboot/selenium-boot)
 [![PyPI](https://img.shields.io/pypi/v/seleniumboot-mcp?label=PyPI%20(MCP))](https://pypi.org/project/seleniumboot-mcp/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/seleniumboot/selenium-boot/blob/master/LICENSE)
-[![Docs](https://img.shields.io/badge/docs-seleniumboot.github.io-1f6feb)](https://seleniumboot.github.io/selenium-boot)
+[![Docs](https://img.shields.io/badge/docs-docs.seleniumboot.com-1f6feb)](https://docs.seleniumboot.com)
 
 </div>
 
@@ -31,7 +31,7 @@ piece is built to work with the others:
 | 🧪 **Selenium Boot** | Zero-boilerplate Java framework — driver lifecycle, smart waits, retries, parallel, HTML reports, API testing, accessibility-first locators | [`selenium-boot`](https://github.com/seleniumboot/selenium-boot) · [Maven Central](https://central.sonatype.com/artifact/io.github.seleniumboot/selenium-boot) |
 | 🤖 **Selenium MCP** | An MCP server that lets Claude / Copilot drive a real browser and **generate ready-to-run tests** — TestNG, JUnit 5, Page Object, Gherkin, Python, C# | [`selenium-mcp`](https://github.com/seleniumboot/selenium-mcp) · [PyPI](https://pypi.org/project/seleniumboot-mcp/) |
 | 🧩 **Seleniumboot MCP VS Code Extension** | One-click install — auto-registers the MCP server with GitHub Copilot & Claude Code, no manual setup | [Marketplace](https://marketplace.visualstudio.com/items?itemName=seleniumboot.selenium-boot-mcp) |
-| 📖 **Documentation** | Full guides, configuration reference, deep dives | [seleniumboot.github.io](https://seleniumboot.github.io/selenium-boot) |
+| 📖 **Documentation** | Full guides, configuration reference, deep dives | [docs.seleniumboot.com](https://docs.seleniumboot.com) |
 | 🚀 **Example project** | A runnable consumer project covering every feature | [`selenium-boot-test`](https://github.com/seleniumboot/selenium-boot-test) |
 
 Java distribution via **Maven Central**, AI tooling via **PyPI**, docs, and a runnable example —
@@ -76,8 +76,8 @@ Selenium Boot test for you, with self-healing locators and codegen for Java / Py
 
 ## Start here
 
-- 📘 **[Getting Started](https://seleniumboot.github.io/selenium-boot/docs/getting-started)** — first test in under 5 minutes
-- 🧰 **[Documentation](https://seleniumboot.github.io/selenium-boot)**
+- 📘 **[Getting Started](https://docs.seleniumboot.com/docs/getting-started)** — first test in under 5 minutes
+- 🧰 **[Documentation](https://docs.seleniumboot.com)**
 - 💬 **[Discussions](https://github.com/seleniumboot/selenium-boot/discussions)** — questions, ideas, show & tell
 - ⭐ Star the repos if this saves you boilerplate — it helps others find the project.
 
