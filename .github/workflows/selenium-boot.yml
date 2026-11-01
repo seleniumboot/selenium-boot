@@ -43,7 +43,7 @@ jobs:
 
       - name: Publish unit test results
         if: always()
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v3
         with:
           name: Unit Test Results
           path: '**/surefire-reports/TEST-*.xml'
@@ -109,7 +109,7 @@ jobs:
 
       - name: Publish consumer test results
         if: always()
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v3
         with:
           name: Consumer Integration Test Results
           path: 'selenium-boot-test/**/surefire-reports/TEST-*.xml'
