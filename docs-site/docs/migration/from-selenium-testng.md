@@ -26,7 +26,7 @@ Remove your Selenium, WebDriverManager, and reporting dependencies and add one:
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>3.9.0</version>
+    <version>3.10.0</version>
 </dependency>
 ```
 
