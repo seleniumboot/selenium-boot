@@ -7,8 +7,8 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chromium.ChromiumDriver;
 import org.openqa.selenium.devtools.DevTools;
-import org.openqa.selenium.devtools.v153.emulation.Emulation;
-import org.openqa.selenium.devtools.v153.emulation.model.DevicePosture;
+import org.openqa.selenium.devtools.v154.emulation.Emulation;
+import org.openqa.selenium.devtools.v154.emulation.model.DevicePosture;
 
 import java.util.Optional;
 import java.util.logging.Logger;

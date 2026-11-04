@@ -14,12 +14,12 @@ import org.openqa.selenium.bidi.network.InterceptPhase;
 import org.openqa.selenium.bidi.network.ProvideResponseParameters;
 import org.openqa.selenium.chromium.ChromiumDriver;
 import org.openqa.selenium.devtools.DevTools;
-import org.openqa.selenium.devtools.v153.fetch.Fetch;
-import org.openqa.selenium.devtools.v153.fetch.model.HeaderEntry;
-import org.openqa.selenium.devtools.v153.fetch.model.RequestId;
-import org.openqa.selenium.devtools.v153.fetch.model.RequestPattern;
-import org.openqa.selenium.devtools.v153.fetch.model.RequestPaused;
-import org.openqa.selenium.devtools.v153.fetch.model.RequestStage;
+import org.openqa.selenium.devtools.v154.fetch.Fetch;
+import org.openqa.selenium.devtools.v154.fetch.model.HeaderEntry;
+import org.openqa.selenium.devtools.v154.fetch.model.RequestId;
+import org.openqa.selenium.devtools.v154.fetch.model.RequestPattern;
+import org.openqa.selenium.devtools.v154.fetch.model.RequestPaused;
+import org.openqa.selenium.devtools.v154.fetch.model.RequestStage;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
