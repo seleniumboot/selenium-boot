@@ -8,9 +8,9 @@ import org.openqa.selenium.bidi.HasBiDi;
 import org.openqa.selenium.bidi.module.Network;
 import org.openqa.selenium.chromium.ChromiumDriver;
 import org.openqa.selenium.devtools.DevTools;
-import org.openqa.selenium.devtools.v153.network.model.LoadingFailed;
-import org.openqa.selenium.devtools.v153.network.model.RequestWillBeSent;
-import org.openqa.selenium.devtools.v153.network.model.ResponseReceived;
+import org.openqa.selenium.devtools.v154.network.model.LoadingFailed;
+import org.openqa.selenium.devtools.v154.network.model.RequestWillBeSent;
+import org.openqa.selenium.devtools.v154.network.model.ResponseReceived;
 
 import java.util.Map;
 import java.util.Optional;
@@ -78,13 +78,13 @@ public final class NetworkFailureRecorder {
     private static AutoCloseable listenCdp(String testId, ChromiumDriver chromium) {
         DevTools devTools = chromium.getDevTools();
         devTools.createSession();
-        devTools.send(org.openqa.selenium.devtools.v153.network.Network.enable(
+        devTools.send(org.openqa.selenium.devtools.v154.network.Network.enable(
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
         Map<String, String[]> seen = new ConcurrentHashMap<>();   // requestId (as text; RequestId has no value equality) -> {method, url}
-        devTools.addListener(org.openqa.selenium.devtools.v153.network.Network.requestWillBeSent(),
+        devTools.addListener(org.openqa.selenium.devtools.v154.network.Network.requestWillBeSent(),
                 (RequestWillBeSent e) -> seen.put(e.getRequestId().toString(),
                         new String[]{e.getRequest().getMethod(), e.getRequest().getUrl()}));
-        devTools.addListener(org.openqa.selenium.devtools.v153.network.Network.responseReceived(),
+        devTools.addListener(org.openqa.selenium.devtools.v154.network.Network.responseReceived(),
                 (ResponseReceived e) -> {
                     int status = e.getResponse().getStatus().intValue();
                     if (status < 400) return;
@@ -92,7 +92,7 @@ public final class NetworkFailureRecorder {
                     ExecutionMetrics.recordNetworkFailure(testId, req != null ? req[0] : "GET",
                             e.getResponse().getUrl(), status, null);
                 });
-        devTools.addListener(org.openqa.selenium.devtools.v153.network.Network.loadingFailed(),
+        devTools.addListener(org.openqa.selenium.devtools.v154.network.Network.loadingFailed(),
                 (LoadingFailed e) -> {
                     if (Boolean.TRUE.equals(e.getCanceled().orElse(false))) return;   // aborted by navigation, not a failure
                     String[] req = seen.get(e.getRequestId().toString());

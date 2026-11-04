@@ -18,10 +18,10 @@ import org.openqa.selenium.bidi.network.RequestData;
 import org.openqa.selenium.chromium.ChromiumDriver;
 import org.openqa.selenium.devtools.DevTools;
 import org.openqa.selenium.devtools.Command;
-import org.openqa.selenium.devtools.v153.fetch.Fetch;
-import org.openqa.selenium.devtools.v153.fetch.model.HeaderEntry;
-import org.openqa.selenium.devtools.v153.fetch.model.RequestId;
-import org.openqa.selenium.devtools.v153.fetch.model.RequestPaused;
+import org.openqa.selenium.devtools.v154.fetch.Fetch;
+import org.openqa.selenium.devtools.v154.fetch.model.HeaderEntry;
+import org.openqa.selenium.devtools.v154.fetch.model.RequestId;
+import org.openqa.selenium.devtools.v154.fetch.model.RequestPaused;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -373,8 +373,8 @@ public class NetworkMockTest {
         Consumer<RequestPaused> cdpListener = cdpCaptor.getValue();
 
         RequestPaused event = mock(RequestPaused.class);
-        org.openqa.selenium.devtools.v153.network.model.Request cdpReq =
-                mock(org.openqa.selenium.devtools.v153.network.model.Request.class);
+        org.openqa.selenium.devtools.v154.network.model.Request cdpReq =
+                mock(org.openqa.selenium.devtools.v154.network.model.Request.class);
         when(event.getRequest()).thenReturn(cdpReq);
         when(cdpReq.getUrl()).thenReturn("https://api.example.com/api/checkout");
         when(event.getRequestId()).thenReturn(new RequestId("cdp-1"));

@@ -7,10 +7,10 @@ import org.openqa.selenium.bidi.HasBiDi;
 import org.openqa.selenium.bidi.module.Network;
 import org.openqa.selenium.chromium.ChromiumDriver;
 import org.openqa.selenium.devtools.DevTools;
-import org.openqa.selenium.devtools.v153.network.model.LoadingFailed;
-import org.openqa.selenium.devtools.v153.network.model.LoadingFinished;
-import org.openqa.selenium.devtools.v153.network.model.RequestWillBeSent;
-import org.openqa.selenium.devtools.v153.network.model.ResponseReceived;
+import org.openqa.selenium.devtools.v154.network.model.LoadingFailed;
+import org.openqa.selenium.devtools.v154.network.model.LoadingFinished;
+import org.openqa.selenium.devtools.v154.network.model.RequestWillBeSent;
+import org.openqa.selenium.devtools.v154.network.model.ResponseReceived;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -38,13 +38,13 @@ final class NetworkActivityTracker {
         if (driver instanceof ChromiumDriver chromium) {
             try (DevTools devTools = chromium.getDevTools()) {
                 devTools.createSession();
-                devTools.send(org.openqa.selenium.devtools.v153.network.Network.enable(
+                devTools.send(org.openqa.selenium.devtools.v154.network.Network.enable(
                         Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
-                devTools.addListener(org.openqa.selenium.devtools.v153.network.Network.requestWillBeSent(),
+                devTools.addListener(org.openqa.selenium.devtools.v154.network.Network.requestWillBeSent(),
                         (RequestWillBeSent event) -> state.requestStarted());
-                devTools.addListener(org.openqa.selenium.devtools.v153.network.Network.loadingFinished(),
+                devTools.addListener(org.openqa.selenium.devtools.v154.network.Network.loadingFinished(),
                         (LoadingFinished event) -> state.requestEnded());
-                devTools.addListener(org.openqa.selenium.devtools.v153.network.Network.loadingFailed(),
+                devTools.addListener(org.openqa.selenium.devtools.v154.network.Network.loadingFailed(),
                         (LoadingFailed event) -> state.requestEnded());
                 pollUntilIdle(state, quietFor, timeout);
             }
@@ -65,9 +65,9 @@ final class NetworkActivityTracker {
         if (driver instanceof ChromiumDriver chromium) {
             try (DevTools devTools = chromium.getDevTools()) {
                 devTools.createSession();
-                devTools.send(org.openqa.selenium.devtools.v153.network.Network.enable(
+                devTools.send(org.openqa.selenium.devtools.v154.network.Network.enable(
                         Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
-                devTools.addListener(org.openqa.selenium.devtools.v153.network.Network.responseReceived(),
+                devTools.addListener(org.openqa.selenium.devtools.v154.network.Network.responseReceived(),
                         (ResponseReceived event) -> {
                             String url = event.getResponse().getUrl();
                             if (NetworkMock.matches(urlPattern, url)) {
