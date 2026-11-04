@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-### Unreleased
+### v3.10.0 — 2026-11-04
+
+- **HTML report: print stylesheet for "Save as PDF"** — printing the report now produces a clean document: UI chrome is hidden, all sections print instead of only the active tab, collapsed groups and failed-test details (error and full stack trace) are expanded, the light palette is used even in dark mode, and your on-screen filters are restored afterwards. (#221, #236)
+
+- **HTML report: execution timeline** — the dashboard now shows a Gantt-style timeline of when each test started and ended, built from the new per-test `startedAtMs` export. (#201)
+
+- **HTML report: results by tag** — a tag breakdown from TestNG groups, Cucumber tags and JUnit 5 tags, with click-to-filter in the Test Cases tab. (#167, #189)
+
+- **HTML report: refreshed theme and restructured markup** — the report's CSS, JavaScript and HTML partials are now separate files and the theme is aligned across tabs. (#192, #193, #194)
+
+- **Tracing: failure traces recorded by default in CI** — when `tracing.enabled` is not set, failed-test traces are recorded in CI and stay off locally. An explicit `true`/`false` still wins. (#198)
+
+- **Selenium Java 4.51.0 → 4.52.0** — internal upgrade. 4.52.0 no longer ships the CDP `devtools.v153` module, so `NetworkMock`, `DeviceEmulator` and the network trackers now use `devtools.v154`. No API change. (#238)
 
 - **HTML report: status and tag filter persistence** — the active status filter (All, Passed, Failed, Skipped, Flaky) and tag filter in the Test Cases tab are now persisted across page reloads and reopens using `localStorage` (`sb-status-filter` and `sb-tag-filter`). Storage reads and writes are safely guarded against restricted environments (private browsing, disabled storage, quota limits); if a previously stored tag is not present in the current report, it is gracefully ignored without restricting rows, and restoring filters preserves the default Dashboard tab view. (#215)
 
