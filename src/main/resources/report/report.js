@@ -275,3 +275,180 @@ function copyFailure(btn, event) {
     } catch (e) {}
 })();
 
+
+// ── Print handling ──
+let printState = null;
+
+// Prepare the complete report for printing.
+window.addEventListener('beforeprint', function () {
+    // 1. Save interactive state before modifying anything
+    printState = {
+        // Tab state
+        activeTabPaneId: (function() {
+            const activePane = document.querySelector('.tab-pane.active');
+            return activePane ? activePane.id : 'tab-dashboard';
+        })(),
+        activeNavItemIndex: (function() {
+            const items = Array.from(document.querySelectorAll('.nav-item'));
+            return items.findIndex(item => item.classList.contains('active'));
+        })(),
+        // Filter and search state
+        activeFilter: activeFilter,
+        activeTagFilter: activeTagFilter,
+        searchValue: (function() {
+            const searchInput = document.getElementById('searchInput');
+            return searchInput ? searchInput.value : '';
+        })(),
+        activeFilterBtnIndex: (function() {
+            const btns = Array.from(document.querySelectorAll('.filter-btn'));
+            return btns.findIndex(b => b.classList.contains('active'));
+        })(),
+        activeTagPillDisplay: (function() {
+            const pill = document.getElementById('activeTagPill');
+            return pill ? pill.style.display : 'none';
+        })(),
+        // Group row and icon states
+        groupMembers: Array.from(document.querySelectorAll('.group-member')).map(row => ({
+            el: row,
+            display: row.style.display
+        })),
+        groupHeaders: Array.from(document.querySelectorAll('.group-header')).map(row => ({
+            el: row,
+            display: row.style.display
+        })),
+        groupIcons: Array.from(document.querySelectorAll('.group-icon')).map(icon => ({
+            el: icon,
+            isClosed: icon.classList.contains('closed')
+        })),
+        // Detail row and icon states
+        detailRows: Array.from(document.querySelectorAll('.detail-row')).map(row => ({
+            el: row,
+            display: row.style.display
+        })),
+        expandIcons: Array.from(document.querySelectorAll('.expand-icon')).map(icon => ({
+            el: icon,
+            isOpen: icon.classList.contains('open')
+        }))
+    };
+
+    // 2. Expand all test groups so collapsed groups do not exclude results
+    document.querySelectorAll('.group-member:not(.detail-row)').forEach(function (row) {
+        row.style.display = '';
+    });
+
+    document.querySelectorAll('.group-header').forEach(function (row) {
+        row.style.display = '';
+    });
+
+    document.querySelectorAll('.group-icon').forEach(function (icon) {
+        icon.classList.remove('closed');
+    });
+
+    // 3. Expand failed-test detail rows before printing so error messages and stack traces are included
+    document.querySelectorAll('#testTable tbody tr.group-member[data-status="FAILED"], #failureTable tbody tr.group-member').forEach(function (failedRow) {
+        const next = failedRow.nextElementSibling;
+        if (next && next.classList.contains('detail-row')) {
+            next.style.display = '';
+        }
+        const icon = failedRow.querySelector('.expand-icon');
+        if (icon) {
+            icon.classList.add('open');
+        }
+    });
+
+    // 4. Ensure filters/search do not exclude tests from the printed report
+    document.querySelectorAll('.filter-btn').forEach(function (button) {
+        button.classList.remove('active');
+    });
+
+    const allFilter = document.querySelector('.filter-btn[onclick*="ALL"]');
+    if (allFilter) {
+        allFilter.classList.add('active');
+    }
+
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.value = '';
+    }
+
+    const activeTagPill = document.getElementById('activeTagPill');
+    if (activeTagPill) {
+        activeTagPill.style.display = 'none';
+    }
+});
+
+// Restore original interactive state after printing.
+window.addEventListener('afterprint', function () {
+    if (!printState) return;
+
+    // 1. Restore tabs
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+    const originalTabPane = document.getElementById(printState.activeTabPaneId);
+    if (originalTabPane) {
+        originalTabPane.classList.add('active');
+    }
+
+    const navItems = document.querySelectorAll('.nav-item');
+    if (printState.activeNavItemIndex >= 0 && navItems[printState.activeNavItemIndex]) {
+        navItems[printState.activeNavItemIndex].classList.add('active');
+    }
+
+    // 2. Restore filters and search query
+    activeFilter = printState.activeFilter;
+    activeTagFilter = printState.activeTagFilter;
+
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    if (printState.activeFilterBtnIndex >= 0 && filterBtns[printState.activeFilterBtnIndex]) {
+        filterBtns[printState.activeFilterBtnIndex].classList.add('active');
+    }
+
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.value = printState.searchValue;
+    }
+
+    const activeTagPill = document.getElementById('activeTagPill');
+    if (activeTagPill) {
+        activeTagPill.style.display = printState.activeTagPillDisplay;
+    }
+
+    // 3. Restore group rows and icons
+    printState.groupMembers.forEach(item => {
+        item.el.style.display = item.display;
+    });
+
+    printState.groupHeaders.forEach(item => {
+        item.el.style.display = item.display;
+    });
+
+    printState.groupIcons.forEach(item => {
+        if (item.isClosed) {
+            item.el.classList.add('closed');
+        } else {
+            item.el.classList.remove('closed');
+        }
+    });
+
+    // 4. Restore detail rows and icons
+    printState.detailRows.forEach(item => {
+        item.el.style.display = item.display;
+    });
+
+    printState.expandIcons.forEach(item => {
+        if (item.isOpen) {
+            item.el.classList.add('open');
+        } else {
+            item.el.classList.remove('open');
+        }
+    });
+
+    // 5. Re-apply search/filters if there were any active
+    if (printState.activeFilter !== 'ALL' || printState.activeTagFilter || printState.searchValue) {
+        applySearch();
+    }
+
+    printState = null;
+});
