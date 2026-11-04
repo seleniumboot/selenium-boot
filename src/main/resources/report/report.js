@@ -451,4 +451,4 @@ window.addEventListener('afterprint', function () {
     }
 
     printState = null;
-});
+});
