@@ -102,6 +102,27 @@ function toggleDetail(idx) {
     if (icon) icon.classList.toggle('open', !isOpen);
 }
 
+// ── Expand all / collapse all (tests matching the active filter and search) ──
+function setAllDetails(open) {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    if (open) {
+        document.querySelectorAll('#testTable tbody tr.group-header').forEach(hdr => {
+            if (hdr.style.display === 'none') return;
+            const icon = document.getElementById('gicon-' + hdr.getAttribute('data-group'));
+            if (icon) icon.classList.remove('closed');
+        });
+    }
+    document.querySelectorAll('#testTable tbody tr.group-member.expandable').forEach(row => {
+        if (!rowMatches(row, q) || !groupIsOpen(row.getAttribute('data-group'))) return;
+        const detail = row.nextElementSibling;
+        if (!detail || !detail.classList.contains('detail-row')) return;
+        row.style.display = '';
+        detail.style.display = open ? '' : 'none';
+        const icon = row.querySelector('.expand-icon');
+        if (icon) icon.classList.toggle('open', open);
+    });
+}
+
 // ── Tag filtering ──
 let activeTagFilter = '';
 function filterByTag(tagName, event) {
@@ -152,27 +173,36 @@ function setFilter(status, btn) {
     } catch (e) {}
     applySearch();
 }
+function rowMatches(row, q) {
+    const rowStatus = row.getAttribute('data-status') || '';
+    const rowTest   = row.getAttribute('data-test')   || '';
+    const groupId   = row.getAttribute('data-group')  || '';
+    const rowTags   = (row.getAttribute('data-tags')  || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+    const hasRetry  = row.querySelector('.retry-badge') !== null;
+    const matchFilter = activeFilter === 'ALL'
+        || activeFilter === rowStatus
+        || (activeFilter === 'FLAKY' && hasRetry);
+    const matchTag = !activeTagFilter || rowTags.includes(activeTagFilter);
+    const matchSearch = !q
+        || rowTest.includes(q)
+        || groupId.toLowerCase().includes(q)
+        || rowTags.some(t => t.includes(q));
+    return matchFilter && matchTag && matchSearch;
+}
+function groupIsOpen(groupId) {
+    const icon = document.getElementById('gicon-' + groupId);
+    return !icon || !icon.classList.contains('closed');
+}
 function applySearch() {
     const q = document.getElementById('searchInput').value.toLowerCase();
     const members = document.querySelectorAll('#testTable tbody tr.group-member:not(.detail-row)');
     const visibleGroups = new Set();
     members.forEach(row => {
-        const rowStatus = row.getAttribute('data-status') || '';
-        const rowTest   = row.getAttribute('data-test')   || '';
-        const groupId   = row.getAttribute('data-group')  || '';
-        const rowTags   = (row.getAttribute('data-tags')  || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-        const hasRetry  = row.querySelector('.retry-badge') !== null;
-        const matchFilter = activeFilter === 'ALL'
-            || activeFilter === rowStatus
-            || (activeFilter === 'FLAKY' && hasRetry);
-        const matchTag = !activeTagFilter || rowTags.includes(activeTagFilter);
-        const matchSearch = !q
-            || rowTest.includes(q)
-            || groupId.toLowerCase().includes(q)
-            || rowTags.some(t => t.includes(q));
-        const show = matchFilter && matchTag && matchSearch;
+        const groupId = row.getAttribute('data-group') || '';
+        const match = rowMatches(row, q);
+        const show = match && groupIsOpen(groupId);
         row.style.display = show ? '' : 'none';
-        if (show) visibleGroups.add(groupId);
+        if (match) visibleGroups.add(groupId);
         const next = row.nextElementSibling;
         if (next && next.classList.contains('detail-row') && !show) next.style.display = 'none';
     });
