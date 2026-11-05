@@ -11,6 +11,10 @@
                         <span id="activeTagName"></span>
                         <button type="button" class="tag-clear-btn" onclick="clearTagFilter()" title="Clear tag filter">&times;</button>
                     </span>
+                    <span class="expand-controls">
+                        <button type="button" class="filter-btn" onclick="setAllDetails(true)">Expand all</button>
+                        <button type="button" class="filter-btn" onclick="setAllDetails(false)">Collapse all</button>
+                    </span>
                     <div class="search-wrap">
                         <span class="search-icon">&#128269;</span>
                         <input type="text" id="searchInput" placeholder="Search by test, class, or tag..." oninput="applySearch()">

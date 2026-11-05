@@ -233,6 +233,7 @@
         .filter-bar { display: flex; align-items: center; gap: 10px; padding: 14px 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
         .filter-btn { border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); border-radius: 16px; padding: 4px 14px; font-size: 13px; cursor: pointer; transition: all .15s; }
         .filter-btn:hover, .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .expand-controls { display: inline-flex; gap: 8px; margin-left: 8px; }
         .search-wrap { margin-left: auto; display: flex; align-items: center; border: 1px solid var(--border); border-radius: 20px; padding: 4px 14px; background: var(--surface2); }
         .search-wrap input { border: none; background: transparent; outline: none; font-size: 13px; color: var(--text); width: 200px; }
         .search-wrap input::placeholder { color: var(--text-secondary); }
@@ -474,6 +475,7 @@
     .sidebar,
     .filter-bar,
     .filter-btn,
+    .expand-controls,
     .search-wrap,
     .dark-toggle,
     .copy-failure-btn,
