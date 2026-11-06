@@ -144,7 +144,7 @@ public final class HtmlReportGenerator {
             String base64 = Base64.getEncoder().encodeToString(bytes);
             String src = "data:image/png;base64," + base64;
             return "<img src=\"" + src + "\" class=\"screenshot-thumb\" "
-                   + "onclick=\"openLightbox(this.src)\" title=\"Click to view full size\" />";
+                   + "onclick=\"openLightbox(this)\" title=\"Click to view full size\" />";
         } catch (java.io.IOException e) {
             return "<span class=\"screenshot-error\">load error</span>";
         }
@@ -1066,7 +1066,7 @@ public final class HtmlReportGenerator {
             if (step.has("screenshotBase64")) {
                 String src = "data:image/png;base64," + step.get("screenshotBase64").asText();
                 thumbHtml = "<img src=\"" + src + "\" class=\"step-thumb\" "
-                          + "onclick=\"openLightbox(this.src)\" title=\"Click to view full size\" />";
+                          + "onclick=\"openLightbox(this)\" title=\"Click to view full size\" />";
             }
 
             sb.append("<div class=\"step-item\">")
