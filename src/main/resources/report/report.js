@@ -6,18 +6,56 @@ function showTab(tabId, el) {
     if (el) el.classList.add('active');
 }
 // ── Lightbox ──
-function openLightbox(src) {
-    document.getElementById('lightbox-img').src = src;
+var lightboxImgs = [];
+var lightboxIdx = 0;
+// Screenshots of the same test: its row thumbnail plus the thumbnails in its detail row.
+function collectTestScreenshots(img) {
+    var row = img.closest('tr');
+    if (!row) return [img];
+    var testRow = row.classList.contains('detail-row') ? row.previousElementSibling : row;
+    var detailRow = testRow && testRow.nextElementSibling;
+    var rows = [testRow];
+    if (detailRow && detailRow.classList.contains('detail-row')) rows.push(detailRow);
+    var imgs = [];
+    rows.forEach(function(r) {
+        if (r) r.querySelectorAll('img.screenshot-thumb, img.step-thumb').forEach(function(i) { imgs.push(i); });
+    });
+    return imgs.indexOf(img) >= 0 ? imgs : [img];
+}
+function showLightbox() {
+    document.getElementById('lightbox-img').src = lightboxImgs[lightboxIdx].src;
+    var multi = lightboxImgs.length > 1;
+    document.getElementById('lightbox-counter').textContent = multi ? (lightboxIdx + 1) + ' / ' + lightboxImgs.length : '';
+    document.getElementById('lightbox-prev').style.display = multi ? '' : 'none';
+    document.getElementById('lightbox-next').style.display = multi ? '' : 'none';
+    document.getElementById('lightbox-prev').disabled = lightboxIdx === 0;
+    document.getElementById('lightbox-next').disabled = lightboxIdx === lightboxImgs.length - 1;
+}
+function openLightbox(img) {
+    lightboxImgs = collectTestScreenshots(img);
+    lightboxIdx = lightboxImgs.indexOf(img);
+    showLightbox();
     document.getElementById('lightbox').classList.add('open');
     document.body.style.overflow = 'hidden';
+}
+function stepLightbox(delta, e) {
+    if (e) e.stopPropagation();
+    var next = lightboxIdx + delta;
+    if (next < 0 || next >= lightboxImgs.length) return;
+    lightboxIdx = next;
+    showLightbox();
 }
 function closeLightbox() {
     document.getElementById('lightbox').classList.remove('open');
     document.getElementById('lightbox-img').src = '';
     document.body.style.overflow = '';
+    lightboxImgs = [];
 }
 document.addEventListener('keydown', function(e) {
+    if (!document.getElementById('lightbox').classList.contains('open')) return;
     if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft') stepLightbox(-1);
+    else if (e.key === 'ArrowRight') stepLightbox(1);
 });
 
 // ── Dark mode ──

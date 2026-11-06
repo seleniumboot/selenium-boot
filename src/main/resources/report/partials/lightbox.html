@@ -1,5 +1,8 @@
 <!-- Lightbox modal -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
     <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
-    <img id="lightbox-img" src="" alt="Screenshot">
+    <button type="button" class="lightbox-nav lightbox-prev" id="lightbox-prev" onclick="stepLightbox(-1, event)" aria-label="Previous screenshot">&#10094;</button>
+    <img id="lightbox-img" src="" alt="Screenshot" onclick="event.stopPropagation()">
+    <button type="button" class="lightbox-nav lightbox-next" id="lightbox-next" onclick="stepLightbox(1, event)" aria-label="Next screenshot">&#10095;</button>
+    <span class="lightbox-counter" id="lightbox-counter"></span>
 </div>

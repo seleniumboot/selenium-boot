@@ -228,6 +228,12 @@
         .lightbox img { max-width: 92vw; max-height: 92vh; border-radius: 6px; box-shadow: 0 8px 40px rgba(0,0,0,.6); }
         .lightbox-close { position: fixed; top: 18px; right: 24px; color: #fff; font-size: 32px; cursor: pointer; line-height: 1; opacity: .8; }
         .lightbox-close:hover { opacity: 1; }
+        .lightbox-nav { position: fixed; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.15); color: #fff; border: 0; border-radius: 50%; width: 44px; height: 44px; font-size: 20px; cursor: pointer; }
+        .lightbox-nav:hover:not(:disabled) { background: rgba(255,255,255,.3); }
+        .lightbox-nav:disabled { opacity: .25; cursor: default; }
+        .lightbox-prev { left: 20px; }
+        .lightbox-next { right: 20px; }
+        .lightbox-counter { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 14px; background: rgba(0,0,0,.5); padding: 3px 12px; border-radius: 12px; }
 
         /* ── Filter + search bar ── */
         .filter-bar { display: flex; align-items: center; gap: 10px; padding: 14px 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
