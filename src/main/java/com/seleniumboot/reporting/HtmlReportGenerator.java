@@ -365,8 +365,8 @@ public final class HtmlReportGenerator {
         int lastDot        = rawTestId.lastIndexOf('.');
         String methodName  = escapeHtml(lastDot >= 0 ? rawTestId.substring(lastDot + 1) : rawTestId);
         String description = test.has("description") ? escapeHtml(test.get("description").asText()) : "";
-        long   logicMs     = test.has("testLogicMs") ? test.get("testLogicMs").asLong() : 0L;
-        long   totalMs     = test.has("totalMs")     ? test.get("totalMs").asLong()     : 0L;
+        long   logicMs     = test.hasNonNull("testLogicMs") ? test.get("testLogicMs").asLong(0L) : 0L;
+        long   totalMs     = test.hasNonNull("totalMs")     ? test.get("totalMs").asLong(0L)     : 0L;
         int    retryCount  = test.has("retryCount")  ? test.get("retryCount").asInt()   : 0;
         String errorMsg      = test.has("errorMessage")  ? test.get("errorMessage").asText()  : null;
         String stackTrace    = test.has("stackTrace")    ? test.get("stackTrace").asText()    : null;
@@ -465,7 +465,9 @@ public final class HtmlReportGenerator {
                 + " data-group=\"" + groupKey + "\""
                 + " data-status=\"" + status + "\""
                 + " data-tags=\"" + tagDataAttr + "\""
-                + " data-test=\"" + methodName.toLowerCase() + "\">"
+                + " data-test=\"" + methodName.toLowerCase() + "\""
+                + " data-logic-ms=\"" + logicMs + "\""
+                + " data-total-ms=\"" + totalMs + "\">"
                 + "<td class=\"test-id\">" + testCellContent + "</td>"
                 + "<td class=\"desc-cell\">" + description + "</td>"
                 + browserCell
