@@ -253,6 +253,44 @@
             padding: 11px 14px; font-size: 12px; font-weight: 500;
             text-transform: uppercase; letter-spacing: .5px; text-align: left; white-space: nowrap;
         }
+
+        /* ── Sortable table headers ── */
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: background .15s ease, color .15s ease;
+        }
+        th.sortable:hover {
+            background: var(--primary-dark);
+        }
+        th.sortable.active {
+            background: var(--primary-dark);
+        }
+        .sort-icon {
+            display: inline-block;
+            margin-left: 6px;
+            font-size: 11px;
+            line-height: 1;
+            vertical-align: middle;
+            opacity: 0.4;
+            transition: opacity .15s ease;
+        }
+        .sort-icon::after {
+            content: '\21C5';
+        }
+        th.sortable:hover .sort-icon {
+            opacity: 0.8;
+        }
+        th.sortable.active .sort-icon {
+            opacity: 1;
+        }
+        .sort-icon.asc::after {
+            content: '\25B2';
+        }
+        .sort-icon.desc::after {
+            content: '\25BC';
+        }
         tbody td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
         tbody tr:nth-child(even):not(.detail-row) { background: var(--surface2); }
         tbody tr.expandable:hover { background: var(--hover); cursor: pointer; }
@@ -489,6 +527,7 @@
     .active-tag-pill,
     .failures-shortcut,
     .lightbox,
+    .sort-icon,
     .footer {
         display: none !important;
     }
@@ -575,6 +614,10 @@
 
     thead {
         display: table-header-group !important;
+    }
+
+    th.sortable {
+        cursor: default !important;
     }
 
     tr {
