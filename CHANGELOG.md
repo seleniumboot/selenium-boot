@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### v3.10.0 — 2026-11-04
 
+- **HTML report: sortable columns in Test Cases table** — clicking headers for Test, Status, Logic (ms), and Total (ms) sorts rows within each test class group ascending or descending with visual sort indicators, while preserving detail row attachments and cooperating seamlessly with active status, tag, and search filters. (#217)
+
+
 - **HTML report: print stylesheet for "Save as PDF"** — printing the report now produces a clean document: UI chrome is hidden, all sections print instead of only the active tab, collapsed groups and failed-test details (error and full stack trace) are expanded, the light palette is used even in dark mode, and your on-screen filters are restored afterwards. (#221, #236)
 
 - **HTML report: execution timeline** — the dashboard now shows a Gantt-style timeline of when each test started and ended, built from the new per-test `startedAtMs` export. (#201)
