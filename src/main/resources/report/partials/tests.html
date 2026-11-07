@@ -24,11 +24,11 @@
                     <table id="testTable">
                         <thead>
                             <tr>
-                                <th>Test</th>
+                                <th class="sortable" data-sort-key="test" onclick="sortTestTable('test')" title="Click to sort">Test <span class="sort-icon"></span></th>
                                 <th>Description</th>
-                                <th>Status</th>
-                                <th>Logic (ms)</th>
-                                <th>Total (ms)</th>
+                                <th class="sortable" data-sort-key="status" onclick="sortTestTable('status')" title="Click to sort">Status <span class="sort-icon"></span></th>
+                                <th class="sortable" data-sort-key="logic" onclick="sortTestTable('logic')" title="Click to sort">Logic (ms) <span class="sort-icon"></span></th>
+                                <th class="sortable" data-sort-key="total" onclick="sortTestTable('total')" title="Click to sort">Total (ms) <span class="sort-icon"></span></th>
                                 <th>Screenshot</th>
                                 <th>Detail</th>
                             </tr>

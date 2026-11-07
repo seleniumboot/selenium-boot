@@ -410,4 +410,288 @@ public class HtmlReportGeneratorTest {
         assertFalse(restorationScript.contains("showTab('tests'"),
                 "Filter restoration must not call showTab('tests') on load");
     }
+
+    // ── Sortable Columns in Test Cases Table (Issue #217) ──
+
+    @Test
+    public void buildHtml_sortableHeaders_haveSortableClassClickHandlersAndSortIcons() throws Exception {
+        String reportHtml = html(1, 0);
+
+        int tableStart = reportHtml.indexOf("<table id=\"testTable\">");
+        int theadEnd = reportHtml.indexOf("</thead>", tableStart);
+        assertTrue(tableStart > 0 && theadEnd > tableStart, "testTable thead must be present in HTML");
+        String theadHtml = reportHtml.substring(tableStart, theadEnd);
+
+        // 1. Test column header
+        assertTrue(theadHtml.contains("sortTestTable('test')"),
+                "Test column header must contain sortTestTable('test') onclick handler");
+        assertTrue(theadHtml.contains("data-sort-key=\"test\""),
+                "Test column header must carry data-sort-key=\"test\"");
+
+        // 2. Status column header
+        assertTrue(theadHtml.contains("sortTestTable('status')"),
+                "Status column header must contain sortTestTable('status') onclick handler");
+        assertTrue(theadHtml.contains("data-sort-key=\"status\""),
+                "Status column header must carry data-sort-key=\"status\"");
+
+        // 3. Logic (ms) column header
+        assertTrue(theadHtml.contains("sortTestTable('logic')"),
+                "Logic ms column header must contain sortTestTable('logic') onclick handler");
+        assertTrue(theadHtml.contains("data-sort-key=\"logic\""),
+                "Logic ms column header must carry data-sort-key=\"logic\"");
+
+        // 4. Total (ms) column header
+        assertTrue(theadHtml.contains("sortTestTable('total')"),
+                "Total ms column header must contain sortTestTable('total') onclick handler");
+        assertTrue(theadHtml.contains("data-sort-key=\"total\""),
+                "Total ms column header must carry data-sort-key=\"total\"");
+
+        // 5. Check sortable class and sort-icon presence
+        int sortableClassCount = 0;
+        int idx = 0;
+        while ((idx = theadHtml.indexOf("class=\"sortable\"", idx)) >= 0) {
+            sortableClassCount++;
+            idx += "class=\"sortable\"".length();
+        }
+        assertEquals(sortableClassCount, 4, "There should be exactly 4 sortable column headers");
+
+        int sortIconCount = 0;
+        idx = 0;
+        while ((idx = theadHtml.indexOf("class=\"sort-icon\"", idx)) >= 0) {
+            sortIconCount++;
+            idx += "class=\"sort-icon\"".length();
+        }
+        assertEquals(sortIconCount, 4, "There should be exactly 4 sort-icon elements in the thead");
+    }
+
+    @Test
+    public void buildHtml_nonSortableHeaders_doNotCarrySortControls() throws Exception {
+        String reportHtml = html(1, 0);
+
+        int tableStart = reportHtml.indexOf("<table id=\"testTable\">");
+        int theadEnd = reportHtml.indexOf("</thead>", tableStart);
+        assertTrue(tableStart > 0 && theadEnd > tableStart, "testTable thead must be present in HTML");
+        String theadHtml = reportHtml.substring(tableStart, theadEnd);
+
+        // Split into <th> chunks to inspect non-sortable columns individually
+        String[] ths = theadHtml.split("<th");
+        for (String th : ths) {
+            if (th.contains(">Description<") || th.contains(">Screenshot<") || th.contains(">Detail<")) {
+                assertFalse(th.contains("sortable"), "Non-sortable column must not have sortable class: " + th);
+                assertFalse(th.contains("sortTestTable"), "Non-sortable column must not have sort onclick: " + th);
+                assertFalse(th.contains("sort-icon"), "Non-sortable column must not have sort-icon span: " + th);
+            }
+        }
+    }
+
+    @Test
+    public void buildHtml_testRows_carryLogicAndTotalMsDataAttributes() throws Exception {
+        String json = """
+        {
+            "totalTests": 2,
+            "passedTests": 1,
+            "failedTests": 1,
+            "skippedTests": 0,
+            "passRate": 50.0,
+            "tests": [
+                {
+                    "testId": "com.example.OrderTest.checkoutSuccess",
+                    "testClassName": "OrderTest",
+                    "status": "PASSED",
+                    "testLogicMs": 1420,
+                    "totalMs": 2850
+                },
+                {
+                    "testId": "com.example.OrderTest.paymentFailure",
+                    "testClassName": "OrderTest",
+                    "status": "FAILED",
+                    "testLogicMs": 0,
+                    "totalMs": 500,
+                    "errorMessage": "gateway timeout"
+                }
+            ]
+        }
+        """;
+        JsonNode root = new ObjectMapper().readTree(json);
+        String reportHtml = HtmlReportGenerator.buildHtml(root);
+
+        // Passed test row assertions
+        assertTrue(reportHtml.contains("data-test=\"checkoutsuccess\""), "methodName lowercased in data-test");
+        assertTrue(reportHtml.contains("data-status=\"PASSED\""), "status attribute present");
+        assertTrue(reportHtml.contains("data-logic-ms=\"1420\""), "data-logic-ms must match testLogicMs");
+        assertTrue(reportHtml.contains("data-total-ms=\"2850\""), "data-total-ms must match totalMs");
+
+        // Failed test row assertions
+        assertTrue(reportHtml.contains("data-test=\"paymentfailure\""), "methodName lowercased in data-test");
+        assertTrue(reportHtml.contains("data-status=\"FAILED\""), "status attribute present");
+        assertTrue(reportHtml.contains("data-logic-ms=\"0\""), "data-logic-ms handles 0 cleanly");
+        assertTrue(reportHtml.contains("data-total-ms=\"500\""), "data-total-ms must match totalMs");
+    }
+
+    @Test
+    public void buildHtml_sortingScript_includesSortingLogicAndFilterIntegration() throws Exception {
+        String reportHtml = html(1, 0);
+
+        int scriptStart = reportHtml.lastIndexOf("<script>");
+        int scriptEnd = reportHtml.lastIndexOf("</script>");
+        assertTrue(scriptStart > 0 && scriptEnd > scriptStart, "Generated HTML must contain embedded script block");
+        String js = reportHtml.substring(scriptStart, scriptEnd);
+
+        // 1. Function and state tracking
+        assertTrue(js.contains("function sortTestTable(") || js.contains("sortTestTable = function("),
+                "Report script must define sortTestTable function");
+        assertTrue(js.contains("currentSortCol") && js.contains("currentSortDir"),
+                "Report script must track currentSortCol and currentSortDir");
+
+        // 2. Supported sort keys
+        assertTrue(js.contains("'test'") && js.contains("'status'") && js.contains("'logic'") && js.contains("'total'"),
+                "Sorting logic must support 'test', 'status', 'logic', and 'total' keys");
+
+        // 3. Numeric attributes and comparison
+        assertTrue(js.contains("data-logic-ms") && js.contains("data-total-ms"),
+                "Sorting logic must query data-logic-ms and data-total-ms attributes");
+
+        // 4. Sort indicator styling update
+        assertTrue(js.contains(".sort-icon") && js.contains("'asc'") && js.contains("'desc'"),
+                "Sorting logic must toggle asc and desc classes on .sort-icon elements");
+
+        // 5. Group preservation and detail row pairing
+        assertTrue(js.contains("detail-row"),
+                "Sorting logic must maintain pairing with contiguous detail-row elements");
+        assertTrue(js.contains("group-header") || js.contains("data-group"),
+                "Sorting logic must preserve class group headers");
+
+        // 6. Filter cooperation
+        assertTrue(js.contains("applySearch()"),
+                "sortTestTable must call applySearch() to refresh visibility under active filters");
+    }
+
+    @Test
+    public void buildHtml_matrixRun_preservesSortingDataAttributesAndBrowserColumn() throws Exception {
+        String json = """
+        {
+            "totalTests": 2,
+            "passedTests": 2,
+            "failedTests": 0,
+            "skippedTests": 0,
+            "passRate": 100.0,
+            "tests": [
+                {
+                    "testId": "com.example.MatrixTest.testCrossBrowser",
+                    "testClassName": "MatrixTest",
+                    "browser": "chrome",
+                    "status": "PASSED",
+                    "testLogicMs": 850,
+                    "totalMs": 1200
+                },
+                {
+                    "testId": "com.example.MatrixTest.testCrossBrowser",
+                    "testClassName": "MatrixTest",
+                    "browser": "firefox",
+                    "status": "PASSED",
+                    "testLogicMs": 950,
+                    "totalMs": 1350
+                }
+            ]
+        }
+        """;
+        JsonNode root = new ObjectMapper().readTree(json);
+        String reportHtml = HtmlReportGenerator.buildHtml(root);
+
+        // Verify matrix groups
+        assertTrue(reportHtml.contains("MatrixTest [Chrome]"), "Matrix run must include browser in group header");
+        assertTrue(reportHtml.contains("MatrixTest [Firefox]"), "Matrix run must include browser in group header");
+
+        // Verify browser cells
+        assertTrue(reportHtml.contains("<td class=\"browser-cell\">Chrome</td>"));
+        assertTrue(reportHtml.contains("<td class=\"browser-cell\">Firefox</td>"));
+
+        // Verify sorting data attributes are present on both matrix rows
+        assertTrue(reportHtml.contains("data-logic-ms=\"850\""));
+        assertTrue(reportHtml.contains("data-total-ms=\"1200\""));
+        assertTrue(reportHtml.contains("data-logic-ms=\"950\""));
+        assertTrue(reportHtml.contains("data-total-ms=\"1350\""));
+
+        // Verify table still contains sortable headers
+        assertTrue(reportHtml.contains("onclick=\"sortTestTable('test')\""));
+        assertTrue(reportHtml.contains("onclick=\"sortTestTable('logic')\""));
+    }
+
+    @Test
+    public void buildHtml_sortableHeaderCss_includesSortIconsAndActiveStates() throws Exception {
+        String reportHtml = html(1, 0);
+
+        int styleStart = reportHtml.indexOf("<style>");
+        int styleEnd = reportHtml.indexOf("</style>");
+        assertTrue(styleStart > 0 && styleEnd > styleStart, "Report must contain embedded style block");
+        String css = reportHtml.substring(styleStart, styleEnd);
+
+        assertTrue(css.contains(".sortable"), "CSS must contain .sortable selector");
+        assertTrue(css.contains(".sort-icon"), "CSS must contain .sort-icon selector");
+        assertTrue(css.contains(".sort-icon.asc") || css.contains(".asc"), "CSS must support asc sort icon state");
+        assertTrue(css.contains(".sort-icon.desc") || css.contains(".desc"), "CSS must support desc sort icon state");
+    }
+
+    @Test
+    public void generate_writesValidReportWithSortableColumnsToDisk() throws Exception {
+        java.nio.file.Path tempDir = java.nio.file.Files.createTempDirectory("sb-e2e-report");
+        String originalReportsDir = System.getProperty("seleniumboot.reports.dir");
+        System.setProperty("seleniumboot.reports.dir", tempDir.toString());
+        try {
+            // Write a sample metrics JSON file
+            String sampleMetricsJson = """
+            {
+                "totalTests": 2,
+                "passedTests": 1,
+                "failedTests": 1,
+                "skippedTests": 0,
+                "passRate": 50.0,
+                "suiteDurationMs": 2500,
+                "tests": [
+                    {
+                        "testId": "com.example.SampleTest.testAlpha",
+                        "testClassName": "SampleTest",
+                        "status": "PASSED",
+                        "testLogicMs": 500,
+                        "totalMs": 800
+                    },
+                    {
+                        "testId": "com.example.SampleTest.testBeta",
+                        "testClassName": "SampleTest",
+                        "status": "FAILED",
+                        "testLogicMs": 1200,
+                        "totalMs": 1700,
+                        "errorMessage": "Assertion failed"
+                    }
+                ]
+            }
+            """;
+            java.nio.file.Files.writeString(tempDir.resolve("selenium-boot-metrics.json"), sampleMetricsJson);
+
+            // Execute generate()
+            HtmlReportGenerator.generate();
+
+            // Verify report file was created
+            java.nio.file.Path reportPath = tempDir.resolve("selenium-boot-report.html");
+            assertTrue(java.nio.file.Files.exists(reportPath), "selenium-boot-report.html must exist on disk");
+            assertTrue(java.nio.file.Files.size(reportPath) > 0, "Report file must not be empty");
+
+            // Read generated HTML and verify sortable columns and data attributes
+            String generatedHtml = java.nio.file.Files.readString(reportPath);
+            assertTrue(generatedHtml.contains("class=\"sortable\""), "Generated report on disk must contain sortable headers");
+            assertTrue(generatedHtml.contains("sortTestTable('test')"), "Generated report on disk must contain test sort handler");
+            assertTrue(generatedHtml.contains("sortTestTable('logic')"), "Generated report on disk must contain logic sort handler");
+            assertTrue(generatedHtml.contains("data-logic-ms=\"500\""), "Generated report on disk must contain row data-logic-ms");
+            assertTrue(generatedHtml.contains("data-total-ms=\"800\""), "Generated report on disk must contain row data-total-ms");
+            assertTrue(generatedHtml.contains("data-logic-ms=\"1200\""), "Generated report on disk must contain row data-logic-ms");
+            assertTrue(generatedHtml.contains("data-total-ms=\"1700\""), "Generated report on disk must contain row data-total-ms");
+            assertTrue(generatedHtml.contains("function sortTestTable"), "Generated report on disk must contain sorting script");
+        } finally {
+            if (originalReportsDir != null) {
+                System.setProperty("seleniumboot.reports.dir", originalReportsDir);
+            } else {
+                System.clearProperty("seleniumboot.reports.dir");
+            }
+        }
+    }
 }

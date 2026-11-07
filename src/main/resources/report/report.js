@@ -250,6 +250,159 @@ function applySearch() {
     });
 }
 
+// ── Column sorting (Test Cases tab) ──
+let currentSortCol = null;
+let currentSortDir = 'asc';
+
+function getNumericVal(row, attr, fallbackIndex) {
+    const val = row.getAttribute(attr);
+    if (val !== null && val !== '') {
+        const n = parseFloat(val);
+        if (!isNaN(n)) return n;
+    }
+    const numericCells = row.querySelectorAll('td.numeric');
+    if (numericCells.length > fallbackIndex) {
+        const n = parseFloat(numericCells[fallbackIndex].textContent.trim());
+        if (!isNaN(n)) return n;
+    }
+    return 0;
+}
+
+function compareTestRows(pairA, pairB, colKey, dir) {
+    const rowA = pairA.testRow;
+    const rowB = pairB.testRow;
+    let cmp = 0;
+
+    if (colKey === 'test') {
+        const a = (rowA.getAttribute('data-test') || '').toLowerCase();
+        const b = (rowB.getAttribute('data-test') || '').toLowerCase();
+        cmp = a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+    } else if (colKey === 'status') {
+        const a = (rowA.getAttribute('data-status') || '').toUpperCase();
+        const b = (rowB.getAttribute('data-status') || '').toUpperCase();
+        cmp = a.localeCompare(b);
+        if (cmp === 0) {
+            const testA = (rowA.getAttribute('data-test') || '').toLowerCase();
+            const testB = (rowB.getAttribute('data-test') || '').toLowerCase();
+            cmp = testA.localeCompare(testB, undefined, { numeric: true, sensitivity: 'base' });
+        }
+    } else if (colKey === 'logic') {
+        const a = getNumericVal(rowA, 'data-logic-ms', 0);
+        const b = getNumericVal(rowB, 'data-logic-ms', 0);
+        cmp = a - b;
+        if (cmp === 0) {
+            const testA = (rowA.getAttribute('data-test') || '').toLowerCase();
+            const testB = (rowB.getAttribute('data-test') || '').toLowerCase();
+            cmp = testA.localeCompare(testB, undefined, { numeric: true, sensitivity: 'base' });
+        }
+    } else if (colKey === 'total') {
+        const a = getNumericVal(rowA, 'data-total-ms', 1);
+        const b = getNumericVal(rowB, 'data-total-ms', 1);
+        cmp = a - b;
+        if (cmp === 0) {
+            const testA = (rowA.getAttribute('data-test') || '').toLowerCase();
+            const testB = (rowB.getAttribute('data-test') || '').toLowerCase();
+            cmp = testA.localeCompare(testB, undefined, { numeric: true, sensitivity: 'base' });
+        }
+    }
+
+    return dir === 'desc' ? -cmp : cmp;
+}
+
+function updateSortHeaders(activeColKey, dir) {
+    const headers = document.querySelectorAll('#testTable thead th.sortable');
+    headers.forEach(th => {
+        const key = th.getAttribute('data-sort-key');
+        const icon = th.querySelector('.sort-icon');
+        if (key === activeColKey) {
+            th.classList.add('active');
+            th.setAttribute('aria-sort', dir === 'asc' ? 'ascending' : 'descending');
+            th.title = 'Sorted ' + (dir === 'asc' ? 'ascending' : 'descending') + '. Click to reverse.';
+            if (icon) {
+                icon.classList.remove('asc', 'desc');
+                icon.classList.add(dir);
+            }
+        } else {
+            th.classList.remove('active');
+            th.setAttribute('aria-sort', 'none');
+            th.title = 'Click to sort';
+            if (icon) {
+                icon.classList.remove('asc', 'desc');
+            }
+        }
+    });
+}
+
+function sortTestTable(colKey) {
+    const table = document.getElementById('testTable');
+    if (!table) return;
+
+    // Toggle direction if already active column; otherwise default to ascending
+    if (currentSortCol === colKey) {
+        currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSortCol = colKey;
+        currentSortDir = 'asc';
+    }
+
+    const groupHeaders = document.querySelectorAll('#testTable tbody tr.group-header');
+
+    if (groupHeaders.length > 0) {
+        // Group-Preserving sorting: sort test rows within each group
+        const allMemberRows = Array.from(document.querySelectorAll('#testTable tbody tr.group-member:not(.detail-row)'));
+
+        groupHeaders.forEach(hdr => {
+            const groupId = hdr.getAttribute('data-group');
+            const groupMembers = allMemberRows.filter(r => r.getAttribute('data-group') === groupId);
+
+            // Collect atomic test row + detail row pairs
+            const pairs = groupMembers.map(testRow => {
+                const next = testRow.nextElementSibling;
+                const detailRow = (next && next.classList.contains('detail-row')) ? next : null;
+                return { testRow, detailRow };
+            });
+
+            // Sort pairs within group
+            pairs.sort((a, b) => compareTestRows(a, b, colKey, currentSortDir));
+
+            // Re-insert pairs in sorted order immediately after group header
+            let anchor = hdr;
+            pairs.forEach(pair => {
+                anchor.insertAdjacentElement('afterend', pair.testRow);
+                anchor = pair.testRow;
+                if (pair.detailRow) {
+                    anchor.insertAdjacentElement('afterend', pair.detailRow);
+                    anchor = pair.detailRow;
+                }
+            });
+        });
+    } else {
+        // Fallback for ungrouped tables
+        const tbody = table.querySelector('tbody');
+        if (tbody) {
+            const testRows = Array.from(tbody.querySelectorAll('tr.group-member:not(.detail-row)'));
+            const pairs = testRows.map(testRow => {
+                const next = testRow.nextElementSibling;
+                const detailRow = (next && next.classList.contains('detail-row')) ? next : null;
+                return { testRow, detailRow };
+            });
+
+            pairs.sort((a, b) => compareTestRows(a, b, colKey, currentSortDir));
+
+            pairs.forEach(pair => {
+                tbody.appendChild(pair.testRow);
+                if (pair.detailRow) tbody.appendChild(pair.detailRow);
+            });
+        }
+    }
+
+    // Update sort indicators on column headers
+    updateSortHeaders(currentSortCol, currentSortDir);
+
+    // Refresh visibility respecting active status filters, search query, and tag filters
+    applySearch();
+}
+
 // ── Copy failure details ──
 function copyFailure(btn, event) {
     if (event) event.stopPropagation();
