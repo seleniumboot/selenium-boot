@@ -118,7 +118,12 @@ if (window.Chart && trendData.length >= 2) {
     });
     line('trendRateChart', 'Pass rate (%)', trendData.map(r => r.passRate), color('--good'), 100);
     line('trendTimeChart', 'Duration (s)', trendData.map(r => r.durationSec), color('--primary'));
-    line('trendFlakyChart', 'Flaky tests', trendData.map(r => r.flakyTests), color('--warn'));
+    // Hide the flaky card entirely when no run in the history had flaky tests.
+    if (trendData.some(r => r.flakyTests > 0)) {
+        line('trendFlakyChart', 'Flaky tests', trendData.map(r => r.flakyTests), color('--warn'));
+    } else {
+        document.getElementById('trendFlakyCard').style.display = 'none';
+    }
 }
 
 // ── Collapse / expand class groups ──
