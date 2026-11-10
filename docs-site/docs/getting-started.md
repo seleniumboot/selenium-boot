@@ -41,7 +41,7 @@ config, a page object and passing tests, ready for `mvn test`.
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>3.10.0</version>
+    <version>3.11.0</version>
 </dependency>
 ```
 
@@ -50,7 +50,7 @@ config, a page object and passing tests, ready for `mvn test`.
 
 ```groovy title="build.gradle"
 dependencies {
-    testImplementation 'io.github.seleniumboot:selenium-boot:3.10.0'
+    testImplementation 'io.github.seleniumboot:selenium-boot:3.11.0'
 }
 
 test {
@@ -64,7 +64,7 @@ test {
 
 ```kotlin title="build.gradle.kts"
 dependencies {
-    testImplementation("io.github.seleniumboot:selenium-boot:3.10.0")
+    testImplementation("io.github.seleniumboot:selenium-boot:3.11.0")
 }
 
 tasks.test {

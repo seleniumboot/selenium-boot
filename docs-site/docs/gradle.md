@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'io.github.seleniumboot:selenium-boot:3.10.0'
+    testImplementation 'io.github.seleniumboot:selenium-boot:3.11.0'
 }
 ```
 
@@ -46,7 +46,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation("io.github.seleniumboot:selenium-boot:3.10.0")
+    testImplementation("io.github.seleniumboot:selenium-boot:3.11.0")
 }
 ```
 
@@ -114,7 +114,7 @@ If you're using `BaseJUnit5Test` or `@EnableSeleniumBoot`:
 
 ```groovy title="build.gradle"
 dependencies {
-    testImplementation 'io.github.seleniumboot:selenium-boot:3.10.0'
+    testImplementation 'io.github.seleniumboot:selenium-boot:3.11.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
 }
@@ -130,7 +130,7 @@ test {
 
 ```kotlin title="build.gradle.kts"
 dependencies {
-    testImplementation("io.github.seleniumboot:selenium-boot:3.10.0")
+    testImplementation("io.github.seleniumboot:selenium-boot:3.11.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
 }
@@ -278,7 +278,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'io.github.seleniumboot:selenium-boot:3.10.0'
+    testImplementation 'io.github.seleniumboot:selenium-boot:3.11.0'
 }
 
 test {

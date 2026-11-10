@@ -21,7 +21,7 @@ Add Cucumber to your project alongside Selenium Boot.
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>3.10.0</version>
+    <version>3.11.0</version>
 </dependency>
 
 <dependency>
@@ -52,7 +52,7 @@ Add Cucumber to your project alongside Selenium Boot.
 <dependency>
     <groupId>io.github.seleniumboot</groupId>
     <artifactId>selenium-boot</artifactId>
-    <version>3.10.0</version>
+    <version>3.11.0</version>
 </dependency>
 
 <dependency>
