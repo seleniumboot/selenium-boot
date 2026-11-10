@@ -444,6 +444,232 @@ function copyFailure(btn, event) {
     }
 }
 
+// ── Export single test as standalone HTML ──
+function escapeHtmlForExport(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function buildStandaloneTestHtml(testId, testRow, panel, activeTheme) {
+    const styleTag = document.querySelector('style');
+    const css = styleTag ? styleTag.textContent : '';
+
+    const hasBrowser = testRow && testRow.querySelector('.browser-cell') !== null;
+    const colspan = hasBrowser ? 8 : 7;
+    const browserTh = hasBrowser ? '<th>Browser</th>' : '';
+
+    const rawGroupName = testRow ? (testRow.getAttribute('data-group') || '').replace(/^failures:/, '') : '';
+    const browser = testRow ? (testRow.getAttribute('data-browser') || (testRow.querySelector('.browser-cell') ? testRow.querySelector('.browser-cell').textContent.trim() : '')) : '';
+
+    let groupTitle = rawGroupName || 'Test Details';
+    if (browser && !groupTitle.includes(browser)) {
+        groupTitle = groupTitle + ' [' + browser + ']';
+    }
+
+    const lastDot = testId.lastIndexOf('.');
+    const methodName = lastDot >= 0 ? testId.substring(lastDot + 1) : testId;
+
+    // Clone test row
+    let testRowHtml = '';
+    if (testRow) {
+        const testRowClone = testRow.cloneNode(true);
+        testRowClone.style.display = '';
+        testRowClone.setAttribute('onclick', 'toggleStandaloneDetail()');
+        const icon = testRowClone.querySelector('.expand-icon');
+        if (icon) {
+            icon.classList.add('open');
+        }
+        testRowHtml = testRowClone.outerHTML;
+    }
+
+    // Clone detail row
+    let detailRowHtml = '';
+    const detailRow = testRow ? testRow.nextElementSibling : null;
+    if (detailRow && detailRow.classList.contains('detail-row')) {
+        const detailRowClone = detailRow.cloneNode(true);
+        detailRowClone.style.display = '';
+        detailRowClone.id = 'standaloneDetailRow';
+        const panelClone = detailRowClone.querySelector('.detail-panel');
+        if (panelClone) {
+            panelClone.querySelectorAll('.copy-failure-btn, .download-test-btn').forEach(function(b) { b.remove(); });
+        }
+        detailRowHtml = detailRowClone.outerHTML;
+    } else if (panel) {
+        const panelClone = panel.cloneNode(true);
+        panelClone.querySelectorAll('.copy-failure-btn, .download-test-btn').forEach(function(b) { b.remove(); });
+        detailRowHtml = '<tr class="detail-row" id="standaloneDetailRow"><td colspan="' + colspan + '">'
+            + '<div class="detail-panel">' + panelClone.innerHTML + '</div>'
+            + '</td></tr>';
+    }
+
+    const groupHeaderHtml = '<tr class="group-header" data-group="' + escapeHtmlForExport(rawGroupName) + '">'
+        + '<td colspan="' + colspan + '">'
+        + '<span class="group-icon">&#x25BC;</span> <strong>' + escapeHtmlForExport(groupTitle) + '</strong>'
+        + '</td></tr>';
+
+    const toggleText = activeTheme === 'dark' ? '&#9728; Light Mode' : '&#9790; Dark Mode';
+
+    const lightboxHtml = '<div class="lightbox" id="lightbox" onclick="closeLightbox()">'
+        + '<span class="lightbox-close" onclick="closeLightbox()">&times;</span>'
+        + '<button type="button" class="lightbox-nav lightbox-prev" id="lightbox-prev" onclick="stepLightbox(-1, event)" aria-label="Previous screenshot">&#10094;</button>'
+        + '<img id="lightbox-img" src="" alt="Screenshot" onclick="event.stopPropagation()">'
+        + '<button type="button" class="lightbox-nav lightbox-next" id="lightbox-next" onclick="stepLightbox(1, event)" aria-label="Next screenshot">&#10095;</button>'
+        + '<span class="lightbox-counter" id="lightbox-counter"></span>'
+        + '</div>';
+
+    const offlineScript = 'var lightboxImgs = [];\n'
+        + 'var lightboxIdx = 0;\n'
+        + 'function openLightbox(img) {\n'
+        + '    lightboxImgs = Array.from(document.querySelectorAll("img.screenshot-thumb, img.step-thumb, img.screenshot-main"));\n'
+        + '    lightboxIdx = lightboxImgs.indexOf(img);\n'
+        + '    if (lightboxIdx < 0) lightboxIdx = 0;\n'
+        + '    showLightbox();\n'
+        + '    document.getElementById("lightbox").classList.add("open");\n'
+        + '    document.body.style.overflow = "hidden";\n'
+        + '}\n'
+        + 'function showLightbox() {\n'
+        + '    if (!lightboxImgs.length) return;\n'
+        + '    document.getElementById("lightbox-img").src = lightboxImgs[lightboxIdx].src;\n'
+        + '    var multi = lightboxImgs.length > 1;\n'
+        + '    var counter = document.getElementById("lightbox-counter");\n'
+        + '    if (counter) counter.textContent = multi ? (lightboxIdx + 1) + " / " + lightboxImgs.length : "";\n'
+        + '    var prev = document.getElementById("lightbox-prev");\n'
+        + '    var next = document.getElementById("lightbox-next");\n'
+        + '    if (prev) { prev.style.display = multi ? "" : "none"; prev.disabled = lightboxIdx === 0; }\n'
+        + '    if (next) { next.style.display = multi ? "" : "none"; next.disabled = lightboxIdx === lightboxImgs.length - 1; }\n'
+        + '}\n'
+        + 'function stepLightbox(delta, e) {\n'
+        + '    if (e) e.stopPropagation();\n'
+        + '    var next = lightboxIdx + delta;\n'
+        + '    if (next < 0 || next >= lightboxImgs.length) return;\n'
+        + '    lightboxIdx = next;\n'
+        + '    showLightbox();\n'
+        + '}\n'
+        + 'function closeLightbox() {\n'
+        + '    var lb = document.getElementById("lightbox");\n'
+        + '    if (lb) lb.classList.remove("open");\n'
+        + '    var img = document.getElementById("lightbox-img");\n'
+        + '    if (img) img.src = "";\n'
+        + '    document.body.style.overflow = "";\n'
+        + '}\n'
+        + 'document.addEventListener("keydown", function(e) {\n'
+        + '    var lb = document.getElementById("lightbox");\n'
+        + '    if (!lb || !lb.classList.contains("open")) return;\n'
+        + '    if (e.key === "Escape") closeLightbox();\n'
+        + '    else if (e.key === "ArrowLeft") stepLightbox(-1);\n'
+        + '    else if (e.key === "ArrowRight") stepLightbox(1);\n'
+        + '});\n'
+        + 'function toggleDark() {\n'
+        + '    var isDark = document.documentElement.getAttribute("data-theme") === "dark";\n'
+        + '    var newTheme = isDark ? "light" : "dark";\n'
+        + '    document.documentElement.setAttribute("data-theme", newTheme);\n'
+        + '    var btn = document.querySelector(".dark-toggle");\n'
+        + '    if (btn) btn.innerHTML = newTheme === "dark" ? "&#9728; Light Mode" : "&#9790; Dark Mode";\n'
+        + '}\n'
+        + 'function toggleStandaloneDetail() {\n'
+        + '    var row = document.getElementById("standaloneDetailRow");\n'
+        + '    var icon = document.querySelector(".expand-icon");\n'
+        + '    if (!row) return;\n'
+        + '    var isHidden = row.style.display === "none";\n'
+        + '    row.style.display = isHidden ? "" : "none";\n'
+        + '    if (icon) icon.classList.toggle("open", isHidden);\n'
+        + '}\n';
+
+    return '<!DOCTYPE html>\n'
+        + '<html lang="en" data-theme="' + escapeHtmlForExport(activeTheme) + '">\n'
+        + '<head>\n'
+        + '    <meta charset="UTF-8">\n'
+        + '    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+        + '    <title>' + escapeHtmlForExport(testId || methodName) + ' - Single Test Report</title>\n'
+        + '    <' + 'style>\n' + css + '\n    <' + '/style>\n'
+        + '</head>\n'
+        + '<body>\n'
+        + '    <div class="app-bar">\n'
+        + '        <div class="app-bar-left">\n'
+        + '            <h1>Selenium Boot Report</h1>\n'
+        + '            <p>Single Test Export &mdash; ' + escapeHtmlForExport(testId || methodName) + '</p>\n'
+        + '        </div>\n'
+        + '        <button type="button" class="dark-toggle" onclick="toggleDark()">' + toggleText + '</button>\n'
+        + '    </div>\n'
+        + '    <div class="layout" style="justify-content: center;">\n'
+        + '        <main class="main-content" style="max-width: 1400px; width: 100%; margin: 0 auto; padding: 24px 20px;">\n'
+        + '            <div class="tab-heading">Test Cases</div>\n'
+        + '            <div class="card table-card">\n'
+        + '                <div class="table-wrap">\n'
+        + '                    <table id="testTable">\n'
+        + '                        <thead>\n'
+        + '                            <tr>\n'
+        + '                                <th>Test</th>\n'
+        + '                                <th>Description</th>\n'
+        + '                                ' + browserTh + '\n'
+        + '                                <th>Status</th>\n'
+        + '                                <th>Logic (ms)</th>\n'
+        + '                                <th>Total (ms)</th>\n'
+        + '                                <th>Screenshot</th>\n'
+        + '                                <th>Detail</th>\n'
+        + '                            </tr>\n'
+        + '                        </thead>\n'
+        + '                        <tbody>\n'
+        + '                            ' + groupHeaderHtml + '\n'
+        + '                            ' + testRowHtml + '\n'
+        + '                            ' + detailRowHtml + '\n'
+        + '                        </tbody>\n'
+        + '                    </table>\n'
+        + '                </div>\n'
+        + '            </div>\n'
+        + '        </main>\n'
+        + '    </div>\n'
+        + '    ' + lightboxHtml + '\n'
+        + '    <' + 'script>\n' + offlineScript + '    <' + '/script>\n'
+        + '</body>\n'
+        + '</html>';
+}
+
+function downloadTest(btn, event) {
+    if (event) event.stopPropagation();
+    const panel = btn.closest('.detail-panel');
+    const detailRow = btn.closest('tr.detail-row');
+    const testRow = detailRow ? detailRow.previousElementSibling : null;
+    if (!panel || !testRow) return;
+
+    const label = btn.getAttribute('data-label') || btn.textContent;
+    btn.setAttribute('data-label', label);
+    btn.textContent = 'Exporting...';
+    btn.disabled = true;
+
+    try {
+        const testId = btn.getAttribute('data-download-id') || btn.getAttribute('data-test-id') || testRow.getAttribute('data-test') || 'test';
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const activeTheme = isDark ? 'dark' : 'light';
+        const htmlDoc = buildStandaloneTestHtml(testId, testRow, panel, activeTheme);
+
+        const filename = (testId || 'test').replace(/[^a-zA-Z0-9._-]/g, '_') + '.html';
+        const blob = new Blob([htmlDoc], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        btn.textContent = 'Downloaded';
+    } catch (e) {
+        console.error('Failed to export test:', e);
+        btn.textContent = 'Export failed';
+    } finally {
+        setTimeout(function() {
+            btn.textContent = label;
+            btn.disabled = false;
+        }, 1500);
+    }
+}
+
 // ── Filter restoration on load ──
 (function() {
     try {
