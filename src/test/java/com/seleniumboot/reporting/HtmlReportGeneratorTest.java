@@ -603,6 +603,7 @@ public class HtmlReportGeneratorTest {
         assertTrue(reportHtml.contains("MatrixTest [Firefox]"), "Matrix run must include browser in group header");
 
         // Verify browser cells
+        assertTrue(reportHtml.contains("<th>Browser</th>"), "Matrix run must include <th>Browser</th> in thead");
         assertTrue(reportHtml.contains("<td class=\"browser-cell\">Chrome</td>"));
         assertTrue(reportHtml.contains("<td class=\"browser-cell\">Firefox</td>"));
 
@@ -693,5 +694,201 @@ public class HtmlReportGeneratorTest {
                 System.clearProperty("seleniumboot.reports.dir");
             }
         }
+    }
+
+    @Test
+    public void downloadTestButton_presentInDetailRow() throws Exception {
+        String json = """
+        {"totalTests":3,"passedTests":1,"failedTests":1,"skippedTests":1,"passRate":33.3,"tests":[
+          {"testId":"a.A.ok","status":"PASSED","testLogicMs":1,"totalMs":1,"stepsNote":"x","description":"d","performanceMetrics":{"pageLoadMs":1}},
+          {"testId":"a.A.bad<x>","status":"FAILED","testLogicMs":1,"totalMs":1,"errorMessage":"boom","stackTrace":"at a.b"},
+          {"testId":"a.A.skip","status":"SKIPPED","testLogicMs":1,"totalMs":1,"errorMessage":"skipped because"}
+        ]}""";
+        String reportHtml = HtmlReportGenerator.buildHtml(new ObjectMapper().readTree(json));
+        String body = reportHtml.substring(reportHtml.indexOf("<tbody"));
+
+        // Download button rendered with escaped test ID
+        assertTrue(body.contains("class=\"download-test-btn\""), "download-test-btn must be present in detail row");
+        assertTrue(body.contains("data-download-id=\"a.A.bad&lt;x&gt;\""), "test id is escaped in data-download-id");
+        assertTrue(body.contains("data-download-id=\"a.A.ok\""), "download button available on passed test with detail");
+        assertTrue(body.contains("data-download-id=\"a.A.skip\""), "download button available on skipped test with error detail");
+        assertTrue(body.contains("onclick=\"downloadTest(this, event)\""), "download button must invoke downloadTest");
+
+        // Existing copy failure button constraint is not broken
+        assertFalse(body.contains("data-test-id=\"a.A.ok\""), "copy failure button only on failed tests");
+    }
+
+    @Test
+    public void downloadTestScript_containsStandaloneExportLogic() throws Exception {
+        String reportHtml = html(1, 0);
+
+        // JavaScript functions present
+        assertTrue(reportHtml.contains("function downloadTest("), "report must define downloadTest function");
+        assertTrue(reportHtml.contains("function buildStandaloneTestHtml("), "report must define buildStandaloneTestHtml function");
+
+        // Blob and download mechanics
+        assertTrue(reportHtml.contains("new Blob("), "downloadTest must create a client-side Blob");
+        assertTrue(reportHtml.contains("URL.createObjectURL("), "downloadTest must create an object URL for download");
+        assertTrue(reportHtml.contains(".download ="), "downloadTest must set download attribute on anchor");
+
+        // Theme fidelity
+        assertTrue(reportHtml.contains("data-theme"), "buildStandaloneTestHtml must preserve data-theme");
+        assertTrue(reportHtml.contains("document.querySelector('style')"), "buildStandaloneTestHtml must read inline CSS from style element");
+
+        // Self-contained lightbox and offline script
+        assertTrue(reportHtml.contains("function openLightbox("), "offline script must define lightbox support");
+        assertTrue(reportHtml.contains("function toggleDark("), "offline script must define theme toggle");
+    }
+
+    @Test
+    public void downloadTestCss_containsButtonAndTableCardRules() throws Exception {
+        String reportHtml = html(1, 0);
+
+        assertTrue(reportHtml.contains(".download-test-btn"), "report CSS must define .download-test-btn");
+        assertTrue(reportHtml.contains(".table-card"), "report CSS must define .table-card");
+        assertTrue(reportHtml.contains(".table-wrap"), "report CSS must define .table-wrap");
+        assertTrue(reportHtml.contains(".detail-panel"), "report CSS must define .detail-panel");
+    }
+
+    @Test
+    public void downloadTest_matrixRun_preservesBrowserDataAttribute() throws Exception {
+        String json = """
+        {
+            "totalTests": 2,
+            "passedTests": 1,
+            "failedTests": 1,
+            "skippedTests": 0,
+            "passRate": 50.0,
+            "tests": [
+                {
+                    "testId": "com.example.MatrixTest.loginChrome",
+                    "status": "PASSED",
+                    "browser": "chrome",
+                    "testLogicMs": 100,
+                    "totalMs": 200,
+                    "performanceMetrics": {"pageLoadMs": 50}
+                },
+                {
+                    "testId": "com.example.MatrixTest.loginFirefox",
+                    "status": "FAILED",
+                    "browser": "firefox",
+                    "testLogicMs": 150,
+                    "totalMs": 250,
+                    "errorMessage": "Element not found"
+                }
+            ]
+        }
+        """;
+        String reportHtml = HtmlReportGenerator.buildHtml(new ObjectMapper().readTree(json));
+
+        assertTrue(reportHtml.contains("data-browser=\"Chrome\""), "Row should carry capitalized data-browser attribute for Chrome");
+        assertTrue(reportHtml.contains("data-browser=\"Firefox\""), "Row should carry capitalized data-browser attribute for Firefox");
+        assertTrue(reportHtml.contains("data-download-id=\"com.example.MatrixTest.loginChrome\""));
+        assertTrue(reportHtml.contains("data-download-id=\"com.example.MatrixTest.loginFirefox\""));
+    }
+
+    @Test
+    public void downloadTest_standaloneExport_isFullySelfContainedAndHasNoExternalFetches() throws Exception {
+        String reportHtml = html(1, 0);
+
+        // Verify report.css has no external network imports or URLs
+        int styleStart = reportHtml.indexOf("<style>");
+        int styleEnd = reportHtml.indexOf("</style>");
+        String css = reportHtml.substring(styleStart, styleEnd);
+        assertFalse(css.contains("http://"), "CSS must not contain external HTTP references");
+        assertFalse(css.contains("https://"), "CSS must not contain external HTTPS references");
+        assertFalse(css.contains("@import"), "CSS must not contain @import rules");
+
+        // Verify standalone generator template in report.js does not fetch external resources
+        int scriptStart = reportHtml.lastIndexOf("<script>");
+        int scriptEnd = reportHtml.lastIndexOf("</script>");
+        String js = reportHtml.substring(scriptStart, scriptEnd);
+        assertFalse(js.contains("fetch("), "Export logic must not perform network fetch requests");
+        assertFalse(js.contains("XMLHttpRequest"), "Export logic must not perform XHR requests");
+        assertTrue(js.contains("new Blob("), "Export must generate file in-memory using client-side Blob");
+        assertTrue(js.contains("buildStandaloneTestHtml"), "Export must include standalone HTML builder");
+    }
+
+    @Test
+    public void generate_writesSampleReportToTargetForManualVerification() throws Exception {
+        java.nio.file.Path targetDir = java.nio.file.Paths.get("target");
+        if (!java.nio.file.Files.exists(targetDir)) {
+            java.nio.file.Files.createDirectories(targetDir);
+        }
+        String pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+        java.nio.file.Path sampleScreenshot = targetDir.resolve("sample-fail.png");
+        java.nio.file.Files.write(sampleScreenshot, java.util.Base64.getDecoder().decode(pngBase64));
+
+        String json = String.format("""
+        {
+            "totalTests": 3,
+            "passedTests": 1,
+            "failedTests": 1,
+            "skippedTests": 1,
+            "passRate": 33.3,
+            "suiteDurationMs": 5200,
+            "tests": [
+                {
+                    "testId": "com.example.cart.CheckoutTest.successfulCheckout",
+                    "testClassName": "CheckoutTest",
+                    "status": "PASSED",
+                    "browser": "chrome",
+                    "tags": ["smoke", "checkout"],
+                    "testLogicMs": 1400,
+                    "totalMs": 2100,
+                    "description": "Verify checkout completes with valid credentials",
+                    "steps": [
+                        {"name": "Open login page", "status": "PASS", "offsetMs": 200},
+                        {"name": "Submit credentials", "status": "PASS", "offsetMs": 800},
+                        {"name": "Place order", "status": "PASS", "offsetMs": 1400}
+                    ]
+                },
+                {
+                    "testId": "com.example.auth.LoginTest.invalidPasswordShowsError",
+                    "testClassName": "LoginTest",
+                    "status": "FAILED",
+                    "browser": "firefox",
+                    "tags": ["regression", "auth"],
+                    "testLogicMs": 850,
+                    "totalMs": 1600,
+                    "description": "Verify alert banner is displayed when password is wrong",
+                    "screenshotPath": "%s",
+                    "errorMessage": "Expected error banner not visible after 5000ms",
+                    "stackTrace": "org.openqa.selenium.TimeoutException: Expected condition failed: waiting for visibility of element located by By.id: alert-banner\\n\\tat com.example.auth.LoginTest.invalidPasswordShowsError(LoginTest.java:42)",
+                    "failureCategory": "TIMEOUT",
+                    "failureType": "PRODUCT_BUG",
+                    "suggestedAction": "Check login service latency or increase banner wait timeout",
+                    "failureDetail": {
+                        "failingLocator": "By.id: alert-banner",
+                        "applicationFrame": "LoginTest.java:42",
+                        "lastSuccessfulStep": "Enter password",
+                        "pageUrl": "https://example.com/login",
+                        "pageTitle": "Login - Example App",
+                        "consoleErrors": ["401 Unauthorized: Invalid credentials"]
+                    },
+                    "steps": [
+                        {"name": "Navigate to /login", "status": "PASS", "offsetMs": 150},
+                        {"name": "Enter wrong password", "status": "PASS", "offsetMs": 400},
+                        {"name": "Wait for banner", "status": "FAIL", "offsetMs": 850, "screenshotBase64": "%s"}
+                    ]
+                },
+                {
+                    "testId": "com.example.auth.LoginTest.ssoLoginBypassed",
+                    "testClassName": "LoginTest",
+                    "status": "SKIPPED",
+                    "browser": "chrome",
+                    "tags": ["sso"],
+                    "testLogicMs": 0,
+                    "totalMs": 10,
+                    "errorMessage": "Skipped: SSO identity provider is temporarily disabled in test environment"
+                }
+            ]
+        }
+        """, sampleScreenshot.toString().replace("\\", "\\\\"), pngBase64);
+
+        String reportHtml = HtmlReportGenerator.buildHtml(new ObjectMapper().readTree(json));
+        java.nio.file.Path sampleReportPath = targetDir.resolve("sample-verification-report.html");
+        java.nio.file.Files.writeString(sampleReportPath, reportHtml);
+        assertTrue(java.nio.file.Files.exists(sampleReportPath), "Sample verification report must be written to target");
     }
 }
