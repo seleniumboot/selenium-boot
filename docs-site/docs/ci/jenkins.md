@@ -92,17 +92,20 @@ stage('Test') {
     parallel {
         stage('Chrome') {
             steps {
-                sh 'mvn test -B -Dbrowser.type=chrome'
+                sh 'mvn test -B -Dselenium.boot.profile=chrome'
             }
         }
         stage('Firefox') {
             steps {
-                sh 'mvn test -B -Dbrowser.type=firefox'
+                sh 'mvn test -B -Dselenium.boot.profile=firefox'
             }
         }
     }
 }
 ```
+
+Each profile is a small override file next to `selenium-boot.yml`, for example `selenium-boot-firefox.yml` that sets `name: firefox` under `browser:`. See [environment profiles](../configuration#environment-profiles).
+
 
 ---
 
