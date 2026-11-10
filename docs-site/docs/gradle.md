@@ -69,9 +69,9 @@ test {
         // suites 'src/test/resources/testng.xml'
     }
 
-    // Forward -Denv=staging / -Dbrowser=firefox from the CLI. Forward only the keys you use:
+    // Forward -Denv=staging from the CLI. Forward only the keys you use:
     // copying every JVM property (java.home, ...) breaks the run if the test JVM differs from Gradle's
-    ['browser', 'env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
+    ['env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
 
     // Display test output in the console
     testLogging {
@@ -91,9 +91,9 @@ tasks.test {
         // suites("src/test/resources/testng.xml")
     }
 
-    // Forward -Denv=staging / -Dbrowser=firefox from the CLI. Forward only the keys you use:
+    // Forward -Denv=staging from the CLI. Forward only the keys you use:
     // copying every JVM property (java.home, ...) breaks the run if the test JVM differs from Gradle's
-    listOf("browser", "env").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
+    listOf("env").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
 
     testLogging {
         events("passed", "skipped", "failed")
@@ -121,7 +121,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    ['browser', 'env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
+    ['env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
 }
 ```
 
@@ -137,7 +137,7 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
-    listOf("browser", "env").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
+    listOf("env").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
 }
 ```
 
@@ -184,7 +184,7 @@ retry:
 ./gradlew test -Denv=staging
 
 # Pass multiple JVM args
-./gradlew test -Dbrowser.name=firefox -Dbrowser.headless=true
+./gradlew test -Dselenium.boot.profile=firefox   # reads selenium-boot-firefox.yml
 ```
 
 ---
@@ -215,7 +215,7 @@ For parallel runs with Gradle, configure the `test` task alongside `selenium-boo
 test {
     useTestNG()
     maxParallelForks = 4          // Gradle worker processes
-    ['browser', 'env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
+    ['env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
 }
 ```
 
@@ -226,7 +226,7 @@ test {
 tasks.test {
     useTestNG()
     maxParallelForks = 4
-    listOf("browser", "env").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
+    listOf("env").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
 }
 ```
 
@@ -283,7 +283,7 @@ dependencies {
 
 test {
     useTestNG()
-    ['browser', 'env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
+    ['env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
     testLogging { events 'passed', 'skipped', 'failed' }
 }
 ```
