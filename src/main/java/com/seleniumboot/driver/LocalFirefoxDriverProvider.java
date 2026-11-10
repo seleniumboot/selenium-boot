@@ -74,6 +74,11 @@ public class LocalFirefoxDriverProvider implements DriverProvider{
         }
 
         WebDriver driver = new FirefoxDriver(options);
+        // Firefox has no start-maximized flag; maximize once the window exists (see WindowSizing).
+        if (WindowSizing.shouldMaximize(config.getBrowser().isHeadless(),
+                CiEnvironmentDetector.isContainer(), arguments)) {
+            driver.manage().window().maximize();
+        }
         driver.manage().timeouts().implicitlyWait(Duration.ZERO);
 
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(config.getTimeouts().getPageLoad()));

@@ -48,6 +48,12 @@ public class LocalChromeDriverProvider implements DriverProvider {
             );
         }
 
+        // Headed local runs start maximized unless the size is already decided (see WindowSizing).
+        if (WindowSizing.shouldMaximize(config.getBrowser().isHeadless(),
+                CiEnvironmentDetector.isContainer(), arguments)) {
+            options.addArguments("--start-maximized");
+        }
+
         if (arguments != null) {
             options.addArguments(arguments);
         }

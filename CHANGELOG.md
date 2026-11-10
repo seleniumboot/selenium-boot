@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Unreleased
 
+- **Headed local browsers start maximized by default** — Chrome gets `--start-maximized` and Firefox calls `maximize()` after launch, so a watched test is no longer left in a small window. Headless runs and containers (fixed 1920x1080) are unchanged, and your own `--start-maximized`, `--window-size`, `--kiosk` or Firefox `--width`/`--height` arguments still win.
+
 - **HTML report: sortable columns in Test Cases table** — clicking headers for Test, Status, Logic (ms), and Total (ms) sorts rows within each test class group ascending or descending with visual sort indicators, while preserving detail row attachments and cooperating seamlessly with active status, tag, and search filters. (#217)
 
 ### v3.10.0 — 2026-11-04
