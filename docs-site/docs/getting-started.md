@@ -137,7 +137,7 @@ public class SmokeTest extends BaseTest {
     @Test
     public void opensThePage() {
         open();  // navigates to baseUrl
-        assertThat(getByRole(Role.HEADING, "Example Domain")).isVisible();
+        assertThat(getByRole(Role.LINK, "Learn more")).isVisible();
     }
 }
 ```

@@ -83,8 +83,7 @@ public class SmokeTest extends BaseTest {
     @Test
     public void opensThePage() {
         open();
-        assertThat(getByRole(Role.HEADING, "Example Domain")).isVisible();
-        assertThat(getByRole(Role.LINK)).isVisible();
+        assertThat(getByRole(Role.LINK, "Learn more")).isVisible();
     }
 }
 ```
