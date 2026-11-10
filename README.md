@@ -36,7 +36,7 @@ Three files. Copy them as-is and `mvn test` goes green against a real Chrome.
     <dependency>
         <groupId>io.github.seleniumboot</groupId>
         <artifactId>selenium-boot</artifactId>
-        <version>3.10.0</version>
+        <version>3.11.0</version>
     </dependency>
 </dependencies>
 
@@ -285,7 +285,7 @@ Grab the jar from the [latest release](https://github.com/seleniumboot/selenium-
 
 ## Project Status
 
-**Current release: v3.10.0** — report timeline, results by tag, print-to-PDF stylesheet and a refreshed theme, LambdaTest and Firefox network mocking, richer traces, and Selenium 4.52.0.
+**Current release: v3.11.0** — sortable report columns, expand/collapse all, screenshot lightbox navigation, headed browsers that start maximized, and a corrected quickstart.
 
 See the full version history in **[CHANGELOG.md](CHANGELOG.md)**.
 
