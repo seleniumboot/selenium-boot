@@ -202,6 +202,16 @@ All screenshots are Base64-encoded and embedded inline. The report is a single f
 
 No images folder, no asset references, no server needed.
 
+### Share a single test
+
+The full report can run to several megabytes. To share one test, expand it and click
+**Download this test** in its detail panel. You get a standalone `<testId>.html` file with
+that test's status, error, stack trace, steps and screenshots. It opens offline in any
+browser, keeps the report's current light or dark theme, and is small enough to attach
+to a Jira ticket, GitHub issue or Slack thread.
+
+The file is built in your browser when you click, so it adds nothing to the report size.
+
 ---
 
 ## Step timeline

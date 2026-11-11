@@ -738,6 +738,11 @@ public class HtmlReportGeneratorTest {
         // Self-contained lightbox and offline script
         assertTrue(reportHtml.contains("function openLightbox("), "offline script must define lightbox support");
         assertTrue(reportHtml.contains("function toggleDark("), "offline script must define theme toggle");
+
+        // Tag pills call filterByTag, which the standalone file doesn't define
+        assertTrue(reportHtml.contains("function stripReportOnlyHandlers("), "export must neutralise report-only handlers");
+        assertTrue(reportHtml.contains("stripReportOnlyHandlers(testRowClone)"), "test row clone must be stripped");
+        assertTrue(reportHtml.contains("stripReportOnlyHandlers(detailRowClone)"), "detail row clone must be stripped");
     }
 
     @Test
@@ -807,88 +812,5 @@ public class HtmlReportGeneratorTest {
         assertFalse(js.contains("XMLHttpRequest"), "Export logic must not perform XHR requests");
         assertTrue(js.contains("new Blob("), "Export must generate file in-memory using client-side Blob");
         assertTrue(js.contains("buildStandaloneTestHtml"), "Export must include standalone HTML builder");
-    }
-
-    @Test
-    public void generate_writesSampleReportToTargetForManualVerification() throws Exception {
-        java.nio.file.Path targetDir = java.nio.file.Paths.get("target");
-        if (!java.nio.file.Files.exists(targetDir)) {
-            java.nio.file.Files.createDirectories(targetDir);
-        }
-        String pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
-        java.nio.file.Path sampleScreenshot = targetDir.resolve("sample-fail.png");
-        java.nio.file.Files.write(sampleScreenshot, java.util.Base64.getDecoder().decode(pngBase64));
-
-        String json = String.format("""
-        {
-            "totalTests": 3,
-            "passedTests": 1,
-            "failedTests": 1,
-            "skippedTests": 1,
-            "passRate": 33.3,
-            "suiteDurationMs": 5200,
-            "tests": [
-                {
-                    "testId": "com.example.cart.CheckoutTest.successfulCheckout",
-                    "testClassName": "CheckoutTest",
-                    "status": "PASSED",
-                    "browser": "chrome",
-                    "tags": ["smoke", "checkout"],
-                    "testLogicMs": 1400,
-                    "totalMs": 2100,
-                    "description": "Verify checkout completes with valid credentials",
-                    "steps": [
-                        {"name": "Open login page", "status": "PASS", "offsetMs": 200},
-                        {"name": "Submit credentials", "status": "PASS", "offsetMs": 800},
-                        {"name": "Place order", "status": "PASS", "offsetMs": 1400}
-                    ]
-                },
-                {
-                    "testId": "com.example.auth.LoginTest.invalidPasswordShowsError",
-                    "testClassName": "LoginTest",
-                    "status": "FAILED",
-                    "browser": "firefox",
-                    "tags": ["regression", "auth"],
-                    "testLogicMs": 850,
-                    "totalMs": 1600,
-                    "description": "Verify alert banner is displayed when password is wrong",
-                    "screenshotPath": "%s",
-                    "errorMessage": "Expected error banner not visible after 5000ms",
-                    "stackTrace": "org.openqa.selenium.TimeoutException: Expected condition failed: waiting for visibility of element located by By.id: alert-banner\\n\\tat com.example.auth.LoginTest.invalidPasswordShowsError(LoginTest.java:42)",
-                    "failureCategory": "TIMEOUT",
-                    "failureType": "PRODUCT_BUG",
-                    "suggestedAction": "Check login service latency or increase banner wait timeout",
-                    "failureDetail": {
-                        "failingLocator": "By.id: alert-banner",
-                        "applicationFrame": "LoginTest.java:42",
-                        "lastSuccessfulStep": "Enter password",
-                        "pageUrl": "https://example.com/login",
-                        "pageTitle": "Login - Example App",
-                        "consoleErrors": ["401 Unauthorized: Invalid credentials"]
-                    },
-                    "steps": [
-                        {"name": "Navigate to /login", "status": "PASS", "offsetMs": 150},
-                        {"name": "Enter wrong password", "status": "PASS", "offsetMs": 400},
-                        {"name": "Wait for banner", "status": "FAIL", "offsetMs": 850, "screenshotBase64": "%s"}
-                    ]
-                },
-                {
-                    "testId": "com.example.auth.LoginTest.ssoLoginBypassed",
-                    "testClassName": "LoginTest",
-                    "status": "SKIPPED",
-                    "browser": "chrome",
-                    "tags": ["sso"],
-                    "testLogicMs": 0,
-                    "totalMs": 10,
-                    "errorMessage": "Skipped: SSO identity provider is temporarily disabled in test environment"
-                }
-            ]
-        }
-        """, sampleScreenshot.toString().replace("\\", "\\\\"), pngBase64);
-
-        String reportHtml = HtmlReportGenerator.buildHtml(new ObjectMapper().readTree(json));
-        java.nio.file.Path sampleReportPath = targetDir.resolve("sample-verification-report.html");
-        java.nio.file.Files.writeString(sampleReportPath, reportHtml);
-        assertTrue(java.nio.file.Files.exists(sampleReportPath), "Sample verification report must be written to target");
     }
 }

@@ -455,6 +455,17 @@ function escapeHtmlForExport(str) {
         .replace(/'/g, '&#39;');
 }
 
+// Tag pills filter the full report; the standalone export has nothing to filter,
+// so neutralise their handlers instead of shipping calls to undefined functions.
+// They still stop propagation, so clicking a pill doesn't collapse the detail row.
+function stripReportOnlyHandlers(root) {
+    root.querySelectorAll('[onclick^="filterByTag"]').forEach(function(el) {
+        el.setAttribute('onclick', 'event.stopPropagation()');
+        el.removeAttribute('title');
+        el.style.cursor = 'default';
+    });
+}
+
 function buildStandaloneTestHtml(testId, testRow, panel, activeTheme) {
     const styleTag = document.querySelector('style');
     const css = styleTag ? styleTag.textContent : '';
@@ -484,6 +495,7 @@ function buildStandaloneTestHtml(testId, testRow, panel, activeTheme) {
         if (icon) {
             icon.classList.add('open');
         }
+        stripReportOnlyHandlers(testRowClone);
         testRowHtml = testRowClone.outerHTML;
     }
 
@@ -498,10 +510,12 @@ function buildStandaloneTestHtml(testId, testRow, panel, activeTheme) {
         if (panelClone) {
             panelClone.querySelectorAll('.copy-failure-btn, .download-test-btn').forEach(function(b) { b.remove(); });
         }
+        stripReportOnlyHandlers(detailRowClone);
         detailRowHtml = detailRowClone.outerHTML;
     } else if (panel) {
         const panelClone = panel.cloneNode(true);
         panelClone.querySelectorAll('.copy-failure-btn, .download-test-btn').forEach(function(b) { b.remove(); });
+        stripReportOnlyHandlers(panelClone);
         detailRowHtml = '<tr class="detail-row" id="standaloneDetailRow"><td colspan="' + colspan + '">'
             + '<div class="detail-panel">' + panelClone.innerHTML + '</div>'
             + '</td></tr>';
