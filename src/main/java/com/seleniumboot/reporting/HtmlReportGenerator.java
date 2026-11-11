@@ -289,6 +289,7 @@ public final class HtmlReportGenerator {
                 .replace("{{REPORT_CSS}}", loadResource("report/report.css"))
                 .replace("{{REPORT_JS}}", loadResource("report/report.js"))
                 .replace("{{REPORT_MARKUP}}", loadMarkup())
+                .replace("{{BROWSER_HEADER}}", isMatrixRun ? "<th>Browser</th>" : "")
                 .replace("{{RUN_SUMMARY}}", metadata[0])
                 .replace("{{METADATA}}", metadata[1])
                 .replace("{{PASSED}}", String.valueOf(passedTests))
@@ -395,7 +396,7 @@ public final class HtmlReportGenerator {
         String stepsHtml   = buildStepTimeline(test);
         boolean hasDetail  = errorMsg != null || stackTrace != null || test.has("failureCategory") || !stepsHtml.isEmpty()
                              || recordingPath != null || aiAnalysis != null || perfNode != null || test.has("testStatus")
-                             || test.has("failureDetail");
+                             || test.has("failureDetail") || "FAILED".equals(status);
         String detailRow   = "";
         if (hasDetail) {
             String whyHtml       = buildTestStatusBadge(test)
@@ -406,6 +407,8 @@ public final class HtmlReportGenerator {
                     ? "<button type=\"button\" class=\"copy-failure-btn\" data-test-id=\"" + escapeHtml(rawTestId)
                       + "\" onclick=\"copyFailure(this, event)\">Copy failure details</button>"
                     : "";
+            String downloadBtn   = "<button type=\"button\" class=\"download-test-btn\" data-download-id=\"" + escapeHtml(rawTestId)
+                    + "\" onclick=\"downloadTest(this, event)\" title=\"Export this test as a standalone HTML file\">Download this test</button>";
             String recordingHtml = recordingPath != null ? buildRecordingCell(recordingPath) : "";
             String traceLink     = tracePath     != null ? buildTraceLink(tracePath) : "";
             String sessionLink   = sessionUrl    != null ? buildSessionLink(sessionUrl) : "";
@@ -419,7 +422,7 @@ public final class HtmlReportGenerator {
             String detailDisplay = detailHidden ? " style=\"display:none\"" : "";
             detailRow = "<tr class=\"detail-row group-member\" data-group=\"" + groupKey + "\" id=\"detail-" + rowIndex + "\"" + detailDisplay + ">"
                     + "<td colspan=\"" + colspan + "\"><div class=\"detail-panel\">"
-                    + copyBtn + failureDetail + perfHtml + sessionLink + traceLink + stepsSection + recordingHtml + aiHtml + errorHtml + traceHtml
+                    + copyBtn + downloadBtn + failureDetail + perfHtml + sessionLink + traceLink + stepsSection + recordingHtml + aiHtml + errorHtml + traceHtml
                     + "</div></td>"
                     + "</tr>";
         }
@@ -458,6 +461,7 @@ public final class HtmlReportGenerator {
         }
 
         String browserCell = showBrowser ? "<td class=\"browser-cell\">" + escapeHtml(browser) + "</td>" : "";
+        String browserAttr = !browser.isEmpty() ? " data-browser=\"" + escapeHtml(browser) + "\"" : "";
 
         return "<tr class=\"" + rowClass + "\""
                 + clickAttr
@@ -467,7 +471,8 @@ public final class HtmlReportGenerator {
                 + " data-tags=\"" + tagDataAttr + "\""
                 + " data-test=\"" + methodName.toLowerCase() + "\""
                 + " data-logic-ms=\"" + logicMs + "\""
-                + " data-total-ms=\"" + totalMs + "\">"
+                + " data-total-ms=\"" + totalMs + "\""
+                + browserAttr + ">"
                 + "<td class=\"test-id\">" + testCellContent + "</td>"
                 + "<td class=\"desc-cell\">" + description + "</td>"
                 + browserCell
