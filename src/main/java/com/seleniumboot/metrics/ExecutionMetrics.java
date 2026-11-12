@@ -17,6 +17,9 @@ public final class ExecutionMetrics {
     /** History copies written by this JVM; excluded when comparing against earlier runs. */
     private static final Set<String> WRITTEN_HISTORY = ConcurrentHashMap.newKeySet();
 
+    /** File name of the newest history copy this JVM wrote; null before the first export. */
+    private static volatile String lastHistoryName;
+
     private static final ConcurrentHashMap<String, TestTiming> TIMINGS =
             new ConcurrentHashMap<>();
 
@@ -547,6 +550,7 @@ public final class ExecutionMetrics {
             String historyName = "selenium-boot-metrics-" + timestamp + ".json";
             mapper.writeValue(new File(historyDir, historyName), report);
             WRITTEN_HISTORY.add(historyName);
+            lastHistoryName = historyName;
 
             System.out.println("[Selenium Boot] Metrics exported → " + primary.getPath());
             System.out.println("[Selenium Boot] History copy     → "
@@ -559,6 +563,14 @@ public final class ExecutionMetrics {
         }
     }
 
+    /**
+     * File name of the history copy written by the latest export in this JVM, e.g.
+     * {@code selenium-boot-metrics-20261112-103000.json}; {@code null} if nothing was exported.
+     */
+    public static String lastHistoryName() {
+        return lastHistoryName;
+    }
+
     // ==========================================================
     // Reset
     // ==========================================================
@@ -567,6 +579,7 @@ public final class ExecutionMetrics {
         START_TIMES.clear();
         TIMINGS.clear();
         WRITTEN_HISTORY.clear();
+        lastHistoryName = null;
         TOTAL_DURATION.set(0);
         SUITE_START.set(0);
     }

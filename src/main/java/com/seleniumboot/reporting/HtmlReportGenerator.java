@@ -48,6 +48,9 @@ public final class HtmlReportGenerator {
                     "[Selenium Boot] HTML report generated at " + reportFile.getPath()
             );
 
+            keepReportCopy(html, keepReportsSetting(),
+                    com.seleniumboot.metrics.ExecutionMetrics.lastHistoryName());
+
         } catch (Exception e) {
             System.err.println(
                     "[Selenium Boot] HTML report generation failed: "
@@ -163,6 +166,72 @@ public final class HtmlReportGenerator {
         return String.format("%02d:%02d:%02d", totalSeconds / 3600, (totalSeconds % 3600) / 60, totalSeconds % 60);
     }
 
+    private static final String TREND_BASE_PREFIX = "const trendReportBase = ";
+
+    /** {@code flakiness.keepReports}; 0 when no config is loaded. */
+    private static int keepReportsSetting() {
+        try {
+            SeleniumBootConfig.Flakiness f = SeleniumBootContext.getConfig().getFlakiness();
+            return f != null ? f.getKeepReports() : 0;
+        } catch (RuntimeException e) {
+            return 0;
+        }
+    }
+
+    /** {@code selenium-boot-metrics-<ts>.json} to {@code selenium-boot-report-<ts>.html}. */
+    static String keptReportName(String historyJsonName) {
+        return historyJsonName.replaceFirst("^selenium-boot-metrics-", "selenium-boot-report-")
+                .replaceFirst("\\.json$", ".html");
+    }
+
+    /**
+     * Saves this run's report next to its history JSON so later reports can link to it, then
+     * deletes the oldest kept reports beyond {@code keep}. Does nothing when {@code keep} is 0
+     * or no history copy was written.
+     */
+    static void keepReportCopy(String html, int keep, String historyJsonName) {
+        if (keep <= 0 || historyJsonName == null) return;
+        File dir = ReportPaths.metricsHistoryDir();
+        try {
+            // The copy sits in the history directory, so its own trend links are plain file names.
+            int at = html.indexOf(TREND_BASE_PREFIX);
+            String copy = html;
+            if (at >= 0) {
+                int end = html.indexOf(";\n", at);
+                if (end > at) copy = html.substring(0, at) + TREND_BASE_PREFIX + "\"\"" + html.substring(end);
+            }
+            Files.writeString(new File(dir, keptReportName(historyJsonName)).toPath(), copy,
+                    StandardCharsets.UTF_8);
+            File[] kept = dir.listFiles((d, n) -> n.startsWith("selenium-boot-report-") && n.endsWith(".html"));
+            if (kept != null && kept.length > keep) {
+                java.util.Arrays.sort(kept, java.util.Comparator.comparing(File::getName));
+                for (int i = 0; i < kept.length - keep; i++) {
+                    if (!kept[i].delete()) kept[i].deleteOnExit();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[Selenium Boot] Could not keep a copy of the report: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Where kept reports are, as seen from the main report: a relative path ending in "/" (or
+     * a file: URI when the two are on different roots), JSON-encoded for the report script.
+     */
+    static String trendReportBase() {
+        File history = ReportPaths.metricsHistoryDir().getAbsoluteFile();
+        File reportDir = ReportPaths.htmlReport().getAbsoluteFile().getParentFile();
+        String base;
+        try {
+            String rel = reportDir.toPath().normalize().relativize(history.toPath().normalize())
+                    .toString().replace(File.separatorChar, '/');
+            base = rel.isEmpty() ? "" : rel + "/";
+        } catch (IllegalArgumentException e) {
+            base = history.toURI().toString();
+        }
+        return new ObjectMapper().getNodeFactory().textNode(base).toString();
+    }
+
     /**
      * Pass-rate and duration of the last {@code maxRuns} runs from the metrics history, oldest
      * first, as a JSON array for the trend charts. Empty array when there is no history.
@@ -188,6 +257,10 @@ public final class HtmlReportGenerator {
                 run.put("flakyTests", n.path("flakyTests").asInt(0));
                 long ms = n.path("suiteDurationMs").asLong(0);
                 run.put("durationSec", Math.round((ms > 0 ? ms : n.path("totalTimeMs").asLong(0)) / 100.0) / 10.0);
+                // Set only when that run's report was kept (flakiness.keepReports), so the
+                // chart point can open it.
+                String kept = keptReportName(files[i].getName());
+                if (new File(dir, kept).isFile()) run.put("report", kept);
             } catch (Exception ignored) {
                 // unreadable history file: skip it
             }
@@ -311,6 +384,7 @@ public final class HtmlReportGenerator {
                 .replace("{{FLAKINESS_SECTION}}", flakinessSection)
                 .replace("{{DONUT_DATA}}", donutData)
                 .replace("{{TREND_DATA}}", buildTrendData(20))
+                .replace("{{TREND_REPORT_BASE}}", trendReportBase())
                 .replace("{{ROWS}}", rows.toString())
                 .replace("{{FAILURE_ROWS}}", failureRows)
                 .replace("{{FAILURE_GROUPS}}", failureGroups)

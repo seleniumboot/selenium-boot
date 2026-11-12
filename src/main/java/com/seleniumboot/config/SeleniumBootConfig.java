@@ -530,6 +530,7 @@ public final class SeleniumBootConfig {
         private double  highRiskThreshold    = 33.0;
         private boolean failOnHighFlakiness  = false;
         private String  historyDir           = "";
+        private int     keepReports          = 0;
 
         public int     getHistoryRuns()                   { return historyRuns; }
         public void    setHistoryRuns(int v)              { this.historyRuns = v; }
@@ -543,6 +544,13 @@ public final class SeleniumBootConfig {
         /** Where metrics history is kept; blank means {@code <reports dir>/metrics-history}. */
         public String  getHistoryDir()                    { return historyDir; }
         public void    setHistoryDir(String v)            { this.historyDir = v == null ? "" : v; }
+
+        /**
+         * How many past HTML reports to keep in the history directory, next to their metrics
+         * JSON, so a trend-chart point can open that run's report. 0 (the default) keeps none.
+         */
+        public int     getKeepReports()                   { return keepReports; }
+        public void    setKeepReports(int v)              { this.keepReports = Math.max(0, v); }
     }
 
     public static final class Tracing {

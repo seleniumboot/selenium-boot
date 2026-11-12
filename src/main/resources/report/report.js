@@ -105,15 +105,28 @@ if (window.Chart) {
 
 // ── Trend over runs ──
 const trendData = {{TREND_DATA}};
+const trendReportBase = {{TREND_REPORT_BASE}};
 if (window.Chart && trendData.length >= 2) {
     document.getElementById('trendRow').style.display = '';
     const labels = trendData.map(r => r.label);
+    // A point opens that run's report when it was kept (flakiness.keepReports).
+    const trendRun = els => els.length ? trendData[els[0].index] : null;
     const line = (el, label, data, color, max) => new Chart(document.getElementById(el), {
         type: 'line',
         data: { labels, datasets: [{ label, data, borderColor: color, backgroundColor: color + '33',
-            fill: true, tension: .3, pointRadius: 3 }] },
+            fill: true, tension: .3, pointRadius: trendData.map(r => r.report ? 4 : 3) }] },
         options: { responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: { legend: { display: false },
+                tooltip: { callbacks: { footer: items =>
+                    items.length && trendData[items[0].dataIndex].report ? 'Click to open this run' : '' } } },
+            onHover: (e, els) => {
+                const r = trendRun(els);
+                e.native.target.style.cursor = r && r.report ? 'pointer' : 'default';
+            },
+            onClick: (e, els) => {
+                const r = trendRun(els);
+                if (r && r.report) window.open(trendReportBase + encodeURIComponent(r.report), '_blank');
+            },
             scales: { x: { grid: { display: false } }, y: { beginAtZero: true, max } } }
     });
     line('trendRateChart', 'Pass rate (%)', trendData.map(r => r.passRate), color('--good'), 100);
