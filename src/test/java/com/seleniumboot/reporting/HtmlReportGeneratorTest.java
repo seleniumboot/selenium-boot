@@ -813,4 +813,74 @@ public class HtmlReportGeneratorTest {
         assertTrue(js.contains("new Blob("), "Export must generate file in-memory using client-side Blob");
         assertTrue(js.contains("buildStandaloneTestHtml"), "Export must include standalone HTML builder");
     }
+
+    @Test
+    public void trendData_linksOnlyRunsWhoseReportWasKept() throws Exception {
+        java.nio.file.Path dir = java.nio.file.Files.createTempDirectory("sb-kept");
+        System.setProperty("seleniumboot.history.dir", dir.toString());
+        try {
+            for (String ts : new String[]{"20261110-100000", "20261111-100000"}) {
+                java.nio.file.Files.writeString(dir.resolve("selenium-boot-metrics-" + ts + ".json"), "{\"passRate\":50.0}");
+            }
+            java.nio.file.Files.writeString(dir.resolve("selenium-boot-report-20261111-100000.html"), "<html></html>");
+
+            JsonNode trend = new ObjectMapper().readTree(HtmlReportGenerator.buildTrendData(20));
+            assertFalse(trend.get(0).has("report"), "no kept report, no link");
+            assertEquals(trend.get(1).get("report").asText(), "selenium-boot-report-20261111-100000.html");
+        } finally {
+            System.clearProperty("seleniumboot.history.dir");
+        }
+    }
+
+    @Test
+    public void keepReportCopy_writesCopyWithLocalLinks_andPrunesOldest() throws Exception {
+        java.nio.file.Path dir = java.nio.file.Files.createTempDirectory("sb-keep");
+        System.setProperty("seleniumboot.history.dir", dir.toString());
+        try {
+            String html = "<script>\nconst trendReportBase = \"../h/\";\nconst x = 1;\n</script>";
+            HtmlReportGenerator.keepReportCopy(html, 2, "selenium-boot-metrics-20261110-100000.json");
+            HtmlReportGenerator.keepReportCopy(html, 2, "selenium-boot-metrics-20261111-100000.json");
+            HtmlReportGenerator.keepReportCopy(html, 2, "selenium-boot-metrics-20261112-100000.json");
+
+            assertFalse(java.nio.file.Files.exists(dir.resolve("selenium-boot-report-20261110-100000.html")), "oldest pruned");
+            java.nio.file.Path newest = dir.resolve("selenium-boot-report-20261112-100000.html");
+            assertTrue(java.nio.file.Files.exists(dir.resolve("selenium-boot-report-20261111-100000.html")));
+            String copy = java.nio.file.Files.readString(newest);
+            assertTrue(copy.contains("const trendReportBase = \"\";\nconst x = 1;"), "copy links siblings by file name: " + copy);
+        } finally {
+            System.clearProperty("seleniumboot.history.dir");
+        }
+    }
+
+    @Test
+    public void keepReportCopy_offByDefault() throws Exception {
+        java.nio.file.Path dir = java.nio.file.Files.createTempDirectory("sb-keep-off");
+        System.setProperty("seleniumboot.history.dir", dir.toString());
+        try {
+            assertEquals(new SeleniumBootConfig.Flakiness().getKeepReports(), 0);
+            HtmlReportGenerator.keepReportCopy("<html></html>", 0, "selenium-boot-metrics-20261110-100000.json");
+            HtmlReportGenerator.keepReportCopy("<html></html>", 5, null);
+            try (java.util.stream.Stream<java.nio.file.Path> files = java.nio.file.Files.list(dir)) {
+                assertEquals(files.count(), 0L);
+            }
+        } finally {
+            System.clearProperty("seleniumboot.history.dir");
+        }
+    }
+
+    @Test
+    public void trendReportBase_isRelativeToTheReport() throws Exception {
+        java.nio.file.Path root = java.nio.file.Files.createTempDirectory("sb-base");
+        System.setProperty("seleniumboot.reports.dir", root.resolve("target").toString());
+        try {
+            System.setProperty("seleniumboot.history.dir", root.resolve("target/metrics-history").toString());
+            assertEquals(HtmlReportGenerator.trendReportBase(), "\"metrics-history/\"");
+            System.setProperty("seleniumboot.history.dir", root.resolve(".selenium-boot-history").toString());
+            assertEquals(HtmlReportGenerator.trendReportBase(), "\"../.selenium-boot-history/\"");
+            assertTrue(html(1, 0).contains("const trendReportBase = \"../.selenium-boot-history/\";"));
+        } finally {
+            System.clearProperty("seleniumboot.history.dir");
+            System.clearProperty("seleniumboot.reports.dir");
+        }
+    }
 }
