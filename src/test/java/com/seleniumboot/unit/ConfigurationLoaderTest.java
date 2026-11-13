@@ -26,12 +26,16 @@ public class ConfigurationLoaderTest {
     public void clearSystemProperties() {
         System.clearProperty("selenium.boot.config");
         System.clearProperty("selenium.boot.profile");
+        System.clearProperty("browser");
+        System.clearProperty("selenium.boot.browser");
     }
 
     @AfterMethod
     public void restoreSystemProperties() {
         System.clearProperty("selenium.boot.config");
         System.clearProperty("selenium.boot.profile");
+        System.clearProperty("browser");
+        System.clearProperty("selenium.boot.browser");
     }
 
     // ----------------------------------------------------------
@@ -203,5 +207,69 @@ public class ConfigurationLoaderTest {
         Files.writeString(file, "timeouts:\n  explicit: -3\n");
         System.setProperty("selenium.boot.config", file.toString());
         ConfigurationLoader.load();
+    }
+
+    // ----------------------------------------------------------
+    // -Dbrowser / -Dselenium.boot.browser override
+    // ----------------------------------------------------------
+
+    private static Path configFile(String yaml) throws IOException {
+        Path file = Files.createTempFile("sb-browser", ".yml");
+        Files.writeString(file, yaml);
+        System.setProperty("selenium.boot.config", file.toString());
+        return file;
+    }
+
+    @Test
+    public void load_browserSystemProperty_overridesYamlName() throws IOException {
+        configFile("browser:\n  name: chrome\n");
+        System.setProperty("browser", "firefox");
+
+        assertEquals(ConfigurationLoader.load().getBrowser().getName(), "firefox");
+    }
+
+    @Test
+    public void load_browserSystemProperty_overridesBuiltInDefaultWithoutAFile() throws IOException {
+        System.setProperty("browser", "edge");
+
+        SeleniumBootConfig config = ConfigurationLoader.load(emptyWorkingDir(), emptyClasspath());
+
+        assertEquals(config.getBrowser().getName(), "edge");
+    }
+
+    @Test
+    public void load_browserSystemProperty_replacesTheMatrix() throws IOException {
+        configFile("browser:\n  matrix: [chrome, firefox]\n");
+        System.setProperty("browser", "firefox");
+
+        SeleniumBootConfig config = ConfigurationLoader.load();
+
+        assertEquals(config.getBrowser().getName(), "firefox");
+        assertTrue(config.getBrowser().getMatrix().isEmpty(), "a single-browser override must not still fan out");
+    }
+
+    @Test
+    public void load_namespacedBrowserProperty_winsOverPlainBrowser() throws IOException {
+        configFile("browser:\n  name: chrome\n");
+        System.setProperty("browser", "edge");
+        System.setProperty("selenium.boot.browser", "firefox");
+
+        assertEquals(ConfigurationLoader.load().getBrowser().getName(), "firefox");
+    }
+
+    @Test
+    public void load_blankBrowserProperty_isIgnored() throws IOException {
+        configFile("browser:\n  name: firefox\n");
+        System.setProperty("browser", "  ");
+
+        assertEquals(ConfigurationLoader.load().getBrowser().getName(), "firefox");
+    }
+
+    @Test
+    public void load_browserPropertyValue_isTrimmedAndLowerCased() throws IOException {
+        configFile("browser:\n  name: chrome\n");
+        System.setProperty("browser", " Firefox ");
+
+        assertEquals(ConfigurationLoader.load().getBrowser().getName(), "firefox");
     }
 }

@@ -69,9 +69,9 @@ test {
         // suites 'src/test/resources/testng.xml'
     }
 
-    // Forward -Denv=staging from the CLI. Forward only the keys you use:
+    // Forward -Denv / -Dbrowser / -Dselenium.boot.profile from the CLI. Forward only the keys you use:
     // copying every JVM property (java.home, ...) breaks the run if the test JVM differs from Gradle's
-    ['env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
+    ['env', 'browser', 'selenium.boot.profile'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
 
     // Display test output in the console
     testLogging {
@@ -91,9 +91,9 @@ tasks.test {
         // suites("src/test/resources/testng.xml")
     }
 
-    // Forward -Denv=staging from the CLI. Forward only the keys you use:
+    // Forward -Denv / -Dbrowser / -Dselenium.boot.profile from the CLI. Forward only the keys you use:
     // copying every JVM property (java.home, ...) breaks the run if the test JVM differs from Gradle's
-    listOf("env").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
+    listOf("env", "browser", "selenium.boot.profile").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
 
     testLogging {
         events("passed", "skipped", "failed")
@@ -121,7 +121,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    ['env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
+    ['env', 'browser', 'selenium.boot.profile'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
 }
 ```
 
@@ -137,7 +137,7 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
-    listOf("env").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
+    listOf("env", "browser", "selenium.boot.profile").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
 }
 ```
 
@@ -183,7 +183,10 @@ retry:
 # Run with an environment profile
 ./gradlew test -Denv=staging
 
-# Pass multiple JVM args
+# Switch browser for one run (overrides browser.name and browser.matrix)
+./gradlew test -Dbrowser=firefox
+
+# Use a config profile
 ./gradlew test -Dselenium.boot.profile=firefox   # reads selenium-boot-firefox.yml
 ```
 
@@ -215,7 +218,7 @@ For parallel runs with Gradle, configure the `test` task alongside `selenium-boo
 test {
     useTestNG()
     maxParallelForks = 4          // Gradle worker processes
-    ['env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
+    ['env', 'browser', 'selenium.boot.profile'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
 }
 ```
 
@@ -226,7 +229,7 @@ test {
 tasks.test {
     useTestNG()
     maxParallelForks = 4
-    listOf("env").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
+    listOf("env", "browser", "selenium.boot.profile").forEach { k -> System.getProperty(k)?.let { systemProperty(k, it) } }
 }
 ```
 
@@ -283,7 +286,7 @@ dependencies {
 
 test {
     useTestNG()
-    ['env'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
+    ['env', 'browser', 'selenium.boot.profile'].each { k -> System.getProperty(k)?.with { systemProperty k, it } }
     testLogging { events 'passed', 'skipped', 'failed' }
 }
 ```
