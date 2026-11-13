@@ -297,3 +297,21 @@ mvn test -Dselenium.boot.profile=staging
 ```
 
 Only the fields present in the profile file are overridden — everything else falls back to the base config.
+
+---
+
+## Switching browser from the command line
+
+Pick the browser for a single run without editing any file:
+
+```bash
+mvn test -Dbrowser=firefox
+```
+
+`-Dselenium.boot.browser=firefox` does the same and wins if both are set. The value replaces
+`browser.name` from `selenium-boot.yml`, any profile, and `SeleniumBootDefaults`. It also
+replaces `browser.matrix`: asking for one browser runs only that browser. Values are
+case-insensitive; a blank value is ignored.
+
+Gradle runs tests in a separate JVM, so forward the property in `build.gradle`. See
+[Gradle setup](./gradle).

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.Locale;
 import java.util.Objects;
 
 import org.yaml.snakeyaml.LoaderOptions;
@@ -117,8 +119,29 @@ public final class ConfigurationLoader {
         // Programmatic defaults (SeleniumBootDefaults) take precedence over the built-in ones.
         SeleniumBootDefaults.applyMissing(config);
         applyBuiltInDefaults(config);
+        applyBrowserOverride(config);
 
         validate(config);
+    }
+
+    /**
+     * Command-line browser override: {@code -Dselenium.boot.browser=firefox}, or the shorter
+     * {@code -Dbrowser=firefox} (the namespaced key wins when both are set). It beats
+     * {@code browser.name} from the file, profiles and {@link SeleniumBootDefaults}, and it
+     * replaces {@code browser.matrix} — asking for one browser must not still fan out to several.
+     * A blank value is ignored.
+     */
+    private static void applyBrowserOverride(SeleniumBootConfig config) {
+        String override = System.getProperty("selenium.boot.browser");
+        if (override == null || override.isBlank()) {
+            override = System.getProperty("browser");
+        }
+        if (override == null || override.isBlank()) {
+            return;
+        }
+        SeleniumBootConfig.Browser browser = config.getBrowser();
+        browser.setName(override.trim().toLowerCase(Locale.ROOT));
+        browser.setMatrix(Collections.emptyList());
     }
 
     /**
