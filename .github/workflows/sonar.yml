@@ -1,0 +1,54 @@
+name: SonarCloud
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  sonar:
+    name: SonarCloud analysis
+    runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    steps:
+      # Fork PRs and repos without the secret skip analysis instead of failing.
+      - name: Check for SONAR_TOKEN
+        id: token
+        run: |
+          if [ -n "$SONAR_TOKEN" ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; echo "SONAR_TOKEN not set; skipping analysis."; fi
+
+      - name: Checkout
+        if: steps.token.outputs.present == 'true'
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # full history for blame / new-code detection
+
+      - name: Set up Java 17
+        if: steps.token.outputs.present == 'true'
+        uses: actions/setup-java@v6
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Cache SonarCloud packages
+        if: steps.token.outputs.present == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Test and analyze
+        if: steps.token.outputs.present == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn verify -Dgpg.skip=true org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar --no-transfer-progress
