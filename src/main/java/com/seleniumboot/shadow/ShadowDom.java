@@ -213,16 +213,11 @@ public final class ShadowDom {
         StringBuilder js = new StringBuilder(
                 "(function() { var el = document.querySelector('" + escapeJs(selectors[0]) + "'); ");
         for (int i = 1; i < selectors.length; i++) {
-            js.append("if (!el) return null; ");
-            if (i < selectors.length - 1) {
-                // Intermediate: move into shadow root then find next host
-                js.append("el = el.shadowRoot ? el.shadowRoot.querySelector('")
-                  .append(escapeJs(selectors[i])).append("') : null; ");
-            } else {
-                // Final: find the target inside the last shadow root
-                js.append("el = el.shadowRoot ? el.shadowRoot.querySelector('")
-                  .append(escapeJs(selectors[i])).append("') : null; ");
-            }
+            // Step into the current host's shadow root and find the next element
+            // (the next host, or the target on the last iteration).
+            js.append("if (!el) return null; ")
+              .append("el = el.shadowRoot ? el.shadowRoot.querySelector('")
+              .append(escapeJs(selectors[i])).append("') : null; ");
         }
         js.append("return el; })()");
         return js.toString();

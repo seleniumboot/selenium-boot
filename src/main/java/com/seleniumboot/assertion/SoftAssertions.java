@@ -18,6 +18,6 @@ public final class SoftAssertions {
 
     /** Clears the collector for the current thread. Called by the framework after each test. */
     public static void clear() {
-        COLLECTOR.get().clear();
+        COLLECTOR.remove(); // next get() starts a fresh collector; no stale value left on pooled threads
     }
 }

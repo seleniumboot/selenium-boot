@@ -444,7 +444,11 @@ public abstract class BasePage {
 
     private void exitFrame() {
         int depth = FRAME_DEPTH.get() - 1;
-        FRAME_DEPTH.set(depth);
+        if (depth == 0) {
+            FRAME_DEPTH.remove(); // back at top level: don't leave a value on pooled threads
+        } else {
+            FRAME_DEPTH.set(depth);
+        }
         if (depth == 0) {
             driver.switchTo().defaultContent();
         } else {

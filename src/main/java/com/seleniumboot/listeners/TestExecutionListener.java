@@ -167,7 +167,7 @@ public final class TestExecutionListener implements ITestListener {
         BrowserContext.clear();
         NetworkMock.cleanup();
         SeleniumBootContext.clearCurrentTestId();
-        jsErrorsLogged.set(false);
+        jsErrorsLogged.remove();
     }
 
     @Override
@@ -181,7 +181,7 @@ public final class TestExecutionListener implements ITestListener {
             ExecutionMetrics.recordConsoleErrors(testId, consoleErrors);
             consoleErrors.forEach(e -> StepLogger.step("[JS Error] " + e, StepStatus.WARN));
         }
-        jsErrorsLogged.set(false);
+        jsErrorsLogged.remove();
 
         String[] pageContext = capturePageContext(testId);
         String recordingPath = skipBrowser(result) ? null : RecordingManager.saveOnFailure(testId);

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.regex.Pattern;
 
 /**
  * JDBC-backed database assertion client. No ORM required — plain SQL.
@@ -147,6 +148,7 @@ public final class DbClient {
      * @throws DbAssertException if the actual count differs
      */
     public void assertRowCount(String table, int expected) {
+        requireIdentifier(table, "table name");
         long actual = countRaw("SELECT COUNT(*) FROM " + table);
         if (actual != expected) {
             throw new DbAssertException(
@@ -166,6 +168,7 @@ public final class DbClient {
      * @throws DbAssertException if the actual count differs
      */
     public void assertRowCount(String table, String where, int expected) {
+        requireIdentifier(table, "table name");
         long actual = countRaw("SELECT COUNT(*) FROM " + table + " WHERE " + where);
         if (actual != expected) {
             throw new DbAssertException(
@@ -181,9 +184,11 @@ public final class DbClient {
         if (conditions == null || conditions.isEmpty()) {
             throw new IllegalArgumentException("[Database] conditions map must not be empty");
         }
+        requireIdentifier(table, "table name");
         StringJoiner where = new StringJoiner(" AND ");
         List<Object> values = new ArrayList<>();
         for (Map.Entry<String, Object> e : conditions.entrySet()) {
+            requireIdentifier(e.getKey(), "column name");
             where.add(e.getKey() + " = ?");
             values.add(e.getValue());
         }
@@ -201,6 +206,21 @@ public final class DbClient {
             throw e;
         } catch (SQLException e) {
             throw new IllegalStateException("[Database] Count query failed: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * One identifier part: plain ({@code users}), or quoted as {@code "x"}, {@code `x`} or {@code [x]}.
+     * Parts may be dot-qualified ({@code public.users}). Values are always bound as parameters;
+     * this only stops table/column names from carrying extra SQL.
+     */
+    private static final String IDENT_PART = "(?:[A-Za-z_][\\w$]*+|\"[^\"]++\"|`[^`]++`|\\[[^\\]]++\\])";
+    private static final Pattern IDENTIFIER = Pattern.compile(IDENT_PART + "(?:\\." + IDENT_PART + ")*+");
+
+    private static void requireIdentifier(String name, String what) {
+        if (name == null || !IDENTIFIER.matcher(name).matches()) {
+            throw new IllegalArgumentException("[Database] Invalid " + what + ": '" + name
+                    + "'. Use a plain or quoted identifier, optionally schema-qualified.");
         }
     }
 

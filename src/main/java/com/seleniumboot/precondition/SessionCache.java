@@ -80,7 +80,7 @@ final class SessionCache {
 
     /** Clears all cached sessions for the current thread. */
     static void clearAll() {
-        cache.get().clear();
+        cache.remove();
     }
 
     @SuppressWarnings("unchecked")

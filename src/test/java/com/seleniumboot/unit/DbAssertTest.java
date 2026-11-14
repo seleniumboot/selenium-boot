@@ -247,4 +247,40 @@ public class DbAssertTest {
         ctor.setAccessible(true);
         return ctor.newInstance(key);
     }
+
+    // ── Identifier validation (SonarCloud java:S2077) ────────────────
+
+    @Test(expectedExceptions = IllegalArgumentException.class,
+          expectedExceptionsMessageRegExp = ".*table name.*")
+    public void assertRowExists_injectedTableName_rejectedBeforeQuery() {
+        DbClient.forDefault().assertRowExists("users; DROP TABLE users", Map.of("id", 1));
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class,
+          expectedExceptionsMessageRegExp = ".*column name.*")
+    public void assertRowExists_injectedColumnName_rejectedBeforeQuery() {
+        DbClient.forDefault().assertRowExists("users", Map.of("id = 1 OR 1", 1));
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class,
+          expectedExceptionsMessageRegExp = ".*table name.*")
+    public void assertRowCount_injectedTableName_rejectedBeforeQuery() {
+        DbClient.forDefault().assertRowCount("users --", 1);
+    }
+
+    @Test
+    public void identifierPattern_acceptsPlainQualifiedAndQuotedNames() throws Exception {
+        java.lang.reflect.Method m = DbClient.class.getDeclaredMethod("requireIdentifier", String.class, String.class);
+        m.setAccessible(true);
+        for (String ok : new String[] {"users", "app.users", "public.\"Order\"", "`order items`", "[dbo].[Users]", "t_1$"}) {
+            m.invoke(null, ok, "table name");
+        }
+    }
+
+    @Test
+    public void identifierPattern_veryLongQualifiedName_doesNotOverflowStack() throws Exception {
+        java.lang.reflect.Method m = DbClient.class.getDeclaredMethod("requireIdentifier", String.class, String.class);
+        m.setAccessible(true);
+        m.invoke(null, "a." .repeat(50_000) + "t", "table name");
+    }
 }
