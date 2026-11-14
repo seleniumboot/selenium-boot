@@ -276,4 +276,11 @@ public class DbAssertTest {
             m.invoke(null, ok, "table name");
         }
     }
+
+    @Test
+    public void identifierPattern_veryLongQualifiedName_doesNotOverflowStack() throws Exception {
+        java.lang.reflect.Method m = DbClient.class.getDeclaredMethod("requireIdentifier", String.class, String.class);
+        m.setAccessible(true);
+        m.invoke(null, "a." .repeat(50_000) + "t", "table name");
+    }
 }

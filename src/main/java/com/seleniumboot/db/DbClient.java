@@ -214,8 +214,8 @@ public final class DbClient {
      * Parts may be dot-qualified ({@code public.users}). Values are always bound as parameters;
      * this only stops table/column names from carrying extra SQL.
      */
-    private static final String IDENT_PART = "(?:[A-Za-z_][\\w$]*|\"[^\"]+\"|`[^`]+`|\\[[^\\]]+\\])";
-    private static final Pattern IDENTIFIER = Pattern.compile(IDENT_PART + "(?:\\." + IDENT_PART + ")*");
+    private static final String IDENT_PART = "(?:[A-Za-z_][\\w$]*+|\"[^\"]++\"|`[^`]++`|\\[[^\\]]++\\])";
+    private static final Pattern IDENTIFIER = Pattern.compile(IDENT_PART + "(?:\\." + IDENT_PART + ")*+");
 
     private static void requireIdentifier(String name, String what) {
         if (name == null || !IDENTIFIER.matcher(name).matches()) {
