@@ -248,7 +248,7 @@ public final class HtmlReportGenerator {
             try {
                 JsonNode n = mapper.readTree(files[i]);
                 com.fasterxml.jackson.databind.node.ObjectNode run = out.addObject();
-                String name = files[i].getName().replaceAll("^.*metrics-|\\.json$", "");
+                String name = files[i].getName().replaceAll("(^.*metrics-)|(\\.json$)", "");
                 run.put("label", name.length() >= 13
                         ? name.substring(4, 6) + "-" + name.substring(6, 8) + " " + name.substring(9, 11) + ":" + name.substring(11, 13)
                         : name);

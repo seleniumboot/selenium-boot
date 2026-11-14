@@ -44,8 +44,9 @@ public final class FailureClassifier {
         }
     }
 
+    // Possessive quantifiers: a long dotted line must not recurse once per segment (StackOverflowError).
     private static final Pattern THROWABLE_LINE = Pattern.compile(
-            "^(?:Caused by: )?((?:[A-Za-z_$][\\w$]*\\.)+[A-Za-z_$][\\w$]*|[A-Za-z_$][\\w$]*(?:Exception|Error))"
+            "^(?:Caused by: )?((?:[A-Za-z_$][\\w$]*+\\.)++[A-Za-z_$][\\w$]*+|[A-Za-z_$][\\w$]*(?:Exception|Error))"
             + "(?::\\s?(.*))?$");
 
     private static final int EVIDENCE_MAX = 140;

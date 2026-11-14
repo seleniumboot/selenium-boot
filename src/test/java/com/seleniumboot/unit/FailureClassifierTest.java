@@ -226,4 +226,12 @@ public class FailureClassifierTest {
         Assert.assertEquals(r3.type(), com.seleniumboot.failure.FailureType.FLAKY);
         Assert.assertEquals(r3.displayLabel(), "Flaky (Locator not found)");
     }
+
+    /** SonarCloud java:S5998: a very long dotted line must not blow the regex stack. */
+    @Test
+    public void veryLongDottedLine_doesNotOverflowStack() {
+        String longLine = "a.".repeat(50_000) + "Boom";
+        FailureClassifier.Result r = FailureClassifier.classify("boom", longLine + "\n\tat x.y(Z.java:1)");
+        Assert.assertNotNull(r.category());
+    }
 }

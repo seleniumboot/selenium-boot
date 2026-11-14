@@ -39,7 +39,7 @@ public final class CucumberStepLogger implements ConcurrentEventListener {
 
     private void onStepStarted(TestStepStarted event) {
         if (event.getTestStep() instanceof HookTestStep) {
-            CURRENT_STEP.set(null);
+            CURRENT_STEP.remove();
             return;
         }
         if (event.getTestStep() instanceof PickleStepTestStep step) {
