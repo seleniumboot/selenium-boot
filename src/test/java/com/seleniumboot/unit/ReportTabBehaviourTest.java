@@ -73,4 +73,30 @@ public class ReportTabBehaviourTest {
         Assert.assertTrue(js.contains("filterByStatus(['PASSED', 'FAILED', 'SKIPPED'][els[0].index])"),
                 "donut slice order must match its labels");
     }
+
+    @Test
+    public void reportJsUpdatesChartsOnThemeToggle() throws Exception {
+        try (var in = getClass().getResourceAsStream("/report/report.js")) {
+            String js = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            Assert.assertTrue(js.contains("function updateChartsTheme()"), "report.js must define updateChartsTheme()");
+            Assert.assertTrue(js.contains("updateChartsTheme();"), "toggleDark must call updateChartsTheme()");
+            Assert.assertTrue(js.contains("Chart.defaults.color = color('--text-secondary')"), "Chart defaults must use --text-secondary");
+            Assert.assertTrue(js.contains("Chart.defaults.borderColor = color('--border')"), "Chart defaults must use --border");
+            Assert.assertTrue(js.contains("donutChart.data.datasets[0].borderColor = surfaceColor"), "donut border must update to surfaceColor");
+            Assert.assertTrue(js.contains("donutChart.update()"), "donutChart must be updated on theme change");
+            Assert.assertTrue(js.contains("executionChart.update()"), "executionChart must be updated on theme change");
+            Assert.assertTrue(js.contains("updateTrendLine(trendRateChart"), "trendRateChart must update on theme change");
+            Assert.assertTrue(js.contains("updateTrendLine(trendTimeChart"), "trendTimeChart must update on theme change");
+            Assert.assertTrue(js.contains("updateTrendLine(trendFlakyChart"), "trendFlakyChart must update on theme change");
+        }
+    }
+
+    @Test
+    public void donutChartBorderUsesSurfaceColor() throws Exception {
+        try (var in = getClass().getResourceAsStream("/report/report.js")) {
+            String js = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            Assert.assertFalse(js.contains("borderColor: '#fff'"), "donut chart must not hardcode #fff border");
+            Assert.assertTrue(js.contains("borderColor: color('--surface')"), "donut chart must use --surface for border");
+        }
+    }
 }

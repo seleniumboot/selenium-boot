@@ -60,89 +60,251 @@ document.addEventListener('keydown', function(e) {
 
 // ── Dark mode ──
 (function() {
-    try { if (localStorage.getItem('sb-theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch(e) {}
+    try {
+        if (localStorage.getItem('sb-theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            const btn = document.querySelector('.dark-toggle');
+            if (btn) btn.innerHTML = '&#9728; Light Mode';
+        }
+    } catch(e) {}
 })();
 function toggleDark() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    try { localStorage.setItem('sb-theme', isDark ? 'light' : 'dark'); } catch(e) {}
+    const newTheme = isDark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    try { localStorage.setItem('sb-theme', newTheme); } catch(e) {}
+    const btn = document.querySelector('.dark-toggle');
+    if (btn) btn.innerHTML = newTheme === 'dark' ? '&#9728; Light Mode' : '&#9790; Dark Mode';
+    updateChartsTheme();
 }
 
 // ── Charts ──
 const executionData = JSON.parse('{{EXECUTION_PERCENTILES}}');
 const donutData     = {{DONUT_DATA}};
-const themeColors = getComputedStyle(document.documentElement);
-const color = name => themeColors.getPropertyValue(name).trim();
+const color = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const chartFontFamily = 'Roboto, "Segoe UI", Arial, sans-serif';
 function safeVal(obj, key) { return obj && obj[key] ? obj[key] : 0; }
+
+let donutChart = null;
+let executionChart = null;
+let trendRateChart = null;
+let trendTimeChart = null;
+let trendFlakyChart = null;
+
 if (window.Chart) {
-    new Chart(document.getElementById('donutChart'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Passed', 'Failed', 'Skipped'],
-            datasets: [{ data: [donutData.passed, donutData.failed, donutData.skipped],
-                backgroundColor: [color('--good'), color('--bad'), color('--warn')],
-                borderWidth: 2, borderColor: color('--surface') }]
-        },
-        options: { responsive: true, maintainAspectRatio: true, cutout: '65%',
-            // A slice opens the Test Cases tab filtered to that status.
-            onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
-            onClick: (e, els) => {
-                if (els.length) filterByStatus(['PASSED', 'FAILED', 'SKIPPED'][els[0].index]);
+    Chart.defaults.font.family = chartFontFamily;
+    Chart.defaults.color = color('--text-secondary');
+    Chart.defaults.borderColor = color('--border');
+
+    const donutEl = document.getElementById('donutChart');
+    if (donutEl) {
+        donutChart = new Chart(donutEl, {
+            type: 'doughnut',
+            data: {
+                labels: ['Passed', 'Failed', 'Skipped'],
+                datasets: [{
+                    data: [donutData.passed, donutData.failed, donutData.skipped],
+                    backgroundColor: [color('--good'), color('--bad'), color('--warn')],
+                    borderWidth: 2,
+                    borderColor: color('--surface')
+                }]
             },
-            plugins: { legend: { position: 'bottom', labels: { font: { family: chartFontFamily, size: 12 } } },
-                tooltip: { callbacks: { footer: () => 'Click to show these tests' } } } }
-    });
-    new Chart(document.getElementById('executionChart'), {
-        type: 'bar',
-        data: {
-            labels: ['P50', 'P90', 'P95', 'P99'],
-            datasets: [{ label: 'Execution Time (ms)',
-                data: [safeVal(executionData,'p50'), safeVal(executionData,'p90'),
-                       safeVal(executionData,'p95'), safeVal(executionData,'p99')],
-                backgroundColor: color('--primary') + '40', borderColor: color('--primary'),
-                borderWidth: 1, borderRadius: 4 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { labels: { font: { family: chartFontFamily, size: 13 } } } },
-            scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
-    });
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                cutout: '65%',
+                // A slice opens the Test Cases tab filtered to that status.
+                onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+                onClick: (e, els) => {
+                    if (els.length) filterByStatus(['PASSED', 'FAILED', 'SKIPPED'][els[0].index]);
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: color('--text-secondary'),
+                            font: { family: chartFontFamily, size: 12 }
+                        }
+                    },
+                    tooltip: { callbacks: { footer: () => 'Click to show these tests' } }
+                }
+            }
+        });
+    }
+
+    const execEl = document.getElementById('executionChart');
+    if (execEl) {
+        executionChart = new Chart(execEl, {
+            type: 'bar',
+            data: {
+                labels: ['P50', 'P90', 'P95', 'P99'],
+                datasets: [{
+                    label: 'Execution Time (ms)',
+                    data: [safeVal(executionData, 'p50'), safeVal(executionData, 'p90'),
+                           safeVal(executionData, 'p95'), safeVal(executionData, 'p99')],
+                    backgroundColor: color('--primary') + '40',
+                    borderColor: color('--primary'),
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: color('--text-secondary'),
+                            font: { family: chartFontFamily, size: 13 }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: color('--text-secondary') }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: color('--border') },
+                        ticks: { color: color('--text-secondary') }
+                    }
+                }
+            }
+        });
+    }
 }
 
 // ── Trend over runs ──
 const trendData = {{TREND_DATA}};
 const trendReportBase = {{TREND_REPORT_BASE}};
 if (window.Chart && trendData.length >= 2) {
-    document.getElementById('trendRow').style.display = '';
+    const trendRow = document.getElementById('trendRow');
+    if (trendRow) trendRow.style.display = '';
     const labels = trendData.map(r => r.label);
     // A point opens that run's report when it was kept (flakiness.keepReports).
     const trendRun = els => els.length ? trendData[els[0].index] : null;
-    const line = (el, label, data, color, max) => new Chart(document.getElementById(el), {
-        type: 'line',
-        data: { labels, datasets: [{ label, data, borderColor: color, backgroundColor: color + '33',
-            fill: true, tension: .3, pointRadius: trendData.map(r => r.report ? 4 : 3) }] },
-        options: { responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false },
-                tooltip: { callbacks: { footer: items =>
-                    items.length && trendData[items[0].dataIndex].report ? 'Click to open this run' : '' } } },
-            onHover: (e, els) => {
-                const r = trendRun(els);
-                e.native.target.style.cursor = r && r.report ? 'pointer' : 'default';
+    const line = (elId, label, data, lineColor, max) => {
+        const el = document.getElementById(elId);
+        if (!el) return null;
+        return new Chart(el, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label,
+                    data,
+                    borderColor: lineColor,
+                    backgroundColor: lineColor + '33',
+                    fill: true,
+                    tension: .3,
+                    pointRadius: trendData.map(r => r.report ? 4 : 3)
+                }]
             },
-            onClick: (e, els) => {
-                const r = trendRun(els);
-                if (r && r.report) window.open(trendReportBase + encodeURIComponent(r.report), '_blank');
-            },
-            scales: { x: { grid: { display: false } }, y: { beginAtZero: true, max } } }
-    });
-    line('trendRateChart', 'Pass rate (%)', trendData.map(r => r.passRate), color('--good'), 100);
-    line('trendTimeChart', 'Duration (s)', trendData.map(r => r.durationSec), color('--primary'));
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            footer: items => items.length && trendData[items[0].dataIndex].report ? 'Click to open this run' : ''
+                        }
+                    }
+                },
+                onHover: (e, els) => {
+                    const r = trendRun(els);
+                    e.native.target.style.cursor = r && r.report ? 'pointer' : 'default';
+                },
+                onClick: (e, els) => {
+                    const r = trendRun(els);
+                    if (r && r.report) window.open(trendReportBase + encodeURIComponent(r.report), '_blank');
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: color('--text-secondary') }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max,
+                        grid: { color: color('--border') },
+                        ticks: { color: color('--text-secondary') }
+                    }
+                }
+            }
+        });
+    };
+    trendRateChart = line('trendRateChart', 'Pass rate (%)', trendData.map(r => r.passRate), color('--good'), 100);
+    trendTimeChart = line('trendTimeChart', 'Duration (s)', trendData.map(r => r.durationSec), color('--primary'));
     // Hide the flaky card entirely when no run in the history had flaky tests.
     if (trendData.some(r => r.flakyTests > 0)) {
-        line('trendFlakyChart', 'Flaky tests', trendData.map(r => r.flakyTests), color('--warn'));
+        trendFlakyChart = line('trendFlakyChart', 'Flaky tests', trendData.map(r => r.flakyTests), color('--warn'));
     } else {
-        document.getElementById('trendFlakyCard').style.display = 'none';
+        const flakyCard = document.getElementById('trendFlakyCard');
+        if (flakyCard) flakyCard.style.display = 'none';
     }
+}
+
+function updateChartsTheme() {
+    if (!window.Chart) return;
+    const textColor = color('--text-secondary');
+    const borderColor = color('--border');
+    const surfaceColor = color('--surface');
+    const goodColor = color('--good');
+    const badColor = color('--bad');
+    const warnColor = color('--warn');
+    const primaryColor = color('--primary');
+
+    Chart.defaults.color = textColor;
+    Chart.defaults.borderColor = borderColor;
+
+    if (donutChart) {
+        donutChart.data.datasets[0].borderColor = surfaceColor;
+        donutChart.data.datasets[0].backgroundColor = [goodColor, badColor, warnColor];
+        if (donutChart.options.plugins && donutChart.options.plugins.legend && donutChart.options.plugins.legend.labels) {
+            donutChart.options.plugins.legend.labels.color = textColor;
+        }
+        donutChart.update();
+    }
+
+    if (executionChart) {
+        executionChart.data.datasets[0].backgroundColor = primaryColor + '40';
+        executionChart.data.datasets[0].borderColor = primaryColor;
+        if (executionChart.options.plugins && executionChart.options.plugins.legend && executionChart.options.plugins.legend.labels) {
+            executionChart.options.plugins.legend.labels.color = textColor;
+        }
+        if (executionChart.options.scales) {
+            if (executionChart.options.scales.x && executionChart.options.scales.x.ticks) {
+                executionChart.options.scales.x.ticks.color = textColor;
+            }
+            if (executionChart.options.scales.y) {
+                if (executionChart.options.scales.y.ticks) executionChart.options.scales.y.ticks.color = textColor;
+                if (executionChart.options.scales.y.grid) executionChart.options.scales.y.grid.color = borderColor;
+            }
+        }
+        executionChart.update();
+    }
+
+    const updateTrendLine = (chart, lineColor) => {
+        if (!chart) return;
+        chart.data.datasets[0].borderColor = lineColor;
+        chart.data.datasets[0].backgroundColor = lineColor + '33';
+        if (chart.options.scales) {
+            if (chart.options.scales.x && chart.options.scales.x.ticks) {
+                chart.options.scales.x.ticks.color = textColor;
+            }
+            if (chart.options.scales.y) {
+                if (chart.options.scales.y.ticks) chart.options.scales.y.ticks.color = textColor;
+                if (chart.options.scales.y.grid) chart.options.scales.y.grid.color = borderColor;
+            }
+        }
+        chart.update();
+    };
+
+    updateTrendLine(trendRateChart, goodColor);
+    updateTrendLine(trendTimeChart, primaryColor);
+    updateTrendLine(trendFlakyChart, warnColor);
 }
 
 // ── Collapse / expand class groups ──
