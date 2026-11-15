@@ -139,6 +139,10 @@ public class ApiClient {
             logStep(response);
             return response;
 
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            StepLogger.step("[API] " + method + " " + url + " → ERROR: " + e.getMessage(), StepStatus.FAIL);
+            throw new RuntimeException("[ApiClient] Request failed: " + method + " " + url, e);
         } catch (Exception e) {
             StepLogger.step("[API] " + method + " " + url + " → ERROR: " + e.getMessage(), StepStatus.FAIL);
             throw new RuntimeException("[ApiClient] Request failed: " + method + " " + url, e);
