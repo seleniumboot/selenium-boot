@@ -85,7 +85,13 @@ if (window.Chart) {
                 borderWidth: 2, borderColor: color('--surface') }]
         },
         options: { responsive: true, maintainAspectRatio: true, cutout: '65%',
-            plugins: { legend: { position: 'bottom', labels: { font: { family: chartFontFamily, size: 12 } } } } }
+            // A slice opens the Test Cases tab filtered to that status.
+            onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+            onClick: (e, els) => {
+                if (els.length) filterByStatus(['PASSED', 'FAILED', 'SKIPPED'][els[0].index]);
+            },
+            plugins: { legend: { position: 'bottom', labels: { font: { family: chartFontFamily, size: 12 } } },
+                tooltip: { callbacks: { footer: () => 'Click to show these tests' } } } }
     });
     new Chart(document.getElementById('executionChart'), {
         type: 'bar',
@@ -214,6 +220,25 @@ function clearTagFilter() {
     applySearch();
 }
 
+// Dashboard → Test Cases: a donut slice or stat card shows only tests with that status.
+// Class groups start collapsed, so open the ones holding a match; "All" resets.
+function filterByStatus(status) {
+    showTab('tests', document.querySelector('.nav-item[onclick*=\'tests\']'));
+    const btn = document.querySelector(".filter-btn[onclick*=\"'" + status + "'\"]");
+    if (!btn) return;
+    setFilter(status, btn);
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#testTable tbody tr.group-member:not(.detail-row)').forEach(row => {
+        if (!rowMatches(row, q)) return;
+        const icon = document.getElementById('gicon-' + row.getAttribute('data-group'));
+        if (icon) icon.classList.remove('closed');
+    });
+    applySearch();
+}
+document.addEventListener('keydown', function(e) {
+    const card = e.target.closest && e.target.closest('.stat-link');
+    if (card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); card.click(); }
+});
 // ── Filter + search (Test Cases tab) ──
 let activeFilter = 'ALL';
 function setFilter(status, btn) {

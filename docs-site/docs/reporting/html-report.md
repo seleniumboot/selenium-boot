@@ -29,7 +29,7 @@ The report has three tabs in the left sidebar:
 
 High-level summary of the run:
 
-- **Total / Passed / Failed / Skipped** counts
+- **Total / Passed / Failed / Skipped** counts. Clicking the Passed, Failed or Skipped card, or that slice of the donut chart, opens the Test Cases tab filtered to that status and expands the class groups that contain matching tests. Click **All** in the filter bar to reset.
 - **Duration** — total wall-clock time
 - **Pass Rate** — percentage of passing tests, colour-coded (green / orange / red)
 - **Results by Tag** — breakdown of tests, passed, failed, skipped and pass rate per tag (TestNG groups, Cucumber tags, JUnit 5 `@Tag`), with click-to-filter

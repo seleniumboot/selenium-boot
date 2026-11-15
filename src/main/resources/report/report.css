@@ -143,6 +143,9 @@
         .passed-card  .stat-value { color: var(--good); }
         .failed-card  .stat-value { color: var(--bad); }
         .skipped-card .stat-value { color: var(--warn); }
+        .stat-link { cursor: pointer; transition: box-shadow .15s, transform .15s; }
+        .stat-link:hover { box-shadow: 0 4px 12px rgba(0,0,0,.15); transform: translateY(-1px); }
+        .stat-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
         .rate-good { color: var(--good) !important; }
         .rate-warn { color: var(--warn) !important; }
         .rate-bad  { color: var(--bad)  !important; }

@@ -49,7 +49,7 @@ public class HtmlReportGeneratorTest {
     @Test
     public void statsComeBeforeRunConfiguration() throws Exception {
         String html = html(3, 0);
-        int stats = html.indexOf("class=\"card stat-card passed-card\"");
+        int stats = html.indexOf("class=\"card stat-card passed-card");
         int config = html.indexOf("Run configuration");
         assertTrue(stats > 0 && config > stats, "stat cards must precede the run configuration block");
     }

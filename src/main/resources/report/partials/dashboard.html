@@ -5,15 +5,15 @@
 
             <!-- Stat cards -->
             <div class="summary-row">
-                <div class="card stat-card passed-card">
+                <div class="card stat-card passed-card stat-link" role="button" tabindex="0" title="Show passed tests" onclick="filterByStatus('PASSED')">
                     <div class="stat-value">{{PASSED}}</div>
                     <div class="stat-label">Passed</div>
                 </div>
-                <div class="card stat-card failed-card">
+                <div class="card stat-card failed-card stat-link" role="button" tabindex="0" title="Show failed tests" onclick="filterByStatus('FAILED')">
                     <div class="stat-value">{{FAILED}}</div>
                     <div class="stat-label">Failed</div>
                 </div>
-                <div class="card stat-card skipped-card">
+                <div class="card stat-card skipped-card stat-link" role="button" tabindex="0" title="Show skipped tests" onclick="filterByStatus('SKIPPED')">
                     <div class="stat-value">{{SKIPPED}}</div>
                     <div class="stat-label">Skipped</div>
                 </div>
