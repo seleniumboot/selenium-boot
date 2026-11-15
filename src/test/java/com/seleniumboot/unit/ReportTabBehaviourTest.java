@@ -56,4 +56,21 @@ public class ReportTabBehaviourTest {
             Assert.assertFalse(js.contains("sb-tab"), "report.js must not restore the last-open tab");
         }
     }
+
+    @Test
+    public void dashboardStatCardsAndDonutFilterTheTestCasesTab() throws Exception {
+        String dashboard, js;
+        try (var in = getClass().getResourceAsStream("/report/partials/dashboard.html")) {
+            dashboard = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        try (var in = getClass().getResourceAsStream("/report/report.js")) {
+            js = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        for (String status : new String[] {"PASSED", "FAILED", "SKIPPED"}) {
+            Assert.assertTrue(dashboard.contains("onclick=\"filterByStatus('" + status + "')\""), status);
+        }
+        Assert.assertTrue(js.contains("function filterByStatus(status)"), js);
+        Assert.assertTrue(js.contains("filterByStatus(['PASSED', 'FAILED', 'SKIPPED'][els[0].index])"),
+                "donut slice order must match its labels");
+    }
 }
