@@ -114,6 +114,9 @@ public final class AiFailureAnalyzer {
                 ExecutionMetrics.recordAiAnalysis(testId, analysis.strip());
                 LOG.info("[AiFailureAnalyzer] Analysis recorded for: " + testId);
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.warning("[AiFailureAnalyzer] Analysis failed (non-critical): " + e.getMessage());
         } catch (Exception e) {
             LOG.warning("[AiFailureAnalyzer] Analysis failed (non-critical): " + e.getMessage());
         }
@@ -215,6 +218,10 @@ public final class AiFailureAnalyzer {
             }
             LOG.warning("[AiFailureAnalyzer] " + provider + " API returned HTTP " + response.statusCode()
                     + ": " + response.body().substring(0, Math.min(200, response.body().length())));
+            return null;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.warning("[AiFailureAnalyzer] HTTP call failed: " + e.getMessage());
             return null;
         } catch (Exception e) {
             LOG.warning("[AiFailureAnalyzer] HTTP call failed: " + e.getMessage());

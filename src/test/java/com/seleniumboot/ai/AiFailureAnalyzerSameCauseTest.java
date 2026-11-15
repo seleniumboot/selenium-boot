@@ -135,4 +135,41 @@ public class AiFailureAnalyzerSameCauseTest {
         assertEquals(calls.get(), 2, "an error must not poison the cause");
         assertNotNull(ExecutionMetrics.getTiming("a.Two.run").getAiAnalysis());
     }
+
+    @Test
+    public void callApi_whenInterrupted_restoresInterruptFlag() {
+        try {
+            Thread.currentThread().interrupt();
+            String result = AiFailureAnalyzer.callApi(cfg(), "k", "prompt");
+            assertNull(result);
+            assertTrue(Thread.interrupted(), "interrupt flag should be restored after InterruptedException");
+        } finally {
+            Thread.interrupted();
+        }
+    }
+
+    @Test
+    public void analyze_whenInterruptedAwaitingInFlightCall_restoresInterruptFlag() throws Exception {
+        delayMs = 300;
+        failed("a.One.run", "login API returned 500");
+        failed("a.Two.run", "login API returned 500");
+
+        ExecutorService pool = Executors.newSingleThreadExecutor();
+        try {
+            pool.submit(() -> AiFailureAnalyzer.analyze(cfg(), "a.One.run", null, null));
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+            while (calls.get() == 0 && System.nanoTime() < deadline) {
+                Thread.sleep(5);
+            }
+            assertEquals(calls.get(), 1, "first call should be in flight");
+
+            Thread.currentThread().interrupt();
+            AiFailureAnalyzer.analyze(cfg(), "a.Two.run", null, null);
+            assertTrue(Thread.interrupted(), "interrupt flag should be restored after InterruptedException");
+        } finally {
+            Thread.interrupted();
+            pool.shutdown();
+            assertTrue(pool.awaitTermination(15, TimeUnit.SECONDS));
+        }
+    }
 }
