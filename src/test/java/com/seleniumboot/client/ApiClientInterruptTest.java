@@ -40,7 +40,7 @@ public class ApiClientInterruptTest {
         try {
             Thread.currentThread().interrupt();
             RuntimeException ex = expectThrows(RuntimeException.class,
-                    () -> ApiClient.to("http://127.0.0.1:1").get("/health").send());
+                    () -> ApiClient.get("http://127.0.0.1:1/health").send());
             assertTrue(ex.getCause() instanceof InterruptedException,
                     "expected InterruptedException cause, got: " + ex.getCause());
             assertTrue(Thread.interrupted(), "interrupt flag should be restored after InterruptedException");
