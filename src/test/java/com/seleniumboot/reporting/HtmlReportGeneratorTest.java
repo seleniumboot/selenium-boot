@@ -883,4 +883,15 @@ public class HtmlReportGeneratorTest {
             System.clearProperty("seleniumboot.reports.dir");
         }
     }
+
+    @Test
+    public void reportEmbedsChartThemeUpdateSupport() throws Exception {
+        String html = html(2, 1);
+        assertTrue(html.contains("function updateChartsTheme()"), "Report must include chart theme update handler");
+        assertTrue(html.contains("toggleDark()"), "Report must include dark mode toggle function");
+        assertTrue(html.contains("Chart.defaults.color = color('--text-secondary')"), "Chart defaults must use theme text secondary");
+        assertTrue(html.contains("Chart.defaults.borderColor = color('--border')"), "Chart defaults must use theme border");
+        assertTrue(html.contains("donutChart.data.datasets[0].borderColor = surfaceColor"), "Donut chart border must use theme surface");
+        assertTrue(html.contains("updateChartsTheme();"), "toggleDark must trigger updateChartsTheme");
+    }
 }
