@@ -67,6 +67,11 @@ public final class ApiHealthChecker {
                         + " responded HTTP " + status + " — dependent tests will be skipped");
             }
             return up;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.out.println("[Selenium Boot] @DependsOnApi: " + url
+                    + " is unreachable (" + e.getMessage() + ") — dependent tests will be skipped");
+            return false;
         } catch (Exception e) {
             System.out.println("[Selenium Boot] @DependsOnApi: " + url
                     + " is unreachable (" + e.getMessage() + ") — dependent tests will be skipped");

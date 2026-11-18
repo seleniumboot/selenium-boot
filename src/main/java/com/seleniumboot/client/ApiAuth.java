@@ -114,6 +114,9 @@ public interface ApiAuth {
 
             } catch (RuntimeException e) {
                 throw e;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("[ApiAuth] Failed to fetch OAuth2 token from: " + tokenUrl, e);
             } catch (Exception e) {
                 throw new RuntimeException("[ApiAuth] Failed to fetch OAuth2 token from: " + tokenUrl, e);
             }
