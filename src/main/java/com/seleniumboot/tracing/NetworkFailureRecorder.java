@@ -80,26 +80,36 @@ public final class NetworkFailureRecorder {
         devTools.createSession();
         devTools.send(org.openqa.selenium.devtools.v154.network.Network.enable(
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
-        Map<String, String[]> seen = new ConcurrentHashMap<>();   // requestId (as text; RequestId has no value equality) -> {method, url}
+        // Selenium dispatches CDP events on a thread pool, so a response can be handled before its
+        // requestWillBeSent (#259). Keyed by requestId as text: RequestId has no value equality.
+        RequestCorrelator requests = new RequestCorrelator();
         devTools.addListener(org.openqa.selenium.devtools.v154.network.Network.requestWillBeSent(),
-                (RequestWillBeSent e) -> seen.put(e.getRequestId().toString(),
-                        new String[]{e.getRequest().getMethod(), e.getRequest().getUrl()}));
+                (RequestWillBeSent e) -> requests.requestSent(e.getRequestId().toString(),
+                        e.getRequest().getMethod(), e.getRequest().getUrl()));
         devTools.addListener(org.openqa.selenium.devtools.v154.network.Network.responseReceived(),
                 (ResponseReceived e) -> {
                     int status = e.getResponse().getStatus().intValue();
                     if (status < 400) return;
-                    String[] req = seen.get(e.getRequestId().toString());
-                    ExecutionMetrics.recordNetworkFailure(testId, req != null ? req[0] : "GET",
-                            e.getResponse().getUrl(), status, null);
+                    String url = e.getResponse().getUrl();
+                    requests.whenKnown(e.getRequestId().toString(), req ->
+                            ExecutionMetrics.recordNetworkFailure(testId, req != null ? req.method() : "GET",
+                                    url, status, null));
                 });
         devTools.addListener(org.openqa.selenium.devtools.v154.network.Network.loadingFailed(),
                 (LoadingFailed e) -> {
                     if (Boolean.TRUE.equals(e.getCanceled().orElse(false))) return;   // aborted by navigation, not a failure
-                    String[] req = seen.get(e.getRequestId().toString());
-                    ExecutionMetrics.recordNetworkFailure(testId, req != null ? req[0] : "GET",
-                            req != null ? req[1] : "(unknown)", 0, e.getErrorText());
+                    String error = e.getErrorText();
+                    requests.whenKnown(e.getRequestId().toString(), req ->
+                            ExecutionMetrics.recordNetworkFailure(testId, req != null ? req.method() : "GET",
+                                    req != null ? req.url() : "(unknown)", 0, error));
                 });
-        return devTools::close;
+        return () -> {
+            try {
+                devTools.close();
+            } finally {
+                requests.flush();   // a failure whose request never arrived is still recorded
+            }
+        };
     }
 
     private static AutoCloseable listenBiDi(String testId, WebDriver driver) {
