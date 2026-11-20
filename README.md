@@ -40,7 +40,7 @@ Three files. Copy them as-is and `mvn test` goes green against a real Chrome.
     <dependency>
         <groupId>io.github.seleniumboot</groupId>
         <artifactId>selenium-boot</artifactId>
-        <version>3.11.0</version>
+        <version>3.12.0</version>
     </dependency>
 </dependencies>
 
@@ -49,7 +49,7 @@ Three files. Copy them as-is and `mvn test` goes green against a real Chrome.
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.11.0</version>
+            <version>3.12.0</version>
         </plugin>
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -289,7 +289,7 @@ Grab the jar from the [latest release](https://github.com/seleniumboot/selenium-
 
 ## Project Status
 
-**Current release: v3.11.0** — sortable report columns, expand/collapse all, screenshot lightbox navigation, headed browsers that start maximized, and a corrected quickstart.
+**Current release: v3.12.0** — single-test HTML export, clickable trend points and donut/stat-card filters in the report, a `-Dbrowser` command-line switch, and robustness fixes.
 
 See the full version history in **[CHANGELOG.md](CHANGELOG.md)**.
 
