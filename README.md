@@ -15,6 +15,10 @@
 
 *The same login flow against a real page, written both ways. Both tests pass.*
 
+<a href="https://www.youtube.com/watch?v=l3qfyVMDr6g"><img src="docs/images/video-thumbnail.jpg" width="560" alt="Watch: from a flaky Selenium test to a green build with Selenium Boot (38-second video)"></a>
+
+*▶ [Watch the 38-second video](https://www.youtube.com/watch?v=l3qfyVMDr6g): a flaky login test rewritten with `getByLabel`, `getByRole` and auto-waiting assertions.*
+
 **Who it's for:** Java and TestNG teams already on Selenium who want accessibility-first locators, auto-waiting and web-first assertions, with the same Selenium underneath, Grid and team skills intact. It adds to Selenium; it does not replace it.
 
 ---
