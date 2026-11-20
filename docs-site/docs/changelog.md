@@ -9,6 +9,32 @@ sidebar_position: 99
 
 All notable changes to Selenium Boot are documented here.
 
+## [3.12.0] — 2026-11-20
+
+- **HTML report: export a single test as standalone HTML** — save one test's details as a self-contained file to share a failure. (#248)
+
+- **HTML report: click a trend point to open that run's report** — (#165, #250)
+
+- **HTML report: click a donut slice or stat card to filter Test Cases** — (#162, #260)
+
+- **`-Dbrowser` switches the browser from the command line** — e.g. `mvn test -Dbrowser=firefox`. (#252)
+
+- **Fix: tag pills no longer throw in single-test exports.** (#249)
+
+- **Fix: theme-aware dashboard charts** — charts follow the light/dark theme. (#261)
+
+- **Fix: CDP network events are matched in any order** in tracing. (#259, #267)
+
+- **Fix: interrupt flag restored** in `AiFailureAnalyzer`, the API client and the precondition helper. (#258, #262, #263)
+
+- **Quality: SonarCloud findings addressed** — regex overflow, SQL identifiers, ThreadLocal cleanup (#254); SonarCloud analysis with JaCoCo coverage added to CI. (#253)
+
+- **Packaging: `NOTICE` and `LICENSE` are bundled into the jars** under `META-INF`. (#269)
+
+- **Dependencies:** jackson-databind, jacoco-maven-plugin 0.8.16, apache-maven 3.10.1. (#264, #265, #266)
+
+- **Docs:** removed `-Dbrowser` examples that predated the feature (#247); README links the 38-second video (#268).
+
 ## [3.11.0] — 2026-11-10
 
 - **Headed local browsers start maximized by default** — Chrome gets `--start-maximized` and Firefox calls `maximize()` after launch, so a watched test is no longer left in a small window. Headless runs and containers (fixed 1920x1080) are unchanged, and your own `--start-maximized`, `--window-size`, `--kiosk` or Firefox `--width`/`--height` arguments still win. (#245)
