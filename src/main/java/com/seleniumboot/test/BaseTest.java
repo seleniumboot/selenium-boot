@@ -7,6 +7,7 @@ import com.seleniumboot.performance.PerformanceAssert;
 import com.seleniumboot.performance.PerformanceCollector;
 import com.seleniumboot.performance.PerformanceMetrics;
 import com.seleniumboot.assertion.LocatorAssert;
+import com.seleniumboot.assertion.PageAssert;
 import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
@@ -103,6 +104,18 @@ public abstract class BaseTest {
      */
     protected SoftAssertionCollector softAssert() {
         return SoftAssertions.get();
+    }
+
+    /**
+     * Begins a fluent, auto-retrying assertion on the current page's title and URL —
+     * use it instead of asserting on {@code getTitle()} / {@code getCurrentUrl()} directly.
+     *
+     * <pre>
+     * assertThatPage().hasTitle("Dashboard").urlContains("/dashboard");
+     * </pre>
+     */
+    protected PageAssert assertThatPage() {
+        return SeleniumAssert.assertThatPage();
     }
 
     /** API client for hybrid UI+API tests. */

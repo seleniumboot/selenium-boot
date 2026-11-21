@@ -93,6 +93,9 @@ Selenide hangs conditions on the element (`shouldBe`, `shouldHave`). Selenium Bo
 | `$(...).shouldHave(attribute("href", "/a"))` | `assertThat($(...)).hasAttribute("href", "/a")` |
 | `$(...).shouldHave(cssClass("on"))` | `assertThat($(...)).hasClass("on")` |
 | `$$(...).shouldHave(size(5))` | `assertThat($(...)).count(5)` |
+| `webdriver().shouldHave(title("Home"))` | `assertThatPage().hasTitle("Home")` |
+| `webdriver().shouldHave(url("https://x.io/a"))` | `assertThatPage().hasUrl("https://x.io/a")` |
+| `webdriver().shouldHave(urlContaining("/a"))` | `assertThatPage().urlContains("/a")` |
 
 `hasText` and `containsText` also accept a `Pattern`. Methods chain: `assertThat($("#msg")).isVisible().containsText("Saved")`.
 
