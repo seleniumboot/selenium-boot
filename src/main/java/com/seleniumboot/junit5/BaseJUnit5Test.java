@@ -94,13 +94,7 @@ public abstract class BaseJUnit5Test {
         return SeleniumAssert.assertThat(locator);
     }
 
-    /**
-     * Begins a fluent, auto-retrying assertion on the current page's title and URL.
-     *
-     * <pre>
-     * assertThatPage().hasTitle("Dashboard").urlContains("/dashboard");
-     * </pre>
-     */
+    /** Auto-retrying assertion on the current page's title and URL. */
     protected PageAssert assertThatPage() {
         return SeleniumAssert.assertThatPage();
     }
