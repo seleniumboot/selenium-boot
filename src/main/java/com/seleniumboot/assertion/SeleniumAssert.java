@@ -21,6 +21,7 @@ import org.openqa.selenium.By;
  * assertThat(By.cssSelector(".error")).isHidden();
  * assertThat(By.id("submit")).isEnabled();
  * assertThat($(".items")).count(5);
+ * assertThatPage().hasTitle("Dashboard");
  * </pre>
  */
 @SeleniumBootApi(since = "1.4.0")
@@ -45,6 +46,18 @@ public final class SeleniumAssert {
         // for the polling mechanism. Full chain resolution is handled
         // by LocatorAssert's poll methods via WebDriverWait.
         return new LocatorAssert(extractBy(locator), locator.toString());
+    }
+
+    /**
+     * Begin a fluent assertion chain on the current page's title and URL.
+     *
+     * <pre>
+     * assertThatPage().hasTitle("Dashboard").urlContains("/dashboard");
+     * </pre>
+     */
+    @SeleniumBootApi(since = "3.13.0")
+    public static PageAssert assertThatPage() {
+        return new PageAssert();
     }
 
     /**

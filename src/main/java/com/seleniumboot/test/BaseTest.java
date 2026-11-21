@@ -7,6 +7,7 @@ import com.seleniumboot.performance.PerformanceAssert;
 import com.seleniumboot.performance.PerformanceCollector;
 import com.seleniumboot.performance.PerformanceMetrics;
 import com.seleniumboot.assertion.LocatorAssert;
+import com.seleniumboot.assertion.PageAssert;
 import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
@@ -232,6 +233,17 @@ public abstract class BaseTest {
     /** Begins a fluent, auto-retrying assertion on the given {@link Locator} chain. */
     protected LocatorAssert assertThat(Locator locator) {
         return SeleniumAssert.assertThat(locator);
+    }
+
+    /**
+     * Begins a fluent, auto-retrying assertion on the current page's title and URL.
+     *
+     * <pre>
+     * assertThatPage().hasTitle("Dashboard").urlContains("/dashboard");
+     * </pre>
+     */
+    protected PageAssert assertThatPage() {
+        return SeleniumAssert.assertThatPage();
     }
 
     // ----------------------------------------------------------

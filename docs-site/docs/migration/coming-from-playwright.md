@@ -64,6 +64,10 @@ Playwright's auto-retrying `expect()` has a direct counterpart: `assertThat(...)
 ```java
 assertThat(getByRole(Role.HEADING)).hasText("Welcome back");
 assertThat($(".cart-count")).hasText("3");
+
+// expect(page).toHaveTitle(...) / toHaveURL(...)
+assertThatPage().hasTitle("Checkout");
+assertThatPage().urlContains("/checkout");
 ```
 
 ### Convention over configuration

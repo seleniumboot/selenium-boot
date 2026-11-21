@@ -2,6 +2,7 @@ package com.seleniumboot.test;
 
 import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.assertion.LocatorAssert;
+import com.seleniumboot.assertion.PageAssert;
 import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.assertion.SoftAssertionCollector;
 import com.seleniumboot.assertion.SoftAssertions;
@@ -696,6 +697,17 @@ public abstract class BasePage {
      */
     protected LocatorAssert assertThat(Locator locator) {
         return SeleniumAssert.assertThat(locator);
+    }
+
+    /**
+     * Begins a fluent, auto-retrying assertion on the current page's title and URL.
+     *
+     * <pre>
+     * assertThatPage().hasTitle("Dashboard").urlContains("/dashboard");
+     * </pre>
+     */
+    protected PageAssert assertThatPage() {
+        return SeleniumAssert.assertThatPage();
     }
 
     // ----------------------------------------------------------

@@ -3,6 +3,7 @@ package com.seleniumboot.junit5;
 import com.seleniumboot.accessibility.AccessibilityAssert;
 import com.seleniumboot.api.SeleniumBootApi;
 import com.seleniumboot.assertion.LocatorAssert;
+import com.seleniumboot.assertion.PageAssert;
 import com.seleniumboot.assertion.SeleniumAssert;
 import com.seleniumboot.browser.ConsoleErrorCollector;
 import com.seleniumboot.db.DbClient;
@@ -91,6 +92,17 @@ public abstract class BaseJUnit5Test {
     /** Auto-retrying assertion on a {@link Locator} chain. */
     protected LocatorAssert assertThat(Locator locator) {
         return SeleniumAssert.assertThat(locator);
+    }
+
+    /**
+     * Begins a fluent, auto-retrying assertion on the current page's title and URL.
+     *
+     * <pre>
+     * assertThatPage().hasTitle("Dashboard").urlContains("/dashboard");
+     * </pre>
+     */
+    protected PageAssert assertThatPage() {
+        return SeleniumAssert.assertThatPage();
     }
 
     /** Logs a named step into the HTML report step timeline. */
