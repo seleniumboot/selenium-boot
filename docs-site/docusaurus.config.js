@@ -135,6 +135,7 @@ const config = {
             items: [
               { label: 'GitHub Issues', href: 'https://github.com/seleniumboot/selenium-boot/issues' },
               { label: 'GitHub Discussions', href: 'https://github.com/seleniumboot/selenium-boot/discussions' },
+              { label: 'YouTube', href: 'https://www.youtube.com/@SeleniumBootOfficial' },
             ],
           },
           {

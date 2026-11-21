@@ -17,7 +17,7 @@
 
 <a href="https://www.youtube.com/watch?v=l3qfyVMDr6g"><img src="docs/images/video-thumbnail.jpg" width="560" alt="Watch: from a flaky Selenium test to a green build with Selenium Boot (38-second video)"></a>
 
-*▶ [Watch the 38-second video](https://www.youtube.com/watch?v=l3qfyVMDr6g): a flaky login test rewritten with `getByLabel`, `getByRole` and auto-waiting assertions.*
+*▶ [Watch the 38-second video](https://www.youtube.com/watch?v=l3qfyVMDr6g): a flaky login test rewritten with `getByLabel`, `getByRole` and auto-waiting assertions. More short tutorials on [YouTube](https://www.youtube.com/@SeleniumBootOfficial).*
 
 **Who it's for:** Java and TestNG teams already on Selenium who want accessibility-first locators, auto-waiting and web-first assertions, with the same Selenium underneath, Grid and team skills intact. It adds to Selenium; it does not replace it.
 
@@ -311,6 +311,7 @@ Contributions are warmly welcome — Selenium Boot is opinionated, and contribut
 - 🤝 [**Help wanted**](https://github.com/seleniumboot/selenium-boot/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) — larger pieces we'd love a hand with
 - 🗺️ [**Roadmap**](ROADMAP.md) — where the project is heading and where help fits
 - 💬 [**Discussions**](https://github.com/seleniumboot/selenium-boot/discussions) — questions and feature ideas
+- ▶️ [**YouTube**](https://www.youtube.com/@SeleniumBootOfficial) — short Selenium Java tutorials and feature demos
 
 Then read [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, the PR checklist, and the backward-compatibility policy. Bug reports and feature requests both have [issue templates](https://github.com/seleniumboot/selenium-boot/issues/new/choose) to guide you.
 
