@@ -106,6 +106,18 @@ public abstract class BaseTest {
         return SoftAssertions.get();
     }
 
+    /**
+     * Begins a fluent, auto-retrying assertion on the current page's title and URL —
+     * use it instead of asserting on {@code getTitle()} / {@code getCurrentUrl()} directly.
+     *
+     * <pre>
+     * assertThatPage().hasTitle("Dashboard").urlContains("/dashboard");
+     * </pre>
+     */
+    protected PageAssert assertThatPage() {
+        return SeleniumAssert.assertThatPage();
+    }
+
     /** API client for hybrid UI+API tests. */
     protected ApiClient apiClient() {
         return ApiClient.create();
@@ -233,11 +245,6 @@ public abstract class BaseTest {
     /** Begins a fluent, auto-retrying assertion on the given {@link Locator} chain. */
     protected LocatorAssert assertThat(Locator locator) {
         return SeleniumAssert.assertThat(locator);
-    }
-
-    /** Begins a fluent, auto-retrying assertion on the current page's title and URL. */
-    protected PageAssert assertThatPage() {
-        return SeleniumAssert.assertThatPage();
     }
 
     // ----------------------------------------------------------
