@@ -79,6 +79,9 @@ final class OutlookProvider implements EmailProvider {
                 emails.add(parseMessage(msg));
             }
             return emails;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("[Email/Outlook] Failed to fetch messages: " + e.getMessage(), e);
         } catch (Exception e) {
             throw new IllegalStateException("[Email/Outlook] Failed to fetch messages: " + e.getMessage(), e);
         }
@@ -103,6 +106,9 @@ final class OutlookProvider implements EmailProvider {
                 String id = msg.path("id").asText();
                 if (!id.isEmpty()) deleteMessage(id, token);
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("[Email/Outlook] Failed to clear messages: " + e.getMessage(), e);
         } catch (Exception e) {
             throw new IllegalStateException("[Email/Outlook] Failed to clear messages: " + e.getMessage(), e);
         }
@@ -136,6 +142,9 @@ final class OutlookProvider implements EmailProvider {
             return accessToken;
         } catch (IllegalStateException e) {
             throw e;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("[Email/Outlook] OAuth2 token request failed: " + e.getMessage(), e);
         } catch (Exception e) {
             throw new IllegalStateException("[Email/Outlook] OAuth2 token request failed: " + e.getMessage(), e);
         }
@@ -166,6 +175,8 @@ final class OutlookProvider implements EmailProvider {
                     .header("Authorization", "Bearer " + token)
                     .DELETE().build();
             http.send(req, HttpResponse.BodyHandlers.discarding());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         } catch (Exception ignored) {}
     }
 

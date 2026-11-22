@@ -51,6 +51,9 @@ final class MailhogProvider implements EmailProvider {
                 emails.add(parseItem(item));
             }
             return emails;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("[Email/Mailhog] Failed to fetch messages: " + e.getMessage(), e);
         } catch (Exception e) {
             throw new IllegalStateException("[Email/Mailhog] Failed to fetch messages: " + e.getMessage(), e);
         }
@@ -63,6 +66,9 @@ final class MailhogProvider implements EmailProvider {
                     .uri(URI.create(baseUrl + "/api/v1/messages"))
                     .DELETE().build();
             http.send(req, HttpResponse.BodyHandlers.discarding());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("[Email/Mailhog] Failed to clear messages: " + e.getMessage(), e);
         } catch (Exception e) {
             throw new IllegalStateException("[Email/Mailhog] Failed to clear messages: " + e.getMessage(), e);
         }

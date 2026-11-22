@@ -63,6 +63,9 @@ final class MailtrapProvider implements EmailProvider {
                 ));
             }
             return emails;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("[Email/Mailtrap] Failed to fetch messages: " + e.getMessage(), e);
         } catch (Exception e) {
             throw new IllegalStateException("[Email/Mailtrap] Failed to fetch messages: " + e.getMessage(), e);
         }
@@ -76,6 +79,9 @@ final class MailtrapProvider implements EmailProvider {
                     .header("Api-Token", apiToken)
                     .method("PATCH", HttpRequest.BodyPublishers.noBody()).build();
             http.send(req, HttpResponse.BodyHandlers.discarding());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("[Email/Mailtrap] Failed to clear inbox: " + e.getMessage(), e);
         } catch (Exception e) {
             throw new IllegalStateException("[Email/Mailtrap] Failed to clear inbox: " + e.getMessage(), e);
         }
