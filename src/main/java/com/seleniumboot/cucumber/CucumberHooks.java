@@ -155,8 +155,8 @@ public class CucumberHooks {
      */
     static String buildTestId(Scenario scenario) {
         String feature = extractFileName(scenario.getUri());
-        String name    = scenario.getName() != null ? scenario.getName() : "unnamed";
-        int    line    = scenario.getLine() != null ? scenario.getLine() : 0;
+        String name    = scenario.getName();
+        int    line    = scenario.getLine();
         return feature + "#" + name + "[L" + line + "]";
     }
 
@@ -240,8 +240,8 @@ public class CucumberHooks {
             }
 
             // ── 2. YAML-based check (tag, feature file, or feature#scenario entries) ──
-            String featureUri    = scenario.getUri() != null ? scenario.getUri().toString() : "";
-            String scenarioName  = scenario.getName() != null ? scenario.getName() : "";
+            String featureUri    = scenario.getUri().toString();
+            String scenarioName  = scenario.getName();
             java.util.Collection<String> tags = scenario.getSourceTagNames();
 
             if (QuarantineLoader.isQuarantinedScenario(tags, featureUri, scenarioName)) {
