@@ -50,6 +50,32 @@ public class MailboxClientTest {
         }
     }
 
+        @Test
+    public void extractLink_singleQuotedHref() {
+        Email email = new Email("s", "", "<a href='https://example.com/single'>Open</a>", "", "");
+        assertEquals(email.extractLink("Open"), "https://example.com/single");
+    }
+
+    @Test
+    public void extractLink_nestedTagsInLinkText() {
+        Email email = new Email("s", "",
+            "<a href=\"https://example.com/nested\"><b>Verify</b> Email</a>", "", "");
+        assertEquals(email.extractLink("Verify Email"), "https://example.com/nested");
+    }
+
+    @Test
+    public void extractLink_upperCaseTagAndAttribute() {
+        Email email = new Email("s", "", "<A HREF=\"https://example.com/upper\">Go</A>", "", "");
+        assertEquals(email.extractLink("go"), "https://example.com/upper");
+    }
+
+    @Test(timeOut = 2000, expectedExceptions = AssertionError.class)
+    public void extractLink_manyAnchorStartsWithoutMatchFinishesQuickly() {
+        // Many "<a" starts and no '>' anywhere: must fail fast instead of backtracking quadratically.
+        String body = "<a ".repeat(60_000);
+        new Email("s", "", body, "", "").extractLink("Anything");
+    }
+
     @Test(expectedExceptions = AssertionError.class)
     public void extractLink_noMatchThrows() {
         Email email = new Email("s", "", "<a href=\"https://x.com\">Other Link</a>", "", "");
