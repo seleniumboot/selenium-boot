@@ -1,35 +1,15 @@
 package com.seleniumboot.locator;
 
 import com.seleniumboot.api.SeleniumBootApi;
-import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.driver.DriverManager;
-import com.seleniumboot.internal.SeleniumBootContext;
-import com.seleniumboot.metrics.ExecutionMetrics;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.Select;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Chainable, auto-waiting element locator.
@@ -49,55 +29,26 @@ import java.util.stream.Collectors;
 @SeleniumBootApi(since = "1.4.0")
 public final class Locator {
 
-    /** Records whether a native drag actually delivered a {@code drop} event to the target. */
-    private static final String ARM_DROP_LISTENER_JS =
-            "var t = arguments[0]; t.__sbDropped = false;"
-            + "t.__sbDropHandler = function () { t.__sbDropped = true; };"
-            + "t.addEventListener('drop', t.__sbDropHandler);";
-
-    private static final String COLLECT_DROP_RESULT_JS =
-            "var t = arguments[0]; t.removeEventListener('drop', t.__sbDropHandler);"
-            + "var dropped = t.__sbDropped === true; delete t.__sbDropped; delete t.__sbDropHandler;"
-            + "return dropped;";
-
-    /** HTML5 DnD fallback: replays the event sequence with one shared DataTransfer. */
-    private static final String SYNTHETIC_DRAG_JS =
-            "var src = arguments[0], dst = arguments[1], dt = new DataTransfer();"
-            + "function fire(el, type) {"
-            + "  var r = el.getBoundingClientRect();"
-            + "  el.dispatchEvent(new DragEvent(type, {bubbles: true, cancelable: true, composed: true,"
-            + "    dataTransfer: dt, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2}));"
-            + "}"
-            + "fire(src, 'dragstart'); fire(dst, 'dragenter'); fire(dst, 'dragover');"
-            + "fire(dst, 'drop'); fire(src, 'dragend');";
-
     /** How the base set of candidate elements is derived. */
-    private enum Kind { CSS_OR_BY, ROLE, TEXT, LABEL, PLACEHOLDER, TESTID, ALT_TEXT, TITLE }
+    enum Kind { CSS_OR_BY, ROLE, TEXT, LABEL, PLACEHOLDER, TESTID, ALT_TEXT, TITLE }
 
     /** Default attribute used by {@link #byTestId(String)} — overridable. */
-    private static volatile String testIdAttribute = "data-testid";
+    static volatile String testIdAttribute = "data-testid";
 
-    /** Form controls that can carry an accessible name from an associated label. */
-    private static final String FORM_CONTROL_CSS =
-            "input:not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']), "
-            + "textarea, select, [contenteditable='true'], "
-            + "[role='textbox'], [role='searchbox'], [role='combobox'], [role='checkbox'], "
-            + "[role='radio'], [role='switch'], [role='slider'], [role='spinbutton']";
+    final Kind kind;
+    final By root;            // set only for Kind.CSS_OR_BY
+    Role semanticRole;        // set only for Kind.ROLE
+    String semanticValue;     // raw text/attr value for the semantic kinds
+    Integer headingLevel;     // optional heading level filter
+    String accessibleName;    // withName(...) filter for role/label kinds
+    boolean exact;            // exact (case-sensitive) vs substring (case-insensitive)
 
-    private final Kind kind;
-    private final By root;            // set only for Kind.CSS_OR_BY
-    private Role semanticRole;        // set only for Kind.ROLE
-    private String semanticValue;     // raw text/attr value for the semantic kinds
-    private Integer headingLevel;     // optional heading level filter
-    private String accessibleName;    // withName(...) filter for role/label kinds
-    private boolean exact;            // exact (case-sensitive) vs substring (case-insensitive)
-
-    private String filterCss;
-    private String withText;
-    private By withinContainer;
-    private int nthIndex = -1;   // -1 = no nth filter
-    private boolean first;
-    private boolean last;
+    String filterCss;
+    String withText;
+    By withinContainer;
+    int nthIndex = -1;   // -1 = no nth filter
+    boolean first;
+    boolean last;
 
     // ------------------------------------------------------------------
     // Factory — called from BasePage / BaseTest via $() and getBy*()
@@ -286,11 +237,13 @@ public final class Locator {
      * use the terminal actions for the fully-resolved element.
      */
     public By toBy() {
-        return buildRoot();
+        return LocatorResolution.buildRoot(this);
     }
 
     // ------------------------------------------------------------------
-    // Terminal actions — all auto-wait
+    // Terminal actions — all auto-wait. Bodies live in the package-private
+    // helpers LocatorActions / LocatorQueries / LocatorWaits; every public
+    // method below keeps its exact signature and delegates unchanged.
     // ------------------------------------------------------------------
 
     /**
@@ -308,21 +261,7 @@ public final class Locator {
      * @throws LocatorException if the element does not reach {@code state} within {@code timeouts.explicit}
      */
     public void waitFor(State state) {
-        if (state == null) {
-            state = State.VISIBLE;
-        }
-        SeleniumBootConfig cfg = SeleniumBootContext.getConfig();
-        int timeout = cfg.getTimeouts().getExplicit();
-        final State targetState = state;
-        try {
-            new WebDriverWait(driver(), Duration.ofSeconds(timeout))
-                    .ignoring(StaleElementReferenceException.class, LocatorException.class)
-                    .until(d -> checkState(targetState));
-        } catch (TimeoutException e) {
-            throw new LocatorException("Element did not reach state " + targetState + ": " + describe()
-                    + " (waited " + timeout + "s)", e);
-        }
-        if (cfg.getDebug().getSlowMoMs() > 0) slowMo(cfg.getDebug().getSlowMoMs());
+        LocatorWaits.waitFor(this, state);
     }
 
     /**
@@ -341,11 +280,11 @@ public final class Locator {
      *
      * <p>Like every terminal action, the element is re-resolved on each poll: one that is not in
      * the DOM yet is waited for, and one the page re-renders between lookup and action does not
-     * surface as a {@link StaleElementReferenceException}. Both are bounded by
+     * surface as a {@link org.openqa.selenium.StaleElementReferenceException}. Both are bounded by
      * {@code timeouts.explicit}.
      */
     public void click() {
-        whenReady(el -> el.isDisplayed() && el.isEnabled(), el -> { el.click(); return null; });
+        LocatorActions.click(this);
     }
 
     /**
@@ -360,10 +299,7 @@ public final class Locator {
      * @throws TimeoutException if a matching element never becomes ready or remains stale
      */
     public void doubleClick() {
-        whenReady(el -> el.isDisplayed() && el.isEnabled(), el -> {
-            new Actions(driver()).doubleClick(el).perform();
-            return null;
-        });
+        LocatorActions.doubleClick(this);
     }
 
     /**
@@ -378,10 +314,7 @@ public final class Locator {
      * @throws TimeoutException if a matching element never becomes visible or remains stale
      */
     public void rightClick() {
-        whenVisible(el -> {
-            new Actions(driver()).contextClick(el).perform();
-            return null;
-        });
+        LocatorActions.rightClick(this);
     }
 
     /**
@@ -392,12 +325,7 @@ public final class Locator {
      * and retries stale or not-yet-present elements until {@code timeouts.explicit} elapses.
      */
     public void check() {
-        whenReady(el -> el.isDisplayed() && el.isEnabled(), el -> {
-            if (!isSelected(el)) {
-                el.click();
-            }
-            return null;
-        });
+        LocatorActions.check(this);
     }
 
     /**
@@ -408,26 +336,17 @@ public final class Locator {
      * or not-yet-present elements until {@code timeouts.explicit} elapses.
      */
     public void uncheck() {
-        whenReady(el -> el.isDisplayed() && el.isEnabled(), el -> {
-            if (isSelected(el)) {
-                el.click();
-            }
-            return null;
-        });
+        LocatorActions.uncheck(this);
     }
 
     /** Waits for the element to be visible, clears it, then types the given text. */
     public void type(String text) {
-        whenVisible(el -> {
-            el.clear();
-            el.sendKeys(text);
-            return null;
-        });
+        LocatorActions.type(this, text);
     }
 
     /** Appends text without clearing first. */
     public void append(String text) {
-        whenVisible(el -> { el.sendKeys(text); return null; });
+        LocatorActions.append(this, text);
     }
 
     /**
@@ -444,10 +363,7 @@ public final class Locator {
      * @throws TimeoutException if a matching element never becomes visible or remains stale
      */
     public void press(Keys... keys) {
-        whenVisible(el -> {
-            el.sendKeys(keys);
-            return null;
-        });
+        LocatorActions.press(this, keys);
     }
 
     /**
@@ -463,10 +379,7 @@ public final class Locator {
      * @throws TimeoutException if a matching element never becomes visible or remains stale
      */
     public void focus() {
-        whenVisible(el -> {
-            ((JavascriptExecutor) driver()).executeScript("arguments[0].focus();", el);
-            return null;
-        });
+        LocatorActions.focus(this);
     }
 
     /**
@@ -476,20 +389,17 @@ public final class Locator {
      * until {@code timeouts.explicit} elapses.
      */
     public void clear() {
-        whenVisible(el -> {
-            el.clear();
-            return null;
-        });
+        LocatorActions.clear(this);
     }
 
     /** Waits for the element to be visible and returns its trimmed visible text. */
     public String getText() {
-        return whenVisible(el -> el.getText().trim());
+        return LocatorQueries.getText(this);
     }
 
     /** Returns the value of the given attribute, waiting for visibility first. */
     public String getAttribute(String name) {
-        return whenVisible(el -> el.getAttribute(name));
+        return LocatorQueries.getAttribute(this, name);
     }
 
     /**
@@ -502,36 +412,22 @@ public final class Locator {
      * @return the input's current value, or {@code ""} if none
      */
     public String inputValue() {
-        return whenVisible(el -> {
-            String val = el.getDomProperty("value");
-            if (val == null) {
-                val = el.getAttribute("value");
-            }
-            return val != null ? val : "";
-        });
+        return LocatorQueries.inputValue(this);
     }
 
     /** Returns true if the element is present and displayed — does NOT wait. */
     public boolean isVisible() {
-        try {
-            return resolve().isDisplayed();
-        } catch (Exception e) {
-            return false;
-        }
+        return LocatorQueries.isVisible(this);
     }
 
     /** Returns true if the element is absent or not displayed — does NOT wait. */
     public boolean isHidden() {
-        return !isVisible();
+        return LocatorQueries.isHidden(this);
     }
 
     /** Returns true if the element is present and enabled. */
     public boolean isEnabled() {
-        try {
-            return resolve().isEnabled();
-        } catch (Exception e) {
-            return false;
-        }
+        return LocatorQueries.isEnabled(this);
     }
 
     /**
@@ -539,38 +435,28 @@ public final class Locator {
      * is present and checked — does NOT wait.
      */
     public boolean isChecked() {
-        try {
-            return isSelected(resolve());
-        } catch (Exception e) {
-            return false;
-        }
+        return LocatorQueries.isChecked(this);
     }
 
     /** Hovers over the element using Actions. */
     public void hover() {
-        whenVisible(el -> { new Actions(driver()).moveToElement(el).perform(); return null; });
+        LocatorActions.hover(this);
     }
 
     /** Scrolls the element into view using JavaScript. */
     public void scrollIntoView() {
-        whenVisible(el -> {
-            ((JavascriptExecutor) driver()).executeScript("arguments[0].scrollIntoView(true);", el);
-            return null;
-        });
+        LocatorActions.scrollIntoView(this);
     }
 
     /** Clicks using JavaScript — useful when element is obscured. */
     public void jsClick() {
-        whenVisible(el -> {
-            ((JavascriptExecutor) driver()).executeScript("arguments[0].click();", el);
-            return null;
-        });
+        LocatorActions.jsClick(this);
     }
 
     /**
      * Drags this element onto {@code target} and drops it there.
      *
-     * <p>Tries the native {@link Actions#dragAndDrop} gesture first. Pages built on the HTML5
+     * <p>Tries the native {@link org.openqa.selenium.interactions.Actions#dragAndDrop} gesture first. Pages built on the HTML5
      * drag-and-drop API ({@code draggable="true"} plus {@code dragstart}/{@code drop} listeners)
      * often ignore it, so when no {@code drop} event reached the target, the full sequence
      * ({@code dragstart, dragenter, dragover, drop, dragend}) is dispatched with a synthetic
@@ -584,15 +470,7 @@ public final class Locator {
      * @throws LocatorException if either element cannot be resolved within {@code timeouts.explicit}
      */
     public void dragTo(Locator target) {
-        target.whenVisible(dst -> whenVisible(src -> {
-            JavascriptExecutor js = (JavascriptExecutor) driver();
-            js.executeScript(ARM_DROP_LISTENER_JS, dst);
-            new Actions(driver()).dragAndDrop(src, dst).perform();
-            if (!Boolean.TRUE.equals(js.executeScript(COLLECT_DROP_RESULT_JS, dst))) {
-                js.executeScript(SYNTHETIC_DRAG_JS, src, dst);
-            }
-            return null;
-        }));
+        LocatorActions.dragTo(this, target);
     }
 
     /**
@@ -604,10 +482,7 @@ public final class Locator {
      * @param text visible text of the option to select
      */
     public void selectOption(String text) {
-        whenVisible(el -> {
-            new Select(el).selectByVisibleText(text);
-            return null;
-        });
+        LocatorActions.selectOption(this, text);
     }
 
     /**
@@ -619,10 +494,7 @@ public final class Locator {
      * @param value value attribute of the option to select
      */
     public void selectOptionByValue(String value) {
-        whenVisible(el -> {
-            new Select(el).selectByValue(value);
-            return null;
-        });
+        LocatorActions.selectOptionByValue(this, value);
     }
 
     /**
@@ -635,7 +507,7 @@ public final class Locator {
      * @throws LocatorException if the element does not become visible within {@code timeouts.explicit}
      */
     public byte[] screenshot() {
-        return whenVisible(el -> el.getScreenshotAs(OutputType.BYTES));
+        return LocatorQueries.screenshot(this);
     }
 
     /**
@@ -648,24 +520,12 @@ public final class Locator {
      * @throws LocatorException if the element cannot be resolved or if writing to the path fails
      */
     public void screenshot(Path path) {
-        if (path == null) {
-            throw new IllegalArgumentException("Screenshot path cannot be null");
-        }
-        byte[] bytes = screenshot();
-        try {
-            Path parent = path.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            Files.write(path, bytes);
-        } catch (IOException e) {
-            throw new LocatorException("Failed to write screenshot to '" + path + "': " + e.getMessage(), e);
-        }
+        LocatorQueries.screenshot(this, path);
     }
 
     /** Returns the number of elements currently matching the locator chain (no wait). */
     public int count() {
-        return resolveAll().size();
+        return LocatorQueries.count(this);
     }
 
     /**
@@ -680,49 +540,17 @@ public final class Locator {
      * @return list of text contents of all matched elements
      */
     public List<String> allTextContents() {
-        SeleniumBootConfig cfg = SeleniumBootContext.getConfig();
-        int timeout = cfg.getTimeouts().getExplicit();
-        AtomicReference<List<String>> result = new AtomicReference<>();
-        new WebDriverWait(driver(), Duration.ofSeconds(timeout))
-                .ignoring(StaleElementReferenceException.class)
-                .until(d -> {
-                    try {
-                        List<WebElement> candidates = resolveAll();
-                        if (candidates.isEmpty()) {
-                            result.set(Collections.emptyList());
-                            return Boolean.TRUE;
-                        }
-                        List<String> texts = new ArrayList<>(candidates.size());
-                        for (WebElement el : candidates) {
-                            String text = el.getText();
-                            if (text == null || text.isBlank()) {
-                                String dom = el.getDomProperty("textContent");
-                                if (dom != null && !dom.isBlank()) {
-                                    text = dom;
-                                }
-                            }
-                            texts.add(text != null ? text.trim() : "");
-                        }
-                        result.set(texts);
-                        return Boolean.TRUE;
-                    } catch (LocatorException e) {
-                        result.set(Collections.emptyList());
-                        return Boolean.TRUE;
-                    }
-                });
-        return result.get();
+        return LocatorQueries.allTextContents(this);
     }
 
     /** Returns the resolved {@link WebElement}, applying all chain filters. */
     public WebElement element() {
-        return whenVisible(el -> el);
+        return LocatorQueries.element(this);
     }
 
     /** Returns all matched {@link WebElement}s, applying all chain filters. */
     public List<WebElement> elements() {
-        return resolveAll().stream()
-                .filter(WebElement::isDisplayed)
-                .collect(Collectors.toList());
+        return LocatorQueries.elements(this);
     }
 
     /**
@@ -752,450 +580,22 @@ public final class Locator {
      * </pre>
      */
     public List<Map<String, String>> rows() {
-        WebElement table = element();
-
-        List<WebElement> allRows = table.findElements(By.cssSelector("tr"));
-
-        // Empty table
-        if (allRows.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        WebElement headerRow = null;
-        List<WebElement> headerCells = new ArrayList<>();
-
-        // 1. Try to find header cells inside <thead>
-        List<WebElement> theadRows = table.findElements(By.cssSelector("thead tr"));
-
-        if (!theadRows.isEmpty()) {
-            List<WebElement> theadHeaders =
-                    theadRows.get(0).findElements(By.cssSelector("th"));
-
-            if (!theadHeaders.isEmpty()) {
-                headerRow = theadRows.get(0);
-                headerCells = theadHeaders;
-            }
-        }
-
-        // 2. No <thead> header -> find the first <tr> containing <th>
-        if (headerCells.isEmpty()) {
-            for (WebElement row : allRows) {
-                List<WebElement> thCells =
-                        row.findElements(By.cssSelector("th"));
-
-                if (!thCells.isEmpty()) {
-                    headerRow = row;
-                    headerCells = thCells;
-                    break;
-                }
-            }
-        }
-
-        // 3. No <th> at all -> use the first <tr> as the header
-        if (headerCells.isEmpty()) {
-            headerRow = allRows.get(0);
-            headerCells = headerRow.findElements(By.cssSelector("td"));
-        }
-
-        // Convert header WebElements into Strings
-        List<String> headers = headerCells.stream()
-                .map(WebElement::getText)
-                .map(String::trim)
-                .collect(Collectors.toList());
-
-        if (headers.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        List<Map<String, String>> result = new ArrayList<>();
-
-        // Convert each data row into a Map
-        for (WebElement row : allRows) {
-
-            // Do not treat the header row as data
-            if (row.equals(headerRow)) {
-                continue;
-            }
-
-            List<WebElement> cells =
-                    row.findElements(By.cssSelector("td"));
-
-            if (cells.isEmpty()) {
-                continue;
-            }
-
-            Map<String, String> rowMap =
-                    new LinkedHashMap<>();
-
-            for (int i = 0; i < headers.size(); i++) {
-                String header = headers.get(i);
-
-                String cellText = i < cells.size()
-                        ? cells.get(i).getText().trim()
-                        : "";
-
-                rowMap.put(header, cellText);
-            }
-
-            result.add(rowMap);
-        }
-
-        return result;
-    }
-
-    // ------------------------------------------------------------------
-    // Internal resolution
-    // ------------------------------------------------------------------
-
-    private WebElement resolve() {
-        List<WebElement> candidates = resolveAll();
-        if (candidates.isEmpty()) {
-            throw new LocatorException("No element found for: " + describe());
-        }
-        return candidates.get(0);
-    }
-
-    private List<WebElement> resolveAll() {
-        WebDriver d = driver();
-        By effectiveRoot = buildRoot();
-        List<WebElement> candidates;
-
-        if (withinContainer != null) {
-            try {
-                WebElement container = d.findElement(withinContainer);
-                candidates = container.findElements(effectiveRoot);
-            } catch (Exception e) {
-                throw new LocatorException("Container not found: " + withinContainer + " — " + e.getMessage());
-            }
-        } else {
-            candidates = d.findElements(effectiveRoot);
-        }
-
-        // apply accessible-name filter (role-based + label locators)
-        if (accessibleName != null) {
-            candidates = candidates.stream()
-                    .filter(el -> nameMatches(d, el, accessibleName))
-                    .collect(Collectors.toList());
-        }
-
-        // apply filter
-        if (filterCss != null) {
-            String css = filterCss;
-            candidates = candidates.stream()
-                    .filter(el -> {
-                        try { return !el.findElements(By.cssSelector("*")).isEmpty()
-                                    || matchesCss(el, css); }
-                        catch (Exception ignored) { return false; }
-                    })
-                    .collect(Collectors.toList());
-
-            // simpler: keep elements that themselves match the extra css selector
-            // re-query from parent if possible, else filter by attribute
-            candidates = filterByCss(d, candidates, css);
-        }
-
-        // apply withText
-        if (withText != null) {
-            String target = withText;
-            candidates = candidates.stream()
-                    .filter(el -> {
-                        try { return el.getText().trim().equals(target); }
-                        catch (Exception ignored) { return false; }
-                    })
-                    .collect(Collectors.toList());
-        }
-
-        // apply nth / first / last
-        if (last) {
-            if (candidates.isEmpty()) {
-                throw new LocatorException(
-                        "last() requested but only 0 element(s) matched: " + describe());
-            }
-            List<WebElement> single = new ArrayList<>();
-            single.add(candidates.get(candidates.size() - 1));
-            return single;
-        }
-
-        if (nthIndex >= 0) {
-            if (nthIndex >= candidates.size()) {
-                String prefix = first ? "first()" : ("nth(" + nthIndex + ")");
-                throw new LocatorException(
-                        prefix + " requested but only " + candidates.size()
-                        + " element(s) matched: " + describe());
-            }
-            List<WebElement> single = new ArrayList<>();
-            single.add(candidates.get(nthIndex));
-            return single;
-        }
-
-        return candidates;
-    }
-
-    /** Filter a candidate list to those whose outerHTML matches a CSS selector via JS. */
-    private List<WebElement> filterByCss(WebDriver d, List<WebElement> candidates, String css) {
-        JavascriptExecutor js = (JavascriptExecutor) d;
-        return candidates.stream().filter(el -> {
-            try {
-                Object result = js.executeScript(
-                        "return arguments[0].matches(arguments[1]);", el, css);
-                return Boolean.TRUE.equals(result);
-            } catch (Exception ignored) {
-                return false;
-            }
-        }).collect(Collectors.toList());
-    }
-
-    private boolean matchesCss(WebElement el, String css) {
-        try {
-            JavascriptExecutor js = (JavascriptExecutor) driver();
-            Object result = js.executeScript(
-                    "return arguments[0].matches(arguments[1]);", el, css);
-            return Boolean.TRUE.equals(result);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    // ------------------------------------------------------------------
-    // Semantic selector synthesis
-    // ------------------------------------------------------------------
-
-    /** Builds the effective base {@link By} for this locator's {@link Kind}. */
-    private By buildRoot() {
-        switch (kind) {
-            case CSS_OR_BY:
-                return root;
-            case ROLE: {
-                String css = semanticRole.cssSelector();
-                if (semanticRole == Role.HEADING && headingLevel != null) {
-                    css = "h" + headingLevel
-                            + ", [role='heading'][aria-level='" + headingLevel + "']";
-                }
-                return By.cssSelector(css);
-            }
-            case TEXT:
-                return By.xpath(textXPath(semanticValue, exact));
-            case LABEL:
-                return By.cssSelector(FORM_CONTROL_CSS);
-            case PLACEHOLDER:
-                return By.cssSelector(attrCss("placeholder", semanticValue, exact));
-            case ALT_TEXT:
-                return By.cssSelector(attrCss("alt", semanticValue, exact));
-            case TITLE:
-                return By.cssSelector(attrCss("title", semanticValue, exact));
-            case TESTID:
-                return By.cssSelector("[" + testIdAttribute + "='" + cssEscape(semanticValue) + "']");
-            default:
-                throw new LocatorException("Unsupported locator kind: " + kind);
-        }
-    }
-
-    /** CSS attribute selector — exact match, or case-insensitive substring by default. */
-    private static String attrCss(String attr, String value, boolean exact) {
-        return exact
-                ? "[" + attr + "='" + cssEscape(value) + "']"
-                : "[" + attr + "*='" + cssEscape(value) + "' i]";
-    }
-
-    private static final String UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private static final String LOWER = "abcdefghijklmnopqrstuvwxyz";
-
-    /** XPath matching visible text — normalized; exact equality or case-insensitive contains. */
-    private static String textXPath(String value, boolean exact) {
-        if (exact) {
-            return ".//*[normalize-space(.)=" + xpathLiteral(value) + "]";
-        }
-        return ".//*[contains(translate(normalize-space(.),"
-                + " '" + UPPER + "', '" + LOWER + "'),"
-                + " " + xpathLiteral(value.toLowerCase()) + ")]";
-    }
-
-    /** Escapes a value for use inside a single-quoted CSS attribute selector. */
-    private static String cssEscape(String value) {
-        return value.replace("\\", "\\\\").replace("'", "\\'");
-    }
-
-    /** Produces a safe XPath string literal, using concat() when both quote types appear. */
-    private static String xpathLiteral(String value) {
-        if (!value.contains("'")) {
-            return "'" + value + "'";
-        }
-        if (!value.contains("\"")) {
-            return "\"" + value + "\"";
-        }
-        StringBuilder sb = new StringBuilder("concat(");
-        String[] parts = value.split("'", -1);
-        for (int i = 0; i < parts.length; i++) {
-            if (i > 0) sb.append(", \"'\", ");
-            sb.append("'").append(parts[i]).append("'");
-        }
-        return sb.append(")").toString();
-    }
-
-    /** True when an element's computed accessible name matches {@code expected}. */
-    private boolean nameMatches(WebDriver d, WebElement el, String expected) {
-        String actual;
-        try {
-            actual = (String) ((JavascriptExecutor) d).executeScript(ACCESSIBLE_NAME_JS, el);
-        } catch (Exception e) {
-            return false;
-        }
-        if (actual == null) return false;
-        actual = actual.trim();
-        if (exact) {
-            return actual.equals(expected);
-        }
-        return actual.toLowerCase().contains(expected.toLowerCase());
-    }
-
-    /** Computes an element's accessible name, following the common ARIA precedence. */
-    private static final String ACCESSIBLE_NAME_JS =
-            "const e = arguments[0];"
-            + "if(!e) return '';"
-            + "const al = e.getAttribute && e.getAttribute('aria-label');"
-            + "if(al && al.trim()) return al.trim();"
-            + "const lb = e.getAttribute && e.getAttribute('aria-labelledby');"
-            + "if(lb){const t = lb.split(/\\s+/).map(function(id){var r=document.getElementById(id);return r?r.textContent:'';}).join(' ').trim(); if(t) return t;}"
-            + "if(e.labels && e.labels.length){return Array.prototype.map.call(e.labels,function(l){return l.textContent;}).join(' ').trim();}"
-            + "const id = e.getAttribute && e.getAttribute('id');"
-            + "if(id){try{var lab=document.querySelector('label[for=\"'+id+'\"]'); if(lab) return lab.textContent.trim();}catch(x){}}"
-            + "const wrap = e.closest && e.closest('label'); if(wrap) return wrap.textContent.trim();"
-            + "const txt = (e.textContent||'').trim(); if(txt) return txt;"
-            + "const alt = e.getAttribute && e.getAttribute('alt'); if(alt && alt.trim()) return alt.trim();"
-            + "const ti = e.getAttribute && e.getAttribute('title'); if(ti && ti.trim()) return ti.trim();"
-            + "const val = e.value; if(val) return (''+val).trim();"
-            + "const ph = e.getAttribute && e.getAttribute('placeholder'); if(ph && ph.trim()) return ph.trim();"
-            + "return '';";
-
-    // ------------------------------------------------------------------
-    // Wait helpers
-    // ------------------------------------------------------------------
-
-    private Boolean checkState(State state) {
-        switch (state) {
-            case VISIBLE: {
-                try {
-                    WebElement el = resolve();
-                    if (!el.isDisplayed()) return null;
-                    SeleniumBootConfig.Debug debug = SeleniumBootContext.getConfig().getDebug();
-                    if (debug.isHighlight()) highlight(el);
-                    return Boolean.TRUE;
-                } catch (LocatorException | StaleElementReferenceException e) {
-                    return null;
-                }
-            }
-            case HIDDEN: {
-                try {
-                    WebElement el = resolve();
-                    return !el.isDisplayed() ? Boolean.TRUE : null;
-                } catch (LocatorException e) {
-                    return Boolean.TRUE;
-                } catch (StaleElementReferenceException e) {
-                    return null;
-                }
-            }
-            case ATTACHED: {
-                try {
-                    WebElement el = resolve();
-                    el.isEnabled();
-                    SeleniumBootConfig.Debug debug = SeleniumBootContext.getConfig().getDebug();
-                    if (debug.isHighlight()) highlight(el);
-                    return Boolean.TRUE;
-                } catch (LocatorException | StaleElementReferenceException e) {
-                    return null;
-                }
-            }
-            case DETACHED: {
-                try {
-                    resolve();
-                    return null;
-                } catch (LocatorException e) {
-                    return Boolean.TRUE;
-                } catch (StaleElementReferenceException e) {
-                    return null;
-                }
-            }
-            default:
-                throw new IllegalArgumentException("Unsupported state: " + state);
-        }
-    }
-
-    private <T> T whenVisible(Function<WebElement, T> action) {
-        return whenReady(WebElement::isDisplayed, action);
-    }
-
-    /**
-     * Polls until an element resolves, satisfies {@code ready}, and {@code action} runs on it —
-     * re-resolving from scratch on every poll. A missing element ({@link LocatorException}) and a
-     * stale one ({@link StaleElementReferenceException}) are retried until
-     * {@code timeouts.explicit} elapses. A locator that never matched then throws
-     * {@link LocatorException} (cause: the {@code TimeoutException}); anything else throws the
-     * {@code TimeoutException}. The action's
-     * result may be {@code null}.
-     */
-    private <T> T whenReady(Predicate<WebElement> ready, Function<WebElement, T> action) {
-        SeleniumBootConfig cfg = SeleniumBootContext.getConfig();
-        int timeout = cfg.getTimeouts().getExplicit();
-        SeleniumBootConfig.Debug debug = cfg.getDebug();
-        AtomicReference<T> result = new AtomicReference<>();
-        try {
-            new WebDriverWait(driver(), Duration.ofSeconds(timeout))
-                    .ignoring(StaleElementReferenceException.class, LocatorException.class)
-                    .until(d -> {
-                        WebElement el = resolve();
-                        if (!ready.test(el)) return null;
-                        if (debug.isHighlight()) highlight(el);
-                        result.set(action.apply(el));
-                        return Boolean.TRUE;
-                    });
-        } catch (TimeoutException e) {
-            ExecutionMetrics.recordFailingLocator(
-                    SeleniumBootContext.getCurrentTestId(), describe());
-            ExecutionMetrics.recordLocatorUse(
-                    SeleniumBootContext.getCurrentTestId(), describe(), false);
-            // A locator that never matched still surfaces as LocatorException, as it did before
-            // the wait existed, so callers catching it keep working.
-            if (e.getCause() instanceof LocatorException le) {
-                throw new LocatorException(le.getMessage() + " (waited " + timeout + "s)", e);
-            }
-            throw e;
-        }
-        ExecutionMetrics.recordLocatorUse(SeleniumBootContext.getCurrentTestId(), describe(), true);
-        if (debug.getSlowMoMs() > 0) slowMo(debug.getSlowMoMs());
-        return result.get();
-    }
-
-    /** Debug aid: outlines the element; best-effort, never fails the action. The outline is left in place. */
-    private void highlight(WebElement el) {
-        try {
-            ((JavascriptExecutor) driver()).executeScript(
-                    "arguments[0].style.outline='2px solid red';", el);
-        } catch (RuntimeException ignored) {
-            // element went stale or the page blocks script — highlighting is cosmetic
-        }
-    }
-
-    private static void slowMo(long ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-        }
+        return LocatorQueries.rows(this);
     }
 
     // ------------------------------------------------------------------
     // Helpers
     // ------------------------------------------------------------------
 
-    private static boolean isSelected(WebElement el) {
+    static boolean isSelected(WebElement el) {
         return el.isSelected() || "true".equalsIgnoreCase(el.getAttribute("aria-checked"));
     }
 
-    private WebDriver driver() {
+    WebDriver driver() {
         return DriverManager.getDriver();
     }
 
-    private String describe() {
+    String describe() {
         StringBuilder sb = new StringBuilder(baseDescription());
         if (accessibleName  != null && kind == Kind.ROLE) {
             sb.append(".withName(\"").append(accessibleName).append("\")");
