@@ -76,6 +76,9 @@ final class TestRailClient {
             return response.body();
         } catch (IllegalStateException e) {
             throw e;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("[TestRail] Request failed: " + url, e);
         } catch (Exception e) {
             throw new IllegalStateException("[TestRail] Request failed: " + url, e);
         }
