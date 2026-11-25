@@ -92,6 +92,9 @@ final class XrayClient {
             throw new IllegalStateException("[Xray] Could not parse auth token from response: " + response.body());
         } catch (IllegalStateException e) {
             throw e;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("[Xray] Authentication request failed", e);
         } catch (Exception e) {
             throw new IllegalStateException("[Xray] Authentication request failed", e);
         }
@@ -112,6 +115,9 @@ final class XrayClient {
             }
         } catch (IllegalStateException e) {
             throw e;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("[Xray] Request failed: " + url, e);
         } catch (Exception e) {
             throw new IllegalStateException("[Xray] Request failed: " + url, e);
         }
