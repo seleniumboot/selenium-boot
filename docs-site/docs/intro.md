@@ -87,7 +87,7 @@ pip install seleniumboot-mcp
 
 77 tools total (43 in the default profile) · self-healing locators · mobile emulation · codegen for Java / Python / C# / Playwright
 
-[PyPI](https://pypi.org/project/seleniumboot-mcp/) · [GitHub](https://github.com/seleniumboot/selenium-mcp)
+[PyPI](https://pypi.org/project/seleniumboot-mcp/) · [GitHub](https://github.com/seleniumboot/selenium-mcp) · [VS Code extension](https://marketplace.visualstudio.com/items?itemName=seleniumboot.selenium-boot-mcp) · [JetBrains plugin](https://plugins.jetbrains.com/plugin/32516)
 :::
 
 ---
