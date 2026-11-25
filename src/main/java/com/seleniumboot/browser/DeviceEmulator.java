@@ -87,48 +87,54 @@ public final class DeviceEmulator {
     // Chromium CDP path
     // ------------------------------------------------------------------
 
+    /**
+     * Chrome drops {@code Emulation.*} overrides when the CDP session that set them detaches, so the
+     * driver's shared session is reused and left open (#289). It closes with the driver.
+     */
+    private static DevTools session(ChromiumDriver driver) {
+        DevTools devTools = driver.getDevTools();
+        devTools.createSessionIfThereIsNotOne();
+        return devTools;
+    }
+
     private static void applyViaCdp(ChromiumDriver driver, DeviceProfile p) {
-        try (DevTools devTools = driver.getDevTools()) {
-            devTools.createSession();
-            devTools.send(Emulation.setDeviceMetricsOverride(
-                    p.getWidth(),
-                    p.getHeight(),
-                    p.getDeviceScaleFactor(),
-                    p.isMobile(),
-                    Optional.empty(),       // scale
-                    Optional.empty(),       // screenWidth
-                    Optional.empty(),       // screenHeight
-                    Optional.empty(),       // positionX
-                    Optional.empty(),       // positionY
-                    Optional.empty(),       // dontSetVisibleSize
-                    Optional.empty(),       // screenOrientation
-                    Optional.empty(),       // viewport
-                    Optional.empty(),       // displayFeature
-                    Optional.empty(),       // devicePosture
-                    Optional.empty(),       // scrollbarType (new in CDP v153)
-                    Optional.empty(),       // screenOrientationLockEmulation (CDP v153)
-                    Optional.empty()        // viewportMeta (new in CDP v155)
-            ));
-            devTools.send(Emulation.setUserAgentOverride(
-                    p.getUserAgent(),
-                    Optional.empty(),
-                    Optional.empty(),
-                    Optional.empty()
-            ));
-        }
+        DevTools devTools = session(driver);
+        devTools.send(Emulation.setDeviceMetricsOverride(
+                p.getWidth(),
+                p.getHeight(),
+                p.getDeviceScaleFactor(),
+                p.isMobile(),
+                Optional.empty(),       // scale
+                Optional.empty(),       // screenWidth
+                Optional.empty(),       // screenHeight
+                Optional.empty(),       // positionX
+                Optional.empty(),       // positionY
+                Optional.empty(),       // dontSetVisibleSize
+                Optional.empty(),       // screenOrientation
+                Optional.empty(),       // viewport
+                Optional.empty(),       // displayFeature
+                Optional.empty(),       // devicePosture
+                Optional.empty(),       // scrollbarType (new in CDP v153)
+                Optional.empty(),       // screenOrientationLockEmulation (CDP v153)
+                Optional.empty()        // viewportMeta (new in CDP v155)
+        ));
+        devTools.send(Emulation.setUserAgentOverride(
+                p.getUserAgent(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty()
+        ));
     }
 
     private static void resetViaCdp(ChromiumDriver driver) {
-        try (DevTools devTools = driver.getDevTools()) {
-            devTools.createSession();
-            devTools.send(Emulation.clearDeviceMetricsOverride());
-            devTools.send(Emulation.setUserAgentOverride(
-                    "",
-                    Optional.empty(),
-                    Optional.empty(),
-                    Optional.empty()
-            ));
-        }
+        DevTools devTools = session(driver);
+        devTools.send(Emulation.clearDeviceMetricsOverride());
+        devTools.send(Emulation.setUserAgentOverride(
+                "",
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty()
+        ));
     }
 
     // ------------------------------------------------------------------

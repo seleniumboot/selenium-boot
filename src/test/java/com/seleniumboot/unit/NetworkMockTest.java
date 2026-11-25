@@ -365,7 +365,7 @@ public class NetworkMockTest {
         assertTrue(NetworkMockTestSupport.isCdpActive(mock), "CDP should be active after BiDi fallback");
         assertTrue(NetworkMockTestSupport.isAttached(mock), "NetworkMock should be attached");
 
-        verify(devTools).createSession();
+        verify(devTools).createSessionIfThereIsNotOne();
         verify(devTools).send(any(Command.class));
 
         ArgumentCaptor<Consumer<RequestPaused>> cdpCaptor = ArgumentCaptor.forClass(Consumer.class);
@@ -401,7 +401,7 @@ public class NetworkMockTest {
         assertFalse(NetworkMockTestSupport.isBiDiActive(mock));
         assertTrue(NetworkMockTestSupport.isCdpActive(mock));
         assertTrue(NetworkMockTestSupport.isAttached(mock));
-        verify(devTools).createSession();
+        verify(devTools).createSessionIfThereIsNotOne();
     }
 
     @Test

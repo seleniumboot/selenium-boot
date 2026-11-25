@@ -1,5 +1,9 @@
 package com.seleniumboot.wait;
 
+import com.seleniumboot.browser.DeviceEmulator;
+import com.seleniumboot.browser.DeviceProfile;
+import com.seleniumboot.driver.DriverManager;
+import com.seleniumboot.network.NetworkMock;
 import com.sun.net.httpserver.HttpServer;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -34,8 +38,12 @@ public class NetworkActivityTrackerLiveTest {
             String path = ex.getRequestURI().getPath();
             if (path.equals("/slow")) sleep(400);
             int code = path.equals("/created") ? 201 : 200;
-            byte[] body = (path.equals("/") ? "<html><body>ok</body></html>" : "x").getBytes(StandardCharsets.UTF_8);
-            ex.getResponseHeaders().set("Content-Type", path.equals("/") ? "text/html" : "text/plain");
+            boolean html = path.equals("/") || path.equals("/viewport");
+            String doc = path.equals("/viewport")
+                    ? "<html><head><meta name='viewport' content='width=device-width'></head><body>v</body></html>"
+                    : "<html><body>ok</body></html>";
+            byte[] body = (html ? doc : "x").getBytes(StandardCharsets.UTF_8);
+            ex.getResponseHeaders().set("Content-Type", html ? "text/html" : "text/plain");
             ex.sendResponseHeaders(code, body.length);
             ex.getResponseBody().write(body);
             ex.close();
@@ -80,6 +88,39 @@ public class NetworkActivityTrackerLiveTest {
 
         assertTrue((Boolean) ((JavascriptExecutor) d).executeScript("return window.__done;"),
                 "idle must not be reported while /slow is still in flight");
+    }
+
+    @Test
+    public void chrome_cdp_waits_doNotDropDeviceEmulation() {
+        WebDriver d = requireChrome();
+        JavascriptExecutor js = (JavascriptExecutor) d;
+        String page = base + "/viewport";
+        DriverManager.pushSessionOverride(d);
+        try {
+            DeviceEmulator.emulate(new DeviceProfile("Live Phone", 390, 844, 3.0, true, "SeleniumBootLiveUA/1.0"));
+            d.get(page);
+            assertEquals(((Number) js.executeScript("return window.innerWidth;")).intValue(), 390);
+
+            NetworkActivityTracker.awaitIdle(d, Duration.ofMillis(200), Duration.ofSeconds(10));
+            js.executeScript("setTimeout(function(){ fetch('/created').catch(function(){}); }, 200);");
+            NetworkActivityTracker.awaitResponse(d, "**/created", Duration.ofSeconds(10));
+            d.get(page);
+
+            assertEquals(((Number) js.executeScript("return window.innerWidth;")).intValue(), 390,
+                    "a network wait must not end the CDP session that holds the emulation (#289)");
+
+            // NetworkMock's CDP fallback must attach to the same session instead of failing silently
+            NetworkMock.get().stub("**/stubbed").returnJson("{\"stubbed\":true}");
+            Object body = js.executeAsyncScript(
+                    "var done = arguments[0]; fetch('/stubbed').then(function(r){ return r.text(); })"
+                    + ".then(done, function(e){ done('fetch failed: ' + e); });");
+            assertEquals(body, "{\"stubbed\":true}");
+            assertEquals(((Number) js.executeScript("return window.innerWidth;")).intValue(), 390);
+        } finally {
+            NetworkMock.cleanup();
+            DeviceEmulator.reset();
+            DriverManager.popSessionOverride();
+        }
     }
 
     private WebDriver requireChrome() {
