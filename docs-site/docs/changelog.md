@@ -13,6 +13,8 @@ All notable changes to Selenium Boot are documented here.
 
 - **Page title and URL assertions** — `assertThatPage()` adds auto-retrying `hasTitle`, `titleContains`, `hasUrl` and `urlContains`, with `Pattern` overloads for `hasTitle` and `hasUrl` (full match). They retry until `timeouts.explicit`, so they hold across redirects and client-side navigation, and a failure reports the last title or URL the browser returned. Available on `BaseTest`, `BasePage`, `BaseJUnit5Test` and `SeleniumAssert`.
 
+- **Selenium Java 4.52.0 → 4.53.0**: internal upgrade. 4.53.0 no longer ships the CDP `devtools.v154` module, so `NetworkMock`, `DeviceEmulator` and the network trackers now use `devtools.v155`. No API change. (#283)
+
 ---
 
 ## [3.12.0] — 2026-11-20
