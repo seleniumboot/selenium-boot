@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -36,17 +37,22 @@ final class NetworkActivityTracker {
     static void awaitIdle(WebDriver driver, Duration quietFor, Duration timeout) {
         IdleState state = new IdleState();
         if (driver instanceof ChromiumDriver chromium) {
-            try (DevTools devTools = chromium.getDevTools()) {
-                devTools.createSession();
+            DevTools devTools = chromium.getDevTools();
+            boolean owned = devTools.getCdpSession() == null;
+            devTools.createSessionIfThereIsNotOne();
+            AtomicBoolean active = new AtomicBoolean(true);
+            try {
                 devTools.send(org.openqa.selenium.devtools.v155.network.Network.enable(
                         Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
                 devTools.addListener(org.openqa.selenium.devtools.v155.network.Network.requestWillBeSent(),
-                        (RequestWillBeSent event) -> state.requestStarted());
+                        (RequestWillBeSent event) -> { if (active.get()) state.requestStarted(); });
                 devTools.addListener(org.openqa.selenium.devtools.v155.network.Network.loadingFinished(),
-                        (LoadingFinished event) -> state.requestEnded());
+                        (LoadingFinished event) -> { if (active.get()) state.requestEnded(); });
                 devTools.addListener(org.openqa.selenium.devtools.v155.network.Network.loadingFailed(),
-                        (LoadingFailed event) -> state.requestEnded());
+                        (LoadingFailed event) -> { if (active.get()) state.requestEnded(); });
                 pollUntilIdle(state, quietFor, timeout);
+            } finally {
+                release(devTools, owned, active);
             }
         } else if (driver instanceof HasBiDi) {
             try (Network network = new Network(driver)) {
@@ -63,18 +69,24 @@ final class NetworkActivityTracker {
     static int awaitResponse(WebDriver driver, String urlPattern, Duration timeout) {
         ResponseLatch latch = new ResponseLatch();
         if (driver instanceof ChromiumDriver chromium) {
-            try (DevTools devTools = chromium.getDevTools()) {
-                devTools.createSession();
+            DevTools devTools = chromium.getDevTools();
+            boolean owned = devTools.getCdpSession() == null;
+            devTools.createSessionIfThereIsNotOne();
+            AtomicBoolean active = new AtomicBoolean(true);
+            try {
                 devTools.send(org.openqa.selenium.devtools.v155.network.Network.enable(
                         Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
                 devTools.addListener(org.openqa.selenium.devtools.v155.network.Network.responseReceived(),
                         (ResponseReceived event) -> {
+                            if (!active.get()) return;
                             String url = event.getResponse().getUrl();
                             if (NetworkMock.matches(urlPattern, url)) {
                                 latch.complete(event.getResponse().getStatus());
                             }
                         });
                 return latch.await(timeout);
+            } finally {
+                release(devTools, owned, active);
             }
         } else if (driver instanceof HasBiDi) {
             try (Network network = new Network(driver)) {
@@ -89,6 +101,16 @@ final class NetworkActivityTracker {
         } else {
             throw unsupported(driver);
         }
+    }
+
+    /**
+     * The driver's CDP session is shared with {@code DeviceEmulator}, {@code NetworkMock} and the
+     * trace recorder, and closing it drops their state (#289). Only a session this call opened is
+     * closed; otherwise the listeners are switched off, because a single listener cannot be removed.
+     */
+    private static void release(DevTools devTools, boolean owned, AtomicBoolean active) {
+        active.set(false);
+        if (owned) devTools.close();
     }
 
     private static void pollUntilIdle(IdleState state, Duration quietFor, Duration timeout) {

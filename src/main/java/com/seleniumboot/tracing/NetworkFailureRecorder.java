@@ -15,6 +15,7 @@ import org.openqa.selenium.devtools.v155.network.model.ResponseReceived;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -77,17 +78,22 @@ public final class NetworkFailureRecorder {
 
     private static AutoCloseable listenCdp(String testId, ChromiumDriver chromium) {
         DevTools devTools = chromium.getDevTools();
-        devTools.createSession();
+        // The session is shared with DeviceEmulator, NetworkMock and network waits (#289): close it
+        // only if this recorder opened it, otherwise just switch the listeners off.
+        boolean owned = devTools.getCdpSession() == null;
+        devTools.createSessionIfThereIsNotOne();
+        AtomicBoolean active = new AtomicBoolean(true);
         devTools.send(org.openqa.selenium.devtools.v155.network.Network.enable(
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
         // Selenium dispatches CDP events on a thread pool, so a response can be handled before its
         // requestWillBeSent (#259). Keyed by requestId as text: RequestId has no value equality.
         RequestCorrelator requests = new RequestCorrelator();
         devTools.addListener(org.openqa.selenium.devtools.v155.network.Network.requestWillBeSent(),
-                (RequestWillBeSent e) -> requests.requestSent(e.getRequestId().toString(),
-                        e.getRequest().getMethod(), e.getRequest().getUrl()));
+                (RequestWillBeSent e) -> { if (active.get()) requests.requestSent(e.getRequestId().toString(),
+                        e.getRequest().getMethod(), e.getRequest().getUrl()); });
         devTools.addListener(org.openqa.selenium.devtools.v155.network.Network.responseReceived(),
                 (ResponseReceived e) -> {
+                    if (!active.get()) return;
                     int status = e.getResponse().getStatus().intValue();
                     if (status < 400) return;
                     String url = e.getResponse().getUrl();
@@ -97,6 +103,7 @@ public final class NetworkFailureRecorder {
                 });
         devTools.addListener(org.openqa.selenium.devtools.v155.network.Network.loadingFailed(),
                 (LoadingFailed e) -> {
+                    if (!active.get()) return;
                     if (Boolean.TRUE.equals(e.getCanceled().orElse(false))) return;   // aborted by navigation, not a failure
                     String error = e.getErrorText();
                     requests.whenKnown(e.getRequestId().toString(), req ->
@@ -105,7 +112,8 @@ public final class NetworkFailureRecorder {
                 });
         return () -> {
             try {
-                devTools.close();
+                active.set(false);
+                if (owned) devTools.close();
             } finally {
                 requests.flush();   // a failure whose request never arrived is still recorded
             }

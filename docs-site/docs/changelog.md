@@ -11,6 +11,8 @@ All notable changes to Selenium Boot are documented here.
 
 ## [Unreleased]
 
+- **Fix: `DeviceEmulator.emulate()` had no effect on Chrome/Edge**: the CDP session was closed right after the overrides were sent, and Chrome drops `Emulation.*` overrides when that session detaches. Emulation now stays in force until `reset()` or the driver quits. `waitForNetworkIdle`, `waitForResponse`, failed-request tracing and `NetworkMock` now share the same CDP session, so a network wait no longer ends emulation or failed-request recording. (#289)
+
 - **Page title and URL assertions** — `assertThatPage()` adds auto-retrying `hasTitle`, `titleContains`, `hasUrl` and `urlContains`, with `Pattern` overloads for `hasTitle` and `hasUrl` (full match). They retry until `timeouts.explicit`, so they hold across redirects and client-side navigation, and a failure reports the last title or URL the browser returned. Available on `BaseTest`, `BasePage`, `BaseJUnit5Test` and `SeleniumAssert`.
 
 - **Selenium Java 4.52.0 → 4.53.0**: internal upgrade. 4.53.0 no longer ships the CDP `devtools.v154` module, so `NetworkMock`, `DeviceEmulator` and the network trackers now use `devtools.v155`. No API change. (#283)

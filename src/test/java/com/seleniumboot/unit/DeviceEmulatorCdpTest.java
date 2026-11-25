@@ -43,7 +43,8 @@ public class DeviceEmulatorCdpTest {
         DeviceEmulator.emulate(new DeviceProfile("Test Phone", 390, 844, 3.0, true, "TestUA/1.0"));
 
         ArgumentCaptor<Command> sent = ArgumentCaptor.forClass(Command.class);
-        verify(devTools).createSession();
+        verify(devTools).createSessionIfThereIsNotOne();
+        verify(devTools, never()).close();   // closing would drop the overrides (#289)
         verify(devTools, times(2)).send(sent.capture());
         List<Command> commands = sent.getAllValues();
 
@@ -59,5 +60,25 @@ public class DeviceEmulatorCdpTest {
         Command ua = commands.get(1);
         assertEquals(ua.getMethod(), "Emulation.setUserAgentOverride");
         assertEquals(ua.getParams().get("userAgent"), "TestUA/1.0");
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void reset_onChrome_clearsOverridesOnTheSameSessionWithoutClosingIt() {
+        ChromeDriver driver = mock(ChromeDriver.class);
+        DevTools devTools = mock(DevTools.class);
+        when(driver.getDevTools()).thenReturn(devTools);
+        DriverManager.pushSessionOverride(driver);
+        pushed = true;
+
+        DeviceEmulator.reset();
+
+        ArgumentCaptor<Command> sent = ArgumentCaptor.forClass(Command.class);
+        verify(devTools).createSessionIfThereIsNotOne();
+        verify(devTools, never()).close();
+        verify(devTools, never()).disconnectSession();
+        verify(devTools, times(2)).send(sent.capture());
+        assertEquals(sent.getAllValues().get(0).getMethod(), "Emulation.clearDeviceMetricsOverride");
+        assertEquals(sent.getAllValues().get(1).getMethod(), "Emulation.setUserAgentOverride");
     }
 }

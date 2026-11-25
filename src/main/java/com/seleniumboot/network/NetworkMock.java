@@ -207,7 +207,7 @@ public final class NetworkMock {
         if (driver instanceof ChromiumDriver chromium) {
             try {
                 devTools = chromium.getDevTools();
-                devTools.createSession();
+                devTools.createSessionIfThereIsNotOne();   // shared with DeviceEmulator and network waits (#289)
 
                 List<RequestPattern> patterns = List.of(
                         new RequestPattern(
