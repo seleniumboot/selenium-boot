@@ -94,7 +94,15 @@ public final class GitHubActionsSummary {
     }
 
     private static String base(String baseDir) {
-        return isBlank(baseDir) ? "target" : baseDir.replace('\\', '/').trim().replaceAll("/+$", "");
+        if (isBlank(baseDir)) {
+            return "target";
+        }
+        String normalized = baseDir.replace('\\', '/').trim();
+        int end = normalized.length();
+        while (end > 0 && normalized.charAt(end - 1) == '/') {
+            end--;
+        }
+        return normalized.substring(0, end);
     }
 
     /**

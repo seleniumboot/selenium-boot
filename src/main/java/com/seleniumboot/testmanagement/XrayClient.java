@@ -58,7 +58,12 @@ final class XrayClient {
             String credentials = cfg.getUsername() + ":" + cfg.getPassword();
             authHeader  = "Basic " + Base64.getEncoder()
                     .encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
-            importUrl   = cfg.getJiraUrl().replaceAll("/+$", "") + "/rest/raven/1.0/import/execution";
+            String jiraUrl = cfg.getJiraUrl();
+            int end = jiraUrl.length();
+            while (end > 0 && jiraUrl.charAt(end - 1) == '/') {
+                end--;
+            }
+            importUrl = jiraUrl.substring(0, end) + "/rest/raven/1.0/import/execution";
         }
 
         String body = buildExecutionJson(results);

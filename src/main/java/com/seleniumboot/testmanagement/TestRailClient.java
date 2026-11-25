@@ -26,7 +26,12 @@ final class TestRailClient {
     private final HttpClient http;
 
     TestRailClient(SeleniumBootConfig.TestManagement.TestRail cfg) {
-        this.baseUrl = cfg.getUrl().replaceAll("/+$", "");
+        String url = cfg.getUrl();
+        int end = url.length();
+        while (end > 0 && url.charAt(end - 1) == '/') {
+            end--;
+        }
+        this.baseUrl = url.substring(0, end);
         String credentials = cfg.getUsername() + ":" + cfg.getApiKey();
         this.authHeader = "Basic " + Base64.getEncoder()
                 .encodeToString(credentials.getBytes(StandardCharsets.UTF_8));

@@ -5,6 +5,7 @@ import com.seleniumboot.config.SeleniumBootConfig;
 import com.seleniumboot.metrics.TestTiming;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -105,6 +106,42 @@ public class GitHubActionsSummaryTest {
         assertTrue(markdown.contains("[artifacts](https://github.com/acme/app/actions/runs/42)"),
                 "Must link to the workflow run page");
         assertTrue(markdown.contains("actions/upload-artifact"), "Must hint how traces get there");
+    }
+
+    @DataProvider(name = "reportDirectories")
+    public Object[][] reportDirectories() {
+        return new Object[][] {
+                {"target", "target"},
+                {"target/", "target"},
+                {"target///", "target"},
+                {"  reports/custom///  ", "reports/custom"},
+                {"reports\\custom\\\\\\", "reports/custom"},
+                {"/", ""},
+                {"///", ""},
+                {"", "target"},
+                {"   ", "target"}
+        };
+    }
+
+    @Test(dataProvider = "reportDirectories")
+    public void buildMarkdown_normalizesArtifactsDirectory(String directory, String expected) {
+        String property = "seleniumboot.reports.dir";
+        String previous = System.getProperty(property);
+        try {
+            System.setProperty(property, directory);
+            TestTiming failed = timing("t1", "LoginTest", "FAILED", "boom", "traces/t1.html");
+            String markdown = GitHubActionsSummary.buildMarkdown(List.of(failed),
+                    "https://github.com/acme/app/actions/runs/42");
+
+            assertTrue(markdown.contains("if `" + expected + "/traces/` is uploaded"),
+                    "Artifacts directory must have all trailing slashes removed");
+        } finally {
+            if (previous == null) {
+                System.clearProperty(property);
+            } else {
+                System.setProperty(property, previous);
+            }
+        }
     }
 
     @Test
