@@ -67,8 +67,10 @@ public final class Email {
             throw new AssertionError("[Email] Email has no body content to extract a link from");
         }
         // Match <a ... href="url" ...>text</a> or <a ... href='url' ...>text</a>
+        // Attributes are matched with [^<>] so the pieces cannot overlap and a tag that never closes
+        // cannot make the engine rescan the rest of the body (super-linear backtracking).
         Pattern p = Pattern.compile(
-            "<a[^>]+href=[\"']([^\"']+)[\"'][^>]*>(.*?)</a>",
+            "<a\\b[^<>]*?\\shref=[\"']([^\"']+)[\"'][^<>]*>(.*?)</a>",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
         Matcher m = p.matcher(source);
         while (m.find()) {
