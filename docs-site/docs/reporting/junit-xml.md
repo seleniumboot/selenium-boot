@@ -53,7 +53,7 @@ target/
 
 The `message` attribute on `<failure>` contains the actual assertion message or exception message from your test — not a generic "Test failed" placeholder.
 
-The `type` attribute is the [failure category](html-report.md#failure-classification) (`LOCATOR_NOT_FOUND`, `TIMEOUT`, `UNKNOWN`, …), and the first line of the body names the evidence it was chosen from. The original stack trace follows unchanged.
+The `type` attribute is the [failure category](html-report.md#failure-classification--intelligence) (`LOCATOR_NOT_FOUND`, `TIMEOUT`, `UNKNOWN`, …), and the first line of the body names the evidence it was chosen from. The original stack trace follows unchanged.
 
 This means CI tools that display failure summaries (GitHub Actions, Jenkins, Azure Pipelines) show meaningful error descriptions without needing to open the full report.
 
